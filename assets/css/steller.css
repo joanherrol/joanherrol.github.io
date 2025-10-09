@@ -65,9 +65,9 @@ body {
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
-  color: #495057;
+  color: #fdfdfd;
   text-align: left;
-  background-color: #fff;
+  background-color: #000;
 }
 
 [tabindex="-1"]:focus {
@@ -235,11 +235,6 @@ label {
 
 button {
   border-radius: 0;
-}
-
-button:focus {
-  outline: 1px dotted;
-  outline: 5px auto -webkit-focus-ring-color;
 }
 
 input,
@@ -490,11 +485,9 @@ mark,
 
 .img-thumbnail {
   padding: 0.25rem;
-  background-color: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: 0.25rem;
   max-width: 100%;
   height: auto;
+  background-color: #fff;
 }
 
 .figure {
@@ -2167,14 +2160,33 @@ pre code {
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
-  color: #495057;
-  background-color: #fff;
+  color: #fdfdfd;
+  background-color: #070707;
   background-clip: padding-box;
-  border: 1px solid #ced4da;
+  border: 0px;
   border-radius: 0.25rem;
   -webkit-transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  resize: none;
 }
+
+/* Dark theme scrollbar for form controls */
+.form-control::-webkit-scrollbar {
+  width: 8px;
+}
+
+.form-control::-webkit-scrollbar-track {
+  background: #212121;
+}
+
+.form-control::-webkit-scrollbar-thumb {
+  background: #353535;
+}
+
+.form-control::-webkit-scrollbar-thumb:hover {
+  background: #424242;
+}
+
 
 @media (prefers-reduced-motion: reduce) {
   .form-control {
@@ -2189,11 +2201,9 @@ pre code {
 }
 
 .form-control:focus {
-  color: #495057;
-  background-color: #fff;
-  border-color: #ffdfd7;
+  color: #fdfdfd;
+  background-color: #070707;
   outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(255, 122, 87, 0.25);
 }
 
 .form-control::-webkit-input-placeholder {
@@ -2756,7 +2766,6 @@ textarea.form-control {
 
 .btn:focus, .btn.focus {
   outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(255, 122, 87, 0.25);
 }
 
 .btn.disabled, .btn:disabled {
@@ -5005,7 +5014,7 @@ input[type="button"].btn-block {
 }
 
 .navbar-dark .navbar-nav .nav-link:hover, .navbar-dark .navbar-nav .nav-link:focus {
-  color: rgba(255, 255, 255, 0.75);
+  color: #fff;
 }
 
 .navbar-dark .navbar-nav .nav-link.disabled {
@@ -5053,7 +5062,7 @@ input[type="button"].btn-block {
           flex-direction: column;
   min-width: 0;
   word-wrap: break-word;
-  background-color: #fff;
+  background-color: #141414;
   background-clip: border-box;
   border: 1px solid rgba(0, 0, 0, 0.125);
   border-radius: 0.25rem;
@@ -11135,10 +11144,6 @@ pre {
   top: 50%;
 }
 
-.card {
-  box-shadow: 2px 3px 10px rgba(206, 212, 218, 0.3);
-}
-
 .card .post-details {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -11229,7 +11234,6 @@ pre {
   position: relative;
   border-radius: 0.3rem;
   border: 1px solid 1px;
-  box-shadow: 1px 2px 6px rgba(173, 181, 189, 0.5);
   padding: 0 30px 0 25px;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -11238,7 +11242,7 @@ pre {
   max-width: 1000px;
   margin: 0 auto 150px;
   z-index: 99;
-  background: #fff;
+  background: #141414;
 }
 
 .contact .form {
@@ -11246,7 +11250,6 @@ pre {
   -webkit-flex-grow: 1;
       -ms-flex-positive: 1;
           flex-grow: 1;
-  border-right: 1px solid #dee2e6;
   padding: 35px 30px 35px 0;
 }
 
@@ -11348,13 +11351,11 @@ pre {
   min-height: 80px;
   -webkit-transition: all 0.3s;
   transition: all 0.3s;
-  background: #fff;
+  background: #000;
 }
 
 .navbar .navbar-brand img {
-  width: 75px;
-  -webkit-filter: drop-shadow(1px 2px 25px rgba(206, 212, 218, 0.9));
-          filter: drop-shadow(1px 2px 25px rgba(206, 212, 218, 0.9));
+  width: 56px;
 }
 
 .navbar .navbar-nav {
@@ -11375,10 +11376,6 @@ pre {
 
 .navbar .navbar-nav .btn {
   min-width: 120px;
-}
-
-.navbar.affix {
-  box-shadow: 0 6px 15px rgba(206, 212, 218, 0.3);
 }
 
 @media (max-width: 767.98px) {
@@ -11419,11 +11416,6 @@ pre {
   height: 13px;
   border-radius: 50%;
   background: #fbc02d;
-  box-shadow: 0 0 10px rgba(255, 122, 87, 0.5);
-}
-
-.page-footer {
-  background: #fcfdff;
 }
 
 .page-footer .row {
@@ -11458,7 +11450,7 @@ pre {
 .header {
   height: 94vh;
   min-height: 650px;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid #141414;
 }
 
 .header .container {
@@ -11522,8 +11514,6 @@ pre {
 .header .container .img-holder img {
   width: 100%;
   max-width: 620px;
-  -webkit-filter: drop-shadow(0 -4px 20px rgba(206, 212, 218, 0.4));
-          filter: drop-shadow(0 -4px 20px rgba(206, 212, 218, 0.4));
   margin-left: auto;
   margin-right: -2rem;
 }
@@ -11553,12 +11543,10 @@ pre {
   display: -ms-flexbox;
   display: -webkit-flex;
   display: flex;
-  border: 1px solid #dee2e6;
   padding: 20px 0;
   margin-top: -50px;
   z-index: 999;
-  background: #fff;
-  box-shadow: 0 0 30px rgba(173, 181, 189, 0.4);
+  background: #141414;
 }
 
 .header .widget .widget-item {
@@ -11636,7 +11624,7 @@ pre {
 }
 
 .section:nth-child(even) {
-  background: white;
+  background: #141414;
 }
 
 .section.bg-white {
