@@ -46,25 +46,6 @@ function TiltCard({ project }: { project: ProjectItem }) {
       "perspective(700px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    const el = ref.current;
-    if (!el) return;
-    const touch = e.touches[0];
-    const rect = el.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-    const rotX = ((y - rect.height / 2) / rect.height) * -16;
-    const rotY = ((x - rect.width / 2) / rect.width) * 16;
-    el.style.transform = `perspective(700px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.04,1.04,1.04)`;
-  };
-
-  const handleTouchEnd = () => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.transform =
-      "perspective(700px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
-  };
-
   return (
     <a
       ref={ref}
@@ -79,8 +60,6 @@ function TiltCard({ project }: { project: ProjectItem }) {
       }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
     >
       <Card className="overflow-hidden border-border gap-0 py-0">
         <div className="relative overflow-hidden">

@@ -7,7 +7,14 @@ import type { ISourceOptions, Engine } from "@tsparticles/engine";
 
 export function ParticlesBackground() {
   const [init, setInit] = useState(false);
+  const [isTouch, setIsTouch] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsTouch(
+      window.matchMedia("(hover: none) and (pointer: coarse)").matches,
+    );
+  }, []);
 
   useEffect(() => {
     initParticlesEngine(async (engine: Engine) => {
@@ -33,8 +40,8 @@ export function ParticlesBackground() {
     fpsLimit: 60,
     interactivity: {
       events: {
-        onHover: { enable: true, mode: "grab" },
-        onClick: { enable: true, mode: "push" },
+        onHover: { enable: !isTouch, mode: "grab" },
+        onClick: { enable: !isTouch, mode: "push" },
       },
       modes: {
         grab: { distance: 160, links: { opacity: 0.4 } },
