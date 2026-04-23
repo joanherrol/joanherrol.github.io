@@ -32,7 +32,7 @@ export const translations = {
     about: {
       label: "About Me",
       p1: "Frontend is where I feel most at home, building interfaces that are fast, accessible, and feel right to use. I work across the full stack and know my way around backend and cloud infrastructure, but the UI is what I care about most.",
-      p2: "Two years of professional experience shipping web products, with a background in cloud engineering that makes me comfortable owning a feature end to end, from API to deployment.",
+      p2: "Three years of professional experience shipping web products, with a background in cloud engineering that makes me comfortable owning a feature end to end, from API to deployment.",
       p3: "Outside of work I play music, draw, and used to make games. I'm a creative person at heart, which I think shows in how I approach UI: details matter, and things should feel as good as they look.",
       downloadCV: "Download CV",
     },

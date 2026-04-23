@@ -81,7 +81,7 @@ export function Hero() {
 
           <div className="flex flex-row md:flex-col gap-10 md:gap-8">
             <div className="text-center">
-              <p className="text-4xl font-bold tracking-tight">2+</p>
+              <p className="text-4xl font-bold tracking-tight">3+</p>
               <p className="text-xs text-muted-foreground uppercase tracking-widest mt-1">
                 {t.hero.yearsExperience}
               </p>
