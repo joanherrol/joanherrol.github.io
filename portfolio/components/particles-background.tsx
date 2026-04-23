@@ -23,9 +23,10 @@ export function ParticlesBackground() {
       const opacity = Math.max(0, 1 - scrolled / (vh * 0.6));
       wrapperRef.current.style.opacity = String(opacity);
     };
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [init]);
 
   const options: ISourceOptions = {
     background: { color: { value: "transparent" } },
