@@ -35,7 +35,10 @@ export function Hero() {
             </p>
 
             <div className="flex flex-wrap gap-3">
-              <Button onClick={() => scrollTo("projects")}>
+              <Button
+                onClick={() => scrollTo("projects")}
+                className="cursor-pointer"
+              >
                 {t.hero.viewProjects}
               </Button>
               <Button variant="outline" asChild>

@@ -31,7 +31,7 @@ export function Navbar() {
       <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
         <button
           onClick={() => scrollTo("home")}
-          className="font-semibold text-sm tracking-tight"
+          className="font-semibold text-sm tracking-tight cursor-pointer"
         >
           JH
         </button>
@@ -41,7 +41,7 @@ export function Navbar() {
             <button
               key={l.href}
               onClick={() => scrollTo(l.href)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             >
               {l.label}
             </button>
@@ -51,13 +51,13 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setLocale(locale === "en" ? "es" : "en")}
-            className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors tracking-widest uppercase"
+            className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors tracking-widest uppercase cursor-pointer"
             aria-label="Toggle language"
           >
             {locale === "en" ? "ES" : "EN"}
           </button>
           <button
-            className="md:hidden text-muted-foreground hover:text-foreground transition-colors"
+            className="md:hidden text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             onClick={() => setOpen(!open)}
             aria-label="Toggle menu"
           >
@@ -76,7 +76,7 @@ export function Navbar() {
                   scrollTo(l.href);
                   setOpen(false);
                 }}
-                className="text-sm text-left text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm text-left text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
                 {l.label}
               </button>
