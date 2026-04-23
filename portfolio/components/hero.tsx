@@ -22,7 +22,7 @@ export function Hero() {
         <div className="flex flex-col md:flex-row items-start md:items-stretch justify-between gap-12">
           <div className="flex-1 flex flex-col gap-6">
             <div className="space-y-2">
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight">
                 Joan Hervás
               </h1>
               <p className="text-xl md:text-2xl text-muted-foreground font-light">
@@ -34,10 +34,10 @@ export function Hero() {
               {t.hero.description}
             </p>
 
-            <div className="flex gap-4 max-w-md">
+            <div className="flex gap-3 w-full md:max-w-md">
               <Button
                 onClick={() => scrollTo("projects")}
-                className="cursor-pointer h-12 px-7 text-base gap-2 active:scale-95 transition-transform flex-1"
+                className="cursor-pointer h-12 px-3 sm:px-7 text-sm sm:text-base gap-2 active:scale-95 transition-transform flex-1 min-w-0"
               >
                 {t.hero.viewProjects}
                 <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/button:translate-x-1" />
@@ -45,7 +45,7 @@ export function Hero() {
               <Button
                 variant="outline"
                 asChild
-                className="h-12 px-7 text-base gap-2 active:scale-95 transition-transform flex-1"
+                className="h-12 px-3 sm:px-7 text-sm sm:text-base gap-2 active:scale-95 transition-transform flex-1 min-w-0"
               >
                 <a href="/docs/CVJoanHervas.pdf" download>
                   <Download className="h-4 w-4 transition-transform duration-200 group-hover/button:-translate-y-0.5" />
@@ -54,13 +54,13 @@ export function Hero() {
               </Button>
             </div>
 
-            <div className="flex gap-3 max-w-md">
+            <div className="flex gap-2 sm:gap-3 w-full md:max-w-md">
               <a
                 href="https://www.linkedin.com/in/joanhervas/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
-                className="flex-1 inline-flex items-center justify-center gap-2 h-10 rounded-lg border border-border bg-background text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95 transition-transform"
+                className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 h-10 rounded-lg border border-border bg-background text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95 transition-transform"
               >
                 <LinkedInIcon className="h-4 w-4 shrink-0" />
                 <span>LinkedIn</span>
@@ -70,7 +70,7 @@ export function Hero() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
-                className="flex-1 inline-flex items-center justify-center gap-2 h-10 rounded-lg border border-border bg-background text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95 transition-transform"
+                className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 h-10 rounded-lg border border-border bg-background text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95 transition-transform"
               >
                 <GitHubIcon className="h-4 w-4 shrink-0" />
                 <span>GitHub</span>
@@ -80,7 +80,7 @@ export function Hero() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="itch.io"
-                className="flex-1 inline-flex items-center justify-center gap-2 h-10 rounded-lg border border-border bg-background text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95 transition-transform"
+                className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 h-10 rounded-lg border border-border bg-background text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95 transition-transform"
               >
                 <Gamepad2 className="h-4 w-4 shrink-0" />
                 <span>itch.io</span>
