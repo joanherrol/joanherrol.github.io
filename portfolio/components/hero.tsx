@@ -11,7 +11,8 @@ function scrollTo(id: string) {
 }
 
 export function Hero() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const cvHref = locale === "es" ? "/docs/CV_JoanHervas_Spanish.pdf" : "/docs/CV_JoanHervas_English.pdf";
   return (
     <section
       id="home"
@@ -47,7 +48,7 @@ export function Hero() {
                 asChild
                 className="h-12 px-3 sm:px-7 text-sm sm:text-base gap-2 active:scale-95 transition-transform flex-1 min-w-0"
               >
-                <a href="/docs/CVJoanHervas.pdf" download>
+                <a href={cvHref} download>
                   <Download className="h-4 w-4 transition-transform duration-200 group-hover/button:-translate-y-0.5" />
                   {t.hero.downloadCV}
                 </a>

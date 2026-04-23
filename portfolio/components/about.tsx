@@ -5,7 +5,8 @@ import { Download, ChevronRight } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 
 export function About() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const cvHref = locale === "es" ? "/docs/CV_JoanHervas_Spanish.pdf" : "/docs/CV_JoanHervas_English.pdf";
   return (
     <section id="about" className="min-h-screen flex flex-col bg-muted/30">
       <div className="max-w-5xl mx-auto px-6 w-full flex-1 flex flex-col pt-32 pb-16">
@@ -33,7 +34,7 @@ export function About() {
 
           <div className="flex justify-end">
             <a
-              href="/docs/CVJoanHervas.pdf"
+              href={cvHref}
               download
               className="group inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-foreground hover:text-background hover:border-foreground active:scale-95"
             >

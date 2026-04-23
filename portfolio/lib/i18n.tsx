@@ -70,7 +70,7 @@ export const translations = {
       ],
       languagesLabel: "Languages",
       languagesList: [
-        { name: "English", note: "Native / Fluent" },
+        { name: "English", note: "Cambridge C2 / Fluent" },
         { name: "Spanish", note: "Native" },
         { name: "Catalan", note: "Native" },
       ],
@@ -164,7 +164,7 @@ export const translations = {
       ],
       languagesLabel: "Idiomas",
       languagesList: [
-        { name: "Inglés", note: "Nativo / Fluido" },
+        { name: "Inglés", note: "Cambridge C2 / Fluido" },
         { name: "Español", note: "Nativo" },
         { name: "Catalán", note: "Nativo" },
       ],
