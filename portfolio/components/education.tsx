@@ -32,7 +32,7 @@ export function Education() {
   return (
     <section id="education" className="min-h-screen flex flex-col">
       <div className="max-w-5xl mx-auto px-6 w-full flex-1 flex flex-col pt-32 pb-16">
-        <p className="text-sm text-muted-foreground uppercase tracking-widest mb-16">
+        <p className="text-sm text-muted-foreground uppercase tracking-widest mb-8">
           {t.education.label}
         </p>
 

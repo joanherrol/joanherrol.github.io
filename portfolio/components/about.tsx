@@ -9,13 +9,13 @@ export function About() {
   return (
     <section id="about" className="min-h-screen flex flex-col bg-muted/30">
       <div className="max-w-5xl mx-auto px-6 w-full flex-1 flex flex-col pt-32 pb-16">
-        <p className="text-sm text-muted-foreground uppercase tracking-widest mb-3">
+        <p className="text-sm text-muted-foreground uppercase tracking-widest mb-8">
           {t.about.label}
         </p>
 
         <div className="flex-1 flex flex-col justify-center gap-6">
           <div className="flex flex-col md:flex-row gap-12 items-stretch">
-            <div className="shrink-0 relative md:w-48 rounded-xl overflow-hidden min-h-[200px]">
+            <div className="shrink-0 relative w-full max-w-xs mx-auto md:max-w-none md:mx-0 md:w-48 rounded-xl overflow-hidden aspect-[3/4] md:aspect-auto min-h-[200px]">
               <Image
                 src="/imgs/portrait.png"
                 alt="Joan Hervás"
