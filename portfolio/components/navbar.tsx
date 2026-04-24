@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Menu, X } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 
@@ -13,24 +13,78 @@ const linkKeys = [
   "contact",
 ] as const;
 
-function scrollTo(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-}
-
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>("home");
   const { locale, setLocale, t } = useLocale();
+  const isScrollingRef = useRef(false);
+  const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const links = linkKeys.map((key) => ({
     href: key,
     label: t.nav[key],
   }));
 
+  const scrollToSection = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    // Mark programmatic scroll start
+    isScrollingRef.current = true;
+
+    // Detect scroll end: 150ms of silence after last scroll event
+    const handleScroll = () => {
+      if (scrollEndTimerRef.current) clearTimeout(scrollEndTimerRef.current);
+      scrollEndTimerRef.current = setTimeout(() => {
+        isScrollingRef.current = false;
+        window.removeEventListener("scroll", handleScroll);
+      }, 150);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    el.scrollIntoView({ behavior: "smooth" });
+    setActiveSection(id);
+    history.replaceState(null, "", id === "home" ? "/" : `#${id}`);
+  }, []);
+
+  // Update URL hash as sections scroll into view during manual scroll
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+
+    linkKeys.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && !isScrollingRef.current) {
+            setActiveSection(id);
+            history.replaceState(null, "", id === "home" ? "/" : `#${id}`);
+          }
+        },
+        { threshold: 0.4 },
+      );
+
+      observer.observe(el);
+      observers.push(observer);
+    });
+
+    return () => observers.forEach((o) => o.disconnect());
+  }, []);
+
+  // On mount, scroll to hash if present
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "");
+    if (hash) {
+      document.getElementById(hash)?.scrollIntoView();
+    }
+  }, []);
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
       <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
         <button
-          onClick={() => scrollTo("home")}
+          onClick={() => scrollToSection("home")}
           className="font-semibold text-sm tracking-tight cursor-pointer"
         >
           JH
@@ -40,8 +94,12 @@ export function Navbar() {
           {links.map((l) => (
             <button
               key={l.href}
-              onClick={() => scrollTo(l.href)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              onClick={() => scrollToSection(l.href)}
+              className={`text-sm transition-colors cursor-pointer ${
+                activeSection === l.href
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
               {l.label}
             </button>
@@ -73,10 +131,14 @@ export function Navbar() {
               <button
                 key={l.href}
                 onClick={() => {
-                  scrollTo(l.href);
+                  scrollToSection(l.href);
                   setOpen(false);
                 }}
-                className="text-sm text-left text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                className={`text-sm text-left transition-colors cursor-pointer ${
+                  activeSection === l.href
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
                 {l.label}
               </button>

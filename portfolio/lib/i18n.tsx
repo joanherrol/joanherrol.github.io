@@ -30,14 +30,12 @@ export const translations = {
       projectsDelivered: "Projects Delivered",
     },
     about: {
-      label: "About Me",
       p1: "Frontend is where I feel most at home, building interfaces that are fast, accessible, and feel right to use. I work across the full stack and know my way around backend and cloud infrastructure, but the UI is what I care about most.",
       p2: "Three years of professional experience shipping web products, with a background in cloud engineering that makes me comfortable owning a feature end to end, from API to deployment.",
       p3: "Outside of work I play music, draw, and used to make games. I'm a creative person at heart, which I think shows in how I approach UI: details matter, and things should feel as good as they look.",
       downloadCV: "Download CV",
     },
     projects: {
-      label: "Portfolio",
       intro:
         "A selection of the projects I'm most proud of. More work is available on my",
       githubLabel: "GitHub",
@@ -60,7 +58,6 @@ export const translations = {
       ],
     },
     skills: {
-      label: "Skills",
       categories: [
         "Frontend",
         "Backend",
@@ -76,7 +73,6 @@ export const translations = {
       ],
     },
     education: {
-      label: "Education",
       items: [
         {
           degree: "Computer Science — Exchange Programme",
@@ -99,7 +95,6 @@ export const translations = {
       ],
     },
     contact: {
-      label: "Contact",
       locationLabel: "Location",
       phoneLabel: "Phone",
       emailLabel: "Email",
@@ -124,14 +119,12 @@ export const translations = {
       projectsDelivered: "Proyectos entregados",
     },
     about: {
-      label: "Sobre mí",
       p1: "El frontend es donde me siento más cómodo, creando interfaces rápidas, accesibles y que se sienten bien al usarlas. He tocado un poco de todo y me manejo bien en backend e infraestructura cloud, pero la UI es lo que más me apasiona.",
       p2: "Tengo tres años de experiencia profesional desarrollando productos web, con una base en cloud engineering que me permite entender el proceso de desarrollo de extremo a extremo, desde la API hasta el despliegue.",
       p3: "Fuera del trabajo toco música, dibujo y antes hacía videojuegos. Soy una persona creativa, y creo que eso se nota en cómo me aproximo al diseño de interfaces: los detalles importan, y las cosas deben sentirse tan bien como se ven.",
       downloadCV: "Descargar CV",
     },
     projects: {
-      label: "Portafolio",
       intro:
         "Una selección de los proyectos de los que más orgulloso estoy. Más disponible en mi",
       githubLabel: "GitHub",
@@ -154,7 +147,6 @@ export const translations = {
       ],
     },
     skills: {
-      label: "Habilidades",
       categories: [
         "Frontend",
         "Backend",
@@ -170,7 +162,6 @@ export const translations = {
       ],
     },
     education: {
-      label: "Formación",
       items: [
         {
           degree: "Computación — Programa de intercambio",
@@ -193,7 +184,6 @@ export const translations = {
       ],
     },
     contact: {
-      label: "Contacto",
       locationLabel: "Ubicación",
       phoneLabel: "Teléfono",
       emailLabel: "Email",

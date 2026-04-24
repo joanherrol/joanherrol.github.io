@@ -6,12 +6,15 @@ import { useLocale } from "@/lib/i18n";
 
 export function About() {
   const { t, locale } = useLocale();
-  const cvHref = locale === "es" ? "/docs/CV_JoanHervas_Spanish.pdf" : "/docs/CV_JoanHervas_English.pdf";
+  const cvHref =
+    locale === "es"
+      ? "/docs/CV_JoanHervas_Spanish.pdf"
+      : "/docs/CV_JoanHervas_English.pdf";
   return (
     <section id="about" className="min-h-screen flex flex-col bg-muted/30">
       <div className="max-w-5xl mx-auto px-6 w-full flex-1 flex flex-col pt-32 pb-16">
         <p className="text-sm text-muted-foreground uppercase tracking-widest mb-8">
-          {t.about.label}
+          {t.nav.about}
         </p>
 
         <div className="flex-1 flex flex-col justify-center gap-6">

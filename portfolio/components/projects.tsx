@@ -98,7 +98,7 @@ export function Projects() {
     <section id="projects" className="min-h-screen flex flex-col">
       <div className="max-w-5xl mx-auto px-6 w-full flex-1 flex flex-col pt-32 pb-16">
         <p className="text-sm text-muted-foreground uppercase tracking-widest mb-8">
-          {t.projects.label}
+          {t.nav.projects}
         </p>
         <p className="text-base max-w-2xl mb-16">
           {t.projects.intro}{" "}

@@ -33,7 +33,7 @@ export function Skills() {
     <section id="skills" className="min-h-screen flex flex-col bg-muted/30">
       <div className="max-w-5xl mx-auto px-6 w-full flex-1 flex flex-col pt-32 pb-16">
         <p className="text-sm text-muted-foreground uppercase tracking-widest mb-8">
-          {t.skills.label}
+          {t.nav.skills}
         </p>
 
         <div className="flex-1 flex flex-col justify-center">
