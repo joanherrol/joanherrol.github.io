@@ -75,7 +75,10 @@ export function Gallery() {
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [loaded, setLoaded] = useState<Set<number>>(new Set());
 
-  const openLightbox = useCallback((index: number) => setLightbox(index), []);
+  const openLightbox = useCallback((index: number) => {
+    if (window.innerWidth < 640) return;
+    setLightbox(index);
+  }, []);
   const closeLightbox = useCallback(() => setLightbox(null), []);
   const prev = useCallback(() => setLightbox((i) => (i === null ? null : (i - 1 + paintings.length) % paintings.length)), []);
   const next = useCallback(() => setLightbox((i) => (i === null ? null : (i + 1) % paintings.length)), []);

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Download, ChevronRight } from "lucide-react";
+import { Download, ChevronRight, ImageIcon } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 
 export function About() {
@@ -11,11 +11,6 @@ export function About() {
     locale === "es"
       ? "/docs/CV_JoanHervas_Spanish.pdf"
       : "/docs/CV_JoanHervas_English.pdf";
-
-  // Split p3 around the gallery link phrase so we can embed it inline
-  const p3 = t.about.p3;
-  const galleryLink = t.gallery.galleryLink;
-  const p3Parts = p3.split(galleryLink);
 
   return (
     <section id="about" className="min-h-screen flex flex-col bg-muted/30">
@@ -38,34 +33,25 @@ export function About() {
             <div className="space-y-4 flex-1">
               <p className="text-base leading-relaxed">{t.about.p1}</p>
               <p className="text-base leading-relaxed">{t.about.p2}</p>
-              <p className="text-base leading-relaxed">
-                {p3Parts.length === 2 ? (
-                  <>
-                    {p3Parts[0]}
-                    <Link
-                      href="/gallery"
-                      className="underline underline-offset-4 decoration-muted-foreground hover:decoration-foreground transition-colors"
-                    >
-                      {galleryLink}
-                    </Link>
-                    {p3Parts[1]}
-                  </>
-                ) : (
-                  p3
-                )}
-              </p>
+              <p className="text-base leading-relaxed">{t.about.p3}</p>
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end items-center gap-3 mt-12">
+            <Link
+              href="/gallery"
+              className="group inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-md transition-all duration-200 hover:bg-foreground hover:text-background hover:border-foreground active:scale-95"
+            >
+              <ImageIcon className="h-4 w-4" />
+              <span>{t.about.galleryButton}</span>
+            </Link>
             <a
               href={cvHref}
               download
-              className="group inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-foreground hover:text-background hover:border-foreground active:scale-95"
+              className="group inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-md transition-all duration-200 hover:bg-foreground hover:text-background hover:border-foreground active:scale-95"
             >
-              <Download className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:scale-110" />
+              <Download className="h-4 w-4" />
               <span>{t.about.downloadCV}</span>
-              <ChevronRight className="h-4 w-4 -translate-x-1 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100" />
             </a>
           </div>
         </div>

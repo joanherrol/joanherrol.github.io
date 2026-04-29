@@ -5,14 +5,15 @@ import { Footer } from "@/components/footer";
 
 export const metadata = {
   title: "Gallery — Joan Hervás",
-  description: "A collection of digital and traditional paintings by Joan Hervás.",
+  description:
+    "A collection of digital and traditional paintings by Joan Hervás.",
 };
 
 export default function GalleryPage() {
   return (
     <LocaleProvider>
       <div className="flex flex-col min-h-screen">
-        <BackNavbar />
+        <BackNavbar backTo="/#about" />
         <main className="flex-1">
           <Gallery />
         </main>

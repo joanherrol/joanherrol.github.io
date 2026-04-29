@@ -12,7 +12,10 @@ function scrollTo(id: string) {
 
 export function Hero() {
   const { t, locale } = useLocale();
-  const cvHref = locale === "es" ? "/docs/CV_JoanHervas_Spanish.pdf" : "/docs/CV_JoanHervas_English.pdf";
+  const cvHref =
+    locale === "es"
+      ? "/docs/CV_JoanHervas_Spanish.pdf"
+      : "/docs/CV_JoanHervas_English.pdf";
   return (
     <section
       id="home"
@@ -41,7 +44,7 @@ export function Hero() {
                 className="cursor-pointer h-12 px-3 sm:px-7 text-sm sm:text-base gap-2 active:scale-95 transition-transform flex-1 min-w-0"
               >
                 {t.hero.viewProjects}
-                <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/button:translate-x-1" />
+                <ArrowRight className="ml-4 transition-transform duration-200 group-hover/button:translate-x-0.5" />
               </Button>
               <Button
                 variant="outline"
@@ -49,7 +52,7 @@ export function Hero() {
                 className="h-12 px-3 sm:px-7 text-sm sm:text-base gap-2 active:scale-95 transition-transform flex-1 min-w-0"
               >
                 <a href={cvHref} download>
-                  <Download className="h-4 w-4 transition-transform duration-200 group-hover/button:-translate-y-0.5" />
+                  <Download className="mr-2 transition-transform duration-200 group-hover/button:scale-114" />
                   {t.hero.downloadCV}
                 </a>
               </Button>

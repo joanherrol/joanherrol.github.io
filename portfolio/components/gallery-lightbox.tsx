@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
 
 interface GalleryLightboxProps {
   src: string;
@@ -15,13 +15,27 @@ interface GalleryLightboxProps {
   onNext: () => void;
 }
 
-export function GalleryLightbox({ src, title, desc, index, total, onClose, onPrev, onNext }: GalleryLightboxProps) {
+export function GalleryLightbox({
+  src,
+  title,
+  desc,
+  index,
+  total,
+  onClose,
+  onPrev,
+  onNext,
+}: GalleryLightboxProps) {
   const [detailMode, setDetailMode] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
 
   const zoomRef = useRef(1);
   const panRef = useRef({ x: 0, y: 0 });
-  const dragRef = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null);
+  const dragRef = useRef<{
+    startX: number;
+    startY: number;
+    panX: number;
+    panY: number;
+  } | null>(null);
   const didDragRef = useRef(false);
   const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -30,7 +44,9 @@ export function GalleryLightbox({ src, title, desc, index, total, onClose, onPre
   // Lock body scroll while open
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, []);
 
   const setCursor = useCallback((cursor: "default" | "grab" | "grabbing") => {
@@ -38,11 +54,16 @@ export function GalleryLightbox({ src, title, desc, index, total, onClose, onPre
     innerRef.current.style.cursor = cursor;
   }, []);
 
-  const applyTransform = useCallback((z: number, x: number, y: number, animated = false) => {
-    if (!imgRef.current) return;
-    imgRef.current.style.transition = animated ? "transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)" : "none";
-    imgRef.current.style.transform = `scale(${z}) translate(${x / z}px, ${y / z}px)`;
-  }, []);
+  const applyTransform = useCallback(
+    (z: number, x: number, y: number, animated = false) => {
+      if (!imgRef.current) return;
+      imgRef.current.style.transition = animated
+        ? "transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)"
+        : "none";
+      imgRef.current.style.transform = `scale(${z}) translate(${x / z}px, ${y / z}px)`;
+    },
+    [],
+  );
 
   const enterDetail = useCallback(() => {
     zoomRef.current = 2.5;
@@ -68,14 +89,16 @@ export function GalleryLightbox({ src, title, desc, index, total, onClose, onPre
     setCursor("default");
     setDetailMode(false);
     setImgLoaded(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src]);
 
   // Keyboard navigation
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { if (detailMode) exitDetail(); else onClose(); }
-      else if (e.key === "ArrowLeft") onPrev();
+      if (e.key === "Escape") {
+        if (detailMode) exitDetail();
+        else onClose();
+      } else if (e.key === "ArrowLeft") onPrev();
       else if (e.key === "ArrowRight") onNext();
     };
     window.addEventListener("keydown", handleKey);
@@ -87,7 +110,12 @@ export function GalleryLightbox({ src, title, desc, index, total, onClose, onPre
     e.preventDefault();
     didDragRef.current = false;
     setCursor("grabbing");
-    dragRef.current = { startX: e.clientX, startY: e.clientY, panX: panRef.current.x, panY: panRef.current.y };
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      panX: panRef.current.x,
+      panY: panRef.current.y,
+    };
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -95,7 +123,10 @@ export function GalleryLightbox({ src, title, desc, index, total, onClose, onPre
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDragRef.current = true;
-    panRef.current = { x: dragRef.current.panX + dx, y: dragRef.current.panY + dy };
+    panRef.current = {
+      x: dragRef.current.panX + dx,
+      y: dragRef.current.panY + dy,
+    };
     applyTransform(zoomRef.current, panRef.current.x, panRef.current.y);
   };
 
@@ -114,12 +145,20 @@ export function GalleryLightbox({ src, title, desc, index, total, onClose, onPre
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
-      pinchRef.current = { dist: getTouchDist(e.touches), zoom: zoomRef.current };
+      pinchRef.current = {
+        dist: getTouchDist(e.touches),
+        zoom: zoomRef.current,
+      };
       dragRef.current = null;
     } else if (e.touches.length === 1 && detailMode) {
       const t = e.touches[0];
       didDragRef.current = false;
-      dragRef.current = { startX: t.clientX, startY: t.clientY, panX: panRef.current.x, panY: panRef.current.y };
+      dragRef.current = {
+        startX: t.clientX,
+        startY: t.clientY,
+        panX: panRef.current.x,
+        panY: panRef.current.y,
+      };
     }
   };
 
@@ -133,7 +172,10 @@ export function GalleryLightbox({ src, title, desc, index, total, onClose, onPre
       const dx = t.clientX - dragRef.current.startX;
       const dy = t.clientY - dragRef.current.startY;
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDragRef.current = true;
-      panRef.current = { x: dragRef.current.panX + dx, y: dragRef.current.panY + dy };
+      panRef.current = {
+        x: dragRef.current.panX + dx,
+        y: dragRef.current.panY + dy,
+      };
       applyTransform(zoomRef.current, panRef.current.x, panRef.current.y);
     }
   };
@@ -148,39 +190,38 @@ export function GalleryLightbox({ src, title, desc, index, total, onClose, onPre
   };
 
   // Desktop only: click outside image closes
-  const handleBackdropClick = () => { onClose(); };
+  const handleBackdropClick = () => {
+    onClose();
+  };
 
-  // Shared zoom button label — avoids repeating in desktop + mobile layouts
-  const zoomLabel = detailMode
-    ? <><ZoomOut className="w-5 h-5" /><span>Exit zoom</span></>
-    : <><ZoomIn className="w-5 h-5" /><span>Zoom in</span></>;
+  const zoomIcon = detailMode ? (
+    <ZoomOut className="w-6 h-6" />
+  ) : (
+    <ZoomIn className="w-6 h-6" />
+  );
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/95 flex flex-col">
+      {/* Backdrop — click outside image to close */}
+      <div className="absolute inset-0 z-0" onClick={handleBackdropClick} />
 
-      {/* Desktop backdrop — click outside image to close (hidden on mobile) */}
-      <div className="hidden sm:block absolute inset-0 z-0" onClick={handleBackdropClick} />
-
-      {/* Close button — mobile only */}
+      {/* Chevrons */}
       <button
-        className="sm:hidden absolute top-4 right-4 z-20 p-1 text-white/50 hover:text-white transition-colors cursor-pointer"
-        onClick={(e) => { e.stopPropagation(); onClose(); }}
-        aria-label="Close"
-      >
-        <X className="w-7 h-7" />
-      </button>
-
-      {/* Chevrons — desktop: absolute mid-sides; mobile: in bottom bar */}
-      <button
-        className="hidden sm:block absolute left-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors cursor-pointer z-10"
-        onClick={(e) => { e.stopPropagation(); onPrev(); }}
+        className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors cursor-pointer z-10"
+        onClick={(e) => {
+          e.stopPropagation();
+          onPrev();
+        }}
         aria-label="Previous"
       >
         <ChevronLeft className="w-10 h-10" />
       </button>
       <button
-        className="hidden sm:block absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors cursor-pointer z-10"
-        onClick={(e) => { e.stopPropagation(); onNext(); }}
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors cursor-pointer z-10"
+        onClick={(e) => {
+          e.stopPropagation();
+          onNext();
+        }}
         aria-label="Next"
       >
         <ChevronRight className="w-10 h-10" />
@@ -189,7 +230,7 @@ export function GalleryLightbox({ src, title, desc, index, total, onClose, onPre
       {/* Image area */}
       <div
         ref={innerRef}
-        className="flex-1 flex items-center justify-center select-none px-4 sm:px-16 pt-12 sm:pt-4 pb-[28vh] sm:pb-[16vh]"
+        className="flex-1 flex items-center justify-center select-none px-16 pt-4 pb-[16vh]"
         style={{ cursor: "default" }}
         onClick={(e) => e.stopPropagation()}
         onMouseDown={handleMouseDown}
@@ -210,7 +251,7 @@ export function GalleryLightbox({ src, title, desc, index, total, onClose, onPre
             alt={title}
             width={1200}
             height={1600}
-            className={`max-h-[60vh] sm:max-h-[75vh] max-w-full w-auto object-contain rounded-xl shadow-2xl transition-opacity duration-500 ${
+            className={`max-h-[75vh] max-w-full w-auto object-contain rounded-xl shadow-2xl transition-opacity duration-500 ${
               imgLoaded ? "opacity-100" : "opacity-0"
             }`}
             priority
@@ -220,13 +261,12 @@ export function GalleryLightbox({ src, title, desc, index, total, onClose, onPre
         </div>
       </div>
 
-      {/* Bottom bar — fixed height, glass background like navbar */}
+      {/* Bottom bar */}
       <div
-        className="absolute bottom-0 inset-x-0 z-10 bg-background/80 backdrop-blur-sm border-t border-border px-4 pb-4 h-[28vh] sm:h-[16vh] flex flex-col"
+        className="absolute bottom-0 inset-x-0 z-10 bg-background/80 backdrop-blur-sm border-t border-border px-4 h-[16vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Desktop layout: text centred + zoom button right, count at bottom */}
-        <div className="hidden sm:flex items-start gap-6 flex-1 pt-3">
+        <div className="flex items-start gap-6 flex-1 pt-3">
           <div className="flex-1 flex justify-center overflow-hidden">
             <div className="max-w-lg w-full">
               <h2 className="text-white text-lg font-semibold">{title}</h2>
@@ -234,46 +274,16 @@ export function GalleryLightbox({ src, title, desc, index, total, onClose, onPre
             </div>
           </div>
           <button
-            className="flex-shrink-0 self-center flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium border border-white/30 rounded-full px-4 py-1.5 transition-colors cursor-pointer mr-4"
-            onClick={() => detailMode ? exitDetail() : enterDetail()}
+            className="flex-shrink-0 self-center p-2 text-white/70 hover:text-white transition-colors cursor-pointer mr-4"
+            onClick={() => (detailMode ? exitDetail() : enterDetail())}
             aria-label={detailMode ? "Exit zoom" : "Zoom in"}
           >
-            {zoomLabel}
+            {zoomIcon}
           </button>
         </div>
-        <p className="hidden sm:block text-white/30 text-xs text-center pb-2">{index + 1} / {total}</p>
-
-        {/* Mobile layout: title+desc → chevrons+zoom → count pinned at bottom */}
-        <div className="sm:hidden flex flex-col flex-1 pt-3">
-          <div className="flex-shrink-0">
-            <h2 className="text-white text-base font-semibold">{title}</h2>
-            <p className="text-white/60 text-sm mt-0.5">{desc}</p>
-          </div>
-          <div className="flex items-center justify-between gap-2 mt-auto mb-8">
-            <button
-              className="flex-1 flex justify-center items-center py-1 text-white/60 active:text-white transition-colors"
-              onClick={onPrev}
-              aria-label="Previous"
-            >
-              <ChevronLeft className="w-7 h-7" />
-            </button>
-            <button
-              className="flex items-center gap-2 text-white/70 text-sm font-medium border border-white/30 rounded-full px-4 py-2 transition-colors"
-              onClick={() => detailMode ? exitDetail() : enterDetail()}
-              aria-label={detailMode ? "Exit zoom" : "Zoom in"}
-            >
-              {zoomLabel}
-            </button>
-            <button
-              className="flex-1 flex justify-center items-center py-1 text-white/60 active:text-white transition-colors"
-              onClick={onNext}
-              aria-label="Next"
-            >
-              <ChevronRight className="w-7 h-7" />
-            </button>
-          </div>
-          <p className="text-white/30 text-xs text-center mt-2">{index + 1} / {total}</p>
-        </div>
+        <p className="text-white/30 text-xs text-center pb-2">
+          {index + 1} / {total}
+        </p>
       </div>
     </div>
   );

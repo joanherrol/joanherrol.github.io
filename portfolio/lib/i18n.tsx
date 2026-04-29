@@ -32,8 +32,9 @@ export const translations = {
     about: {
       p1: "Frontend is where I feel most at home, building interfaces that are fast, accessible, and feel right to use. I work across the full stack and know my way around backend and cloud infrastructure, but the UI is what I care about most.",
       p2: "Three years of professional experience shipping web products, with a background in cloud engineering that makes me comfortable owning a feature end to end, from API to deployment.",
-      p3: "Outside of work I play music, paint (some examples can be seen here) and used to make games. I'm a creative person at heart, which I think shows in how I approach UI: details matter, and things should feel as good as they look.",
+      p3: "Outside of work I play music, paint and used to make games. I'm a creative person at heart, which I think shows in how I approach UI: details matter, and things should feel as good as they look.",
       downloadCV: "Download CV",
+      galleryButton: "Gallery",
     },
     projects: {
       intro:
@@ -102,31 +103,42 @@ export const translations = {
     gallery: {
       heading: "Gallery",
       subheading: "A selection of digital and traditional paintings.",
-      galleryLink: "here",
       bouguereauTitle: "Bouguereau Master Study",
-      bouguereauDesc: "Digital study after William-Adolphe Bouguereau, exploring classical light and shadow.",
+      bouguereauDesc:
+        "Digital study after William-Adolphe Bouguereau, exploring classical light and shadow.",
       partyTitle: "Party Night",
-      partyDesc: "A digital painting painted from photo reference, capturing a spontaneous moment from a night out with friends.",
+      partyDesc:
+        "A digital painting painted from photo reference, capturing a spontaneous moment from a night out with friends.",
       despairTitle: "Despair",
-      despairDesc: "An expressive figure study exploring themes of anguish and raw emotion.",
+      despairDesc:
+        "An expressive figure study exploring themes of anguish and raw emotion.",
       forestPortraitTitle: "Forest portrait",
-      forestPortraitDesc: "Digital portrait painted from photo reference, with a focus on natural light and skin tones.",
+      forestPortraitDesc:
+        "Digital portrait painted from photo reference, with a focus on natural light and skin tones.",
       dragonTitle: "Dragon",
-      dragonDesc: "Traditional painting of a fierce dragon, done with acrylic on paper.",
+      dragonDesc:
+        "Traditional painting of a fierce dragon, done with acrylic on paper.",
       totoroTitle: "Totoro Bus Stop",
-      totoroDesc: "Watercolour recreation of the iconic bus stop scene from My Neighbour Totoro.",
+      totoroDesc:
+        "Watercolour recreation of the iconic bus stop scene from My Neighbour Totoro.",
       flowerPortraitTitle: "Portrait with Flowers",
-      flowerPortraitDesc: "Digital portrait painted from photo reference, with a natural, sun-drenched atmosphere.",
+      flowerPortraitDesc:
+        "Digital portrait painted from photo reference, with a natural, sun-drenched atmosphere.",
       beachPortraitTitle: "Beach Portrait",
-      beachPortraitDesc: "Digital portrait painted from photo reference, exploring warm backlighting and saturated colours.",
+      beachPortraitDesc:
+        "Digital portrait painted from photo reference, exploring warm backlighting and saturated colours.",
       joyfulPortraitTitle: "Joyful Portrait",
-      joyfulPortraitDesc: "Digital portrait painted from photo reference, with vivid colours and warm skin tones.",
+      joyfulPortraitDesc:
+        "Digital portrait painted from photo reference, with vivid colours and warm skin tones.",
       doublePortraitTitle: "Double Portrait",
-      doublePortraitDesc: "Double digital portrait painted from photo reference, capturing a warm and intimate moment between two people.",
+      doublePortraitDesc:
+        "Double digital portrait painted from photo reference, capturing a warm and intimate moment between two people.",
       multicolourPortraitTitle: "Multicolour Portrait",
-      multicolourPortraitDesc: "Digital portrait of a young person in a natural outdoor setting, with soft ambient light.",
+      multicolourPortraitDesc:
+        "Digital portrait of a young person in a natural outdoor setting, with soft ambient light.",
       traditionalPortraitTitle: "Traditional Portrait",
-      traditionalPortraitDesc: "Traditional portrait painted from photo reference, emphasising the subject's gaze and expression, done with acrylic on paper.",
+      traditionalPortraitDesc:
+        "Traditional portrait painted from photo reference, emphasising the subject's gaze and expression, done with acrylic on paper.",
     },
   },
   es: {
@@ -150,8 +162,9 @@ export const translations = {
     about: {
       p1: "El frontend es donde me siento más cómodo, creando interfaces rápidas, accesibles y que se sienten bien al usarlas. He tocado un poco de todo y me manejo bien en backend e infraestructura cloud, pero la UI es lo que más me apasiona.",
       p2: "Tengo tres años de experiencia profesional desarrollando productos web, con una base en cloud engineering que me permite entender el proceso de desarrollo de extremo a extremo, desde la API hasta el despliegue.",
-      p3: "Fuera del trabajo toco música, pinto  (algunos ejemplos disponibles aquí) y antes hacía videojuegos. Soy una persona creativa, y creo que eso se nota en cómo me aproximo al diseño de interfaces: los detalles importan, y las cosas deben sentirse tan bien como se ven.",
+      p3: "Fuera del trabajo toco música, pinto y antes hacía videojuegos. Soy una persona creativa, y creo que eso se nota en cómo me aproximo al diseño de interfaces: los detalles importan, y las cosas deben sentirse tan bien como se ven.",
       downloadCV: "Descargar CV",
+      galleryButton: "Galería",
     },
     projects: {
       intro:
@@ -220,31 +233,42 @@ export const translations = {
     gallery: {
       heading: "Galería",
       subheading: "Una selección de pinturas digitales y tradicionales.",
-      galleryLink: "aquí",
       bouguereauTitle: "Estudio de Bouguereau",
-      bouguereauDesc: "Estudio digital de William-Adolphe Bouguereau, explorando la luz y la sombra clásicas.",
+      bouguereauDesc:
+        "Estudio digital de William-Adolphe Bouguereau, explorando la luz y la sombra clásicas.",
       partyTitle: "Noche de fiesta",
-      partyDesc: "Una pintura digital pintada a partir de referencia fotográfica, capturando un momento espontáneo de una noche de salida con amigos.",
+      partyDesc:
+        "Una pintura digital pintada a partir de referencia fotográfica, capturando un momento espontáneo de una noche de salida con amigos.",
       despairTitle: "Desesperación",
-      despairDesc: "Un estudio de figura expresivo que explora temas de angustia y emoción en bruto.",
+      despairDesc:
+        "Un estudio de figura expresivo que explora temas de angustia y emoción en bruto.",
       forestPortraitTitle: "Retrato en el bosque",
-      forestPortraitDesc: "Retrato digital pintado a partir de referencia fotográfica, con un enfoque en la luz natural y los tonos de piel.",
+      forestPortraitDesc:
+        "Retrato digital pintado a partir de referencia fotográfica, con un enfoque en la luz natural y los tonos de piel.",
       dragonTitle: "Dragón",
-      dragonDesc: "Pintura tradicional de un dragón, realizada con acrílico sobre papel.",
+      dragonDesc:
+        "Pintura tradicional de un dragón, realizada con acrílico sobre papel.",
       totoroTitle: "Parada de bus de Totoro",
-      totoroDesc: "Recreación en acuarela de la icónica escena de la parada de bus de Mi vecino Totoro.",
+      totoroDesc:
+        "Recreación en acuarela de la icónica escena de la parada de bus de Mi vecino Totoro.",
       flowerPortraitTitle: "Retrato con flores",
-      flowerPortraitDesc: "Retrato digital pintado a partir de referencia fotográfica, con una atmósfera natural bañada por el sol.",
+      flowerPortraitDesc:
+        "Retrato digital pintado a partir de referencia fotográfica, con una atmósfera natural bañada por el sol.",
       beachPortraitTitle: "Retrato en la playa",
-      beachPortraitDesc: "Retrato digital pintado a partir de referencia fotográfica, explorando el contraluz cálido y colores saturados.",
+      beachPortraitDesc:
+        "Retrato digital pintado a partir de referencia fotográfica, explorando el contraluz cálido y colores saturados.",
       joyfulPortraitTitle: "Retrato feliz",
-      joyfulPortraitDesc: "Retrato digital pintado a partir de referencia fotográfica, con colores vivos y tonos de piel cálidos.",
+      joyfulPortraitDesc:
+        "Retrato digital pintado a partir de referencia fotográfica, con colores vivos y tonos de piel cálidos.",
       doublePortraitTitle: "Retrato doble",
-      doublePortraitDesc: "Doble retrato digital pintado a partir de referencia fotográfica, capturando un momento íntimo y cálido entre dos personas.",
+      doublePortraitDesc:
+        "Doble retrato digital pintado a partir de referencia fotográfica, capturando un momento íntimo y cálido entre dos personas.",
       multicolourPortraitTitle: "Retrato multicolor",
-      multicolourPortraitDesc: "Retrato digital de un joven en un entorno exterior natural, con luz ambiente suave.",
+      multicolourPortraitDesc:
+        "Retrato digital de un joven en un entorno exterior natural, con luz ambiente suave.",
       traditionalPortraitTitle: "Retrato tradicional",
-      traditionalPortraitDesc: "Retrato tradicional pintado a partir de referencia fotográfica, enfatizando la mirada y expresión, realizado con acrílico sobre papel.",
+      traditionalPortraitDesc:
+        "Retrato tradicional pintado a partir de referencia fotográfica, enfatizando la mirada y expresión, realizado con acrílico sobre papel.",
     },
   },
 } as const;
