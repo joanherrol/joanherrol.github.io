@@ -18,7 +18,7 @@ export function Hero() {
       id="home"
       className="relative min-h-screen flex flex-col justify-center pt-16 overflow-hidden"
     >
-      <ParticlesBackground />
+      <ParticlesBackground scrollFade />
       <div className="max-w-5xl mx-auto px-6 py-24 w-full">
         <div className="flex flex-col md:flex-row items-start md:items-stretch justify-between gap-12">
           <div className="flex-1 flex flex-col gap-6">

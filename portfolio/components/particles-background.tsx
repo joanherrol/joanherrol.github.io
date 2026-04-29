@@ -5,7 +5,7 @@ import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
 import type { ISourceOptions, Engine } from "@tsparticles/engine";
 
-export function ParticlesBackground() {
+export function ParticlesBackground({ scrollFade }: { scrollFade?: boolean } = {}) {
   const [init, setInit] = useState(false);
   const [isTouch, setIsTouch] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -23,6 +23,7 @@ export function ParticlesBackground() {
   }, []);
 
   useEffect(() => {
+    if (!scrollFade) return;
     const handleScroll = () => {
       if (!wrapperRef.current) return;
       const scrolled = window.scrollY;
@@ -33,7 +34,7 @@ export function ParticlesBackground() {
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [init]);
+  }, [init, scrollFade]);
 
   const options: ISourceOptions = {
     background: { color: { value: "transparent" } },

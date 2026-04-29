@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Download, ChevronRight } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 
@@ -10,6 +11,12 @@ export function About() {
     locale === "es"
       ? "/docs/CV_JoanHervas_Spanish.pdf"
       : "/docs/CV_JoanHervas_English.pdf";
+
+  // Split p3 around the gallery link phrase so we can embed it inline
+  const p3 = t.about.p3;
+  const galleryLink = t.gallery.galleryLink;
+  const p3Parts = p3.split(galleryLink);
+
   return (
     <section id="about" className="min-h-screen flex flex-col bg-muted/30">
       <div className="max-w-5xl mx-auto px-6 w-full flex-1 flex flex-col pt-32 pb-16">
@@ -31,7 +38,22 @@ export function About() {
             <div className="space-y-4 flex-1">
               <p className="text-base leading-relaxed">{t.about.p1}</p>
               <p className="text-base leading-relaxed">{t.about.p2}</p>
-              <p className="text-base leading-relaxed">{t.about.p3}</p>
+              <p className="text-base leading-relaxed">
+                {p3Parts.length === 2 ? (
+                  <>
+                    {p3Parts[0]}
+                    <Link
+                      href="/gallery"
+                      className="underline underline-offset-4 decoration-muted-foreground hover:decoration-foreground transition-colors"
+                    >
+                      {galleryLink}
+                    </Link>
+                    {p3Parts[1]}
+                  </>
+                ) : (
+                  p3
+                )}
+              </p>
             </div>
           </div>
 
