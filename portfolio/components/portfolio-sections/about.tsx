@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Download, ChevronRight, ImageIcon } from "lucide-react";
+import { Download, ImageIcon } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 
 export function About() {

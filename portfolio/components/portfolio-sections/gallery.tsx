@@ -3,8 +3,8 @@
 import { useState, useCallback } from "react";
 import Image from "next/image";
 import { useLocale } from "@/lib/i18n";
-import { ParticlesBackground } from "@/components/particles-background";
-import { GalleryLightbox } from "@/components/gallery-lightbox";
+import { ParticlesBackground } from "@/components/shared/particles-background";
+import { GalleryLightbox } from "@/components/shared/gallery-lightbox";
 
 const paintings = [
   {
@@ -80,15 +80,29 @@ export function Gallery() {
     setLightbox(index);
   }, []);
   const closeLightbox = useCallback(() => setLightbox(null), []);
-  const prev = useCallback(() => setLightbox((i) => (i === null ? null : (i - 1 + paintings.length) % paintings.length)), []);
-  const next = useCallback(() => setLightbox((i) => (i === null ? null : (i + 1) % paintings.length)), []);
+  const prev = useCallback(
+    () =>
+      setLightbox((i) =>
+        i === null ? null : (i - 1 + paintings.length) % paintings.length,
+      ),
+    [],
+  );
+  const next = useCallback(
+    () => setLightbox((i) => (i === null ? null : (i + 1) % paintings.length)),
+    [],
+  );
 
   return (
-    <section id="gallery" className="relative min-h-screen flex flex-col overflow-hidden">
+    <section
+      id="gallery"
+      className="relative min-h-screen flex flex-col overflow-hidden"
+    >
       <ParticlesBackground />
       <div className="max-w-6xl mx-auto px-6 w-full flex-1 flex flex-col pt-32 pb-16">
         <div className="mb-10">
-          <h1 className="text-4xl font-bold text-foreground">{t.gallery.heading}</h1>
+          <h1 className="text-4xl font-bold text-foreground">
+            {t.gallery.heading}
+          </h1>
           <p className="text-muted-foreground mt-2">{t.gallery.subheading}</p>
         </div>
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
@@ -100,7 +114,10 @@ export function Gallery() {
             >
               <div className="relative w-full overflow-hidden rounded-xl shadow-md bg-muted">
                 {!loaded.has(i) && (
-                  <div className="absolute inset-0 animate-pulse bg-muted rounded-xl" style={{ aspectRatio: "3/4" }} />
+                  <div
+                    className="absolute inset-0 animate-pulse bg-muted rounded-xl"
+                    style={{ aspectRatio: "3/4" }}
+                  />
                 )}
                 <Image
                   src={p.src}

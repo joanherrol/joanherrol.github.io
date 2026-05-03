@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Gamepad2, ArrowRight, Download } from "lucide-react";
-import { GitHubIcon, LinkedInIcon } from "@/components/icons";
-import { ParticlesBackground } from "@/components/particles-background";
+import { GitHubIcon, LinkedInIcon } from "@/components/shared/icons";
+import { ParticlesBackground } from "@/components/shared/particles-background";
 import { useLocale } from "@/lib/i18n";
 
 function scrollTo(id: string) {

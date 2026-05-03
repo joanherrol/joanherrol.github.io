@@ -1,6 +1,6 @@
 import { Gamepad2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { GitHubIcon, LinkedInIcon } from "@/components/icons";
+import { GitHubIcon, LinkedInIcon } from "@/components/shared/icons";
 
 export function Footer() {
   return (

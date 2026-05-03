@@ -44,7 +44,7 @@ export const translations = {
         {
           title: "Proovit",
           description:
-            "A full-featured mobile application with a focus on clean UX and modern frontend architecture.",
+            "A social challenge app built with Expo and Node.js, combining daily prompts, proof uploads, AI validation, and competitive group play.",
         },
         {
           title: "Shoot'em Up!",
@@ -140,6 +140,112 @@ export const translations = {
       traditionalPortraitDesc:
         "Traditional portrait painted from photo reference, emphasising the subject's gaze and expression, done with acrylic on paper.",
     },
+    proovit: {
+      hero: {
+        title: "Proovit",
+        logoAlt: "Proovit logo",
+        subtitle:
+          "A social challenge app developed with a friend. Each user receives a challenge and uploads photo proof from their phone. It is then validated with AI, and the app keeps track of the results, so users can compete with friends and see their progress on a global leaderboard.",
+      },
+      navSections: {
+        showcase: "Showcase",
+        functionality: "Functionality",
+        tech: "Tech",
+        design: "Design",
+      },
+      links: {
+        playStore:
+          "https://play.google.com/store/apps/details?id=com.pablolaparra.proovit",
+        playStoreLabel: "Open on Google Play",
+      },
+      features: {
+        items: [
+          {
+            title: "Daily challenge rotation",
+            description:
+              "An random daily challenge is presented to all users, and they have 24 hours to complete it. Challenges are maintained by scheduled backend tasks, making the experience fresh and engaging every day.",
+          },
+          {
+            title: "Uploading photo proof",
+            description:
+              "Depending on the challenge, users can upload photo proof from their device's camera or gallery. This allows more flexibility for challenges, allowing users to upload memories as well as real-time proof",
+          },
+          {
+            title: "AI-assisted validation",
+            description:
+              "Uploaded proofs are reviewed with OpenAI to flag whether the challenge is actually completed, rewarding the user if successful and preventing cheating.",
+          },
+          {
+            title: "Social aspect",
+            description:
+              "Users can add captions to their posts, comment on their friends' and give them upvotes. This makes each challenge a shared event.",
+          },
+          {
+            title: "Private groups",
+            description:
+              "Private groups can enable default challenge rotations and run custom challenges. Members of these groups are the ones validating each other's proofs, instead of AI.",
+          },
+          {
+            title: "Gamification and retention",
+            description:
+              "Coins, achievements, streaks, rankings, spins, and push notifications reinforce retention and give the product a strong sense of momentum.",
+          },
+        ],
+      },
+      tech: {
+        items: [
+          {
+            layer: "UI/UX",
+            technologies: [
+              "React Native",
+              "Expo",
+              "React Navigation",
+              "TanStack React Query",
+              "Clerk Expo",
+            ],
+          },
+          {
+            layer: "Multimedia",
+            technologies: [
+              "Vision Camera",
+              "Expo Image Picker",
+              "Cloudinary",
+              "Lottie",
+              "Expo Notifications",
+            ],
+          },
+          {
+            layer: "Backend API",
+            technologies: [
+              "Node.js",
+              "Express",
+              "PostgreSQL",
+              "Clerk",
+              "Multer",
+              "Cloudinary",
+            ],
+          },
+          {
+            layer: "Validation logic",
+            technologies: ["OpenAI SDK"],
+          },
+          {
+            layer: "Scheduled operations",
+            technologies: ["node-cron"],
+          },
+        ],
+      },
+      design: {
+        description:
+          "The UI language is built to feel dynamic and competitive: high contrast surfaces, a sharp accent color, expressive type, and animations with Lottie assets.",
+        fontTitle: "Typography",
+        fontSample: "Outfit",
+        fontDescription:
+          "Outfit is chosen for its geometric shapes and clean rhythm across small labels, large headings, and mobile interfaces.",
+        paletteTitle: "Color Palette",
+        animationsTitle: "Lottie Animations",
+      },
+    },
   },
   es: {
     nav: {
@@ -174,7 +280,7 @@ export const translations = {
         {
           title: "Proovit",
           description:
-            "Una aplicación móvil completa con foco en UX limpia y arquitectura frontend moderna.",
+            "Una app social de retos construida con Expo y Node.js, combinando prompts diarios, subida de pruebas, validación por IA y juego competitivo en grupo.",
         },
         {
           title: "Shoot'em Up!",
@@ -270,6 +376,112 @@ export const translations = {
       traditionalPortraitDesc:
         "Retrato tradicional pintado a partir de referencia fotográfica, enfatizando la mirada y expresión, realizado con acrílico sobre papel.",
     },
+    proovit: {
+      hero: {
+        title: "Proovit",
+        logoAlt: "Logo de Proovit",
+        subtitle:
+          "Una aplicación social de retos desarrollada con un amigo. Cada usuario recibe un reto y sube una prueba fotográfica desde su móvil. Esta se valida con IA, y la app registra los resultados para que los usuarios puedan competir con amigos y ver su progreso en un ranking global.",
+      },
+      navSections: {
+        showcase: "Demostración",
+        functionality: "Funcionalidad",
+        tech: "Tecnología",
+        design: "Diseño",
+      },
+      links: {
+        playStore:
+          "https://play.google.com/store/apps/details?id=com.pablolaparra.proovit",
+        playStoreLabel: "Abrir en Google Play",
+      },
+      features: {
+        items: [
+          {
+            title: "Rotación diaria de retos",
+            description:
+              "Se presenta un reto diario aleatorio a todos los usuarios, que tienen 24 horas para completarlo. Los retos se mantienen mediante tareas programadas en el backend, haciendo que la experiencia sea fresca y atractiva cada día.",
+          },
+          {
+            title: "Subida de prueba fotográfica",
+            description:
+              "Dependiendo del reto, los usuarios pueden subir pruebas fotográficas desde la cámara o galería de su dispositivo. Esto permite mayor flexibilidad, permitiendo subir recuerdos además de pruebas en tiempo real.",
+          },
+          {
+            title: "Validación asistida por IA",
+            description:
+              "Las pruebas subidas se revisan con OpenAI para comprobar si el reto está realmente completado, recompensando al usuario si lo está y previniendo trampas.",
+          },
+          {
+            title: "Aspecto social",
+            description:
+              "Los usuarios pueden añadir captions a sus publicaciones, comentar las de sus amigos y darles votos positivos. Esto convierte cada reto en un evento compartido.",
+          },
+          {
+            title: "Grupos privados",
+            description:
+              "Los grupos privados pueden activar rotaciones de retos por defecto y además lanzar retos personalizados. Los miembros de estos grupos validan las pruebas de los demás en lugar de la IA.",
+          },
+          {
+            title: "Gamificación y retención",
+            description:
+              "Monedas, logros, rachas, rankings, spins y notificaciones push refuerzan la retención y dan al producto una fuerte sensación de dinamismo.",
+          },
+        ],
+      },
+      tech: {
+        items: [
+          {
+            layer: "UI/UX",
+            technologies: [
+              "React Native",
+              "Expo",
+              "React Navigation",
+              "TanStack React Query",
+              "Clerk Expo",
+            ],
+          },
+          {
+            layer: "Multimedia",
+            technologies: [
+              "Vision Camera",
+              "Expo Image Picker",
+              "Cloudinary",
+              "Lottie",
+              "Expo Notifications",
+            ],
+          },
+          {
+            layer: "Backend API",
+            technologies: [
+              "Node.js",
+              "Express",
+              "PostgreSQL",
+              "Clerk",
+              "Multer",
+              "Cloudinary",
+            ],
+          },
+          {
+            layer: "Lógica de validación",
+            technologies: ["OpenAI SDK"],
+          },
+          {
+            layer: "Operaciones programadas",
+            technologies: ["node-cron"],
+          },
+        ],
+      },
+      design: {
+        description:
+          "El lenguaje de la UI está construido para sentirse dinámico y competitivo: superficies de alto contraste, un color de acento marcado, tipografía expresiva y animaciones con recursos Lottie.",
+        fontTitle: "Tipografía",
+        fontSample: "Outfit",
+        fontDescription:
+          "Outfit se elige por sus formas geométricas y su ritmo limpio en etiquetas pequeñas, títulos grandes e interfaces móviles.",
+        paletteTitle: "Paleta de color",
+        animationsTitle: "Animaciones Lottie",
+      },
+    },
   },
 } as const;
 
@@ -290,7 +502,9 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem("locale") as Locale | null;
-    if (saved === "en" || saved === "es") setLocaleState(saved);
+    if (saved === "en" || saved === "es") {
+      setLocaleState(saved);
+    }
   }, []);
 
   const setLocale = (l: Locale) => {

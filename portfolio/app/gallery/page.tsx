@@ -1,13 +1,7 @@
 import { LocaleProvider } from "@/lib/i18n";
-import { BackNavbar } from "@/components/back-navbar";
-import { Gallery } from "@/components/gallery";
-import { Footer } from "@/components/footer";
-
-export const metadata = {
-  title: "Gallery — Joan Hervás",
-  description:
-    "A collection of digital and traditional paintings by Joan Hervás.",
-};
+import { BackNavbar } from "@/components/shared/back-navbar";
+import { Gallery } from "@/components/portfolio-sections/gallery";
+import { Footer } from "@/components/shared/footer";
 
 export default function GalleryPage() {
   return (
