@@ -44,7 +44,9 @@ export function ShowcaseSection() {
             </div>
           </div>
 
-          <PhoneShowcase />
+          <div className="hidden lg:block">
+            <PhoneShowcase />
+          </div>
         </div>
       </div>
     </section>
