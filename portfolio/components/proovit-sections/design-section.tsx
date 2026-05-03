@@ -51,13 +51,13 @@ export function DesignSection() {
   const { t } = useLocale();
 
   return (
-    <section id="design" className="h-screen flex flex-col overflow-hidden">
-      <div className="max-w-5xl mx-auto px-6 w-full h-full flex flex-col pt-24 pb-10 overflow-y-auto">
+    <section id="design" className="min-h-screen flex flex-col">
+      <div className="max-w-5xl mx-auto px-6 w-full flex-1 flex flex-col pt-24 pb-10">
         <p className="text-sm text-muted-foreground uppercase tracking-widest mb-8">
           {t.proovit.navSections.design}
         </p>
 
-        <div className="flex-1 flex flex-col justify-center gap-8">
+        <div className="flex flex-col gap-8">
           <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
             {t.proovit.design.description}
           </p>
@@ -111,7 +111,7 @@ export function DesignSection() {
               <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 {t.proovit.design.animationsTitle}
               </p>
-              <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3">
+              <div className="mt-4 grid grid-cols-2 gap-16 sm:grid-cols-3">
                 {motionAssets.map((asset) => (
                   <div key={asset.id} className="px-1">
                     <div className="flex h-20 items-center justify-center">
