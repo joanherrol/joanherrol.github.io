@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  type ReactNode,
-} from "react";
+import { createContext, use, useState, useEffect, type ReactNode } from "react";
 
 export type Locale = "en" | "es";
 
@@ -522,5 +516,5 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 }
 
 export function useLocale() {
-  return useContext(LocaleContext);
+  return use(LocaleContext);
 }

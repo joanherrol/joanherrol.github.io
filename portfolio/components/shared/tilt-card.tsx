@@ -6,13 +6,48 @@ import { Card } from "@/components/ui/card";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 
+type Project = {
+  title: string;
+  description: string;
+  image: string;
+  url: string;
+};
+
 type TiltCardProps = {
-  project: {
-    title: string;
-    description: string;
-    image: string;
-    url: string;
-  };
+  project: Project;
+};
+
+function TiltCardBody({ project }: { project: Project }) {
+  return (
+    <Card className="overflow-hidden border-border gap-0 py-0">
+      <div className="relative overflow-hidden">
+        <Image
+          src={project.image}
+          alt={project.title}
+          width={0}
+          height={0}
+          sizes="(max-width: 640px) 100vw, 33vw"
+          loading="eager"
+          style={{ width: "100%", height: "auto", display: "block" }}
+        />
+        <div className="absolute inset-0 bg-background/85 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-5">
+          <ExternalLink className="h-4 w-4 self-end" />
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {project.description}
+          </p>
+        </div>
+      </div>
+      <div className="px-4 py-3 border-t border-border">
+        <p className="text-sm font-semibold">{project.title}</p>
+      </div>
+    </Card>
+  );
+}
+
+const tiltStyle: React.CSSProperties = {
+  transition: "transform 0.15s ease-out",
+  transformStyle: "preserve-3d",
+  willChange: "transform",
 };
 
 export function TiltCard({ project }: TiltCardProps) {
@@ -43,36 +78,11 @@ export function TiltCard({ project }: TiltCardProps) {
         ref={ref}
         href={project.url}
         className="group block"
-        style={{
-          transition: "transform 0.15s ease-out",
-          transformStyle: "preserve-3d",
-          willChange: "transform",
-        }}
+        style={tiltStyle}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        <Card className="overflow-hidden border-border gap-0 py-0">
-          <div className="relative overflow-hidden">
-            <Image
-              src={project.image}
-              alt={project.title}
-              width={0}
-              height={0}
-              sizes="(max-width: 640px) 100vw, 33vw"
-              loading="eager"
-              style={{ width: "100%", height: "auto", display: "block" }}
-            />
-            <div className="absolute inset-0 bg-background/85 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-5">
-              <ExternalLink className="h-4 w-4 self-end" />
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {project.description}
-              </p>
-            </div>
-          </div>
-          <div className="px-4 py-3 border-t border-border">
-            <p className="text-sm font-semibold">{project.title}</p>
-          </div>
-        </Card>
+        <TiltCardBody project={project} />
       </Link>
     );
   }
@@ -84,36 +94,11 @@ export function TiltCard({ project }: TiltCardProps) {
       target="_blank"
       rel="noopener noreferrer"
       className="group block"
-      style={{
-        transition: "transform 0.15s ease-out",
-        transformStyle: "preserve-3d",
-        willChange: "transform",
-      }}
+      style={tiltStyle}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <Card className="overflow-hidden border-border gap-0 py-0">
-        <div className="relative overflow-hidden">
-          <Image
-            src={project.image}
-            alt={project.title}
-            width={0}
-            height={0}
-            sizes="(max-width: 640px) 100vw, 33vw"
-            loading="eager"
-            style={{ width: "100%", height: "auto", display: "block" }}
-          />
-          <div className="absolute inset-0 bg-background/85 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-5">
-            <ExternalLink className="h-4 w-4 self-end" />
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {project.description}
-            </p>
-          </div>
-        </div>
-        <div className="px-4 py-3 border-t border-border">
-          <p className="text-sm font-semibold">{project.title}</p>
-        </div>
-      </Card>
+      <TiltCardBody project={project} />
     </a>
   );
 }

@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { LocaleProvider } from "@/lib/i18n";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -17,7 +18,9 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={`${inter.variable} dark h-full antialiased scroll-smooth`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <LocaleProvider>{children}</LocaleProvider>
+      </body>
     </html>
   );
 }
