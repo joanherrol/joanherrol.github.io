@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Gamepad2, ArrowRight, Download } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/shared/icons";
+import { SocialLink } from "@/components/shared/social-link";
 import { ParticlesBackground } from "@/components/shared/particles-background";
 import { useLocale } from "@/lib/i18n";
 
@@ -41,54 +42,39 @@ export function Hero() {
             <div className="flex gap-3 w-full md:max-w-md">
               <Button
                 onClick={() => scrollTo("projects")}
-                className="cursor-pointer h-12 px-3 sm:px-7 text-sm sm:text-base gap-2 active:scale-95 transition-transform flex-1 min-w-0"
+                className="cursor-pointer h-12 text-sm sm:text-base flex-1 gap-4"
               >
                 {t.hero.viewProjects}
-                <ArrowRight className="ml-4 transition-transform duration-200 group-hover/button:translate-x-0.5" />
+                <ArrowRight className="transition-transform duration-200 group-hover/button:translate-x-0.5" />
               </Button>
               <Button
                 variant="outline"
                 asChild
-                className="h-12 px-3 sm:px-7 text-sm sm:text-base gap-2 active:scale-95 transition-transform flex-1 min-w-0"
+                className="h-12 text-sm sm:text-base flex-1 gap-4"
               >
                 <a href={cvHref} download>
-                  <Download className="mr-2 transition-transform duration-200 group-hover/button:scale-114" />
+                  <Download className="transition-transform duration-200 group-hover/button:scale-114" />
                   {t.hero.downloadCV}
                 </a>
               </Button>
             </div>
 
             <div className="flex gap-2 sm:gap-3 w-full md:max-w-md">
-              <a
+              <SocialLink
                 href="https://www.linkedin.com/in/joanhervas/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="LinkedIn"
-                className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 h-10 rounded-lg border border-border bg-background text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95 transition-transform"
+                label="LinkedIn"
               >
                 <LinkedInIcon className="h-4 w-4 shrink-0" />
                 <span>LinkedIn</span>
-              </a>
-              <a
-                href="https://github.com/joanherrol"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="GitHub"
-                className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 h-10 rounded-lg border border-border bg-background text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95 transition-transform"
-              >
+              </SocialLink>
+              <SocialLink href="https://github.com/joanherrol" label="GitHub">
                 <GitHubIcon className="h-4 w-4 shrink-0" />
                 <span>GitHub</span>
-              </a>
-              <a
-                href="https://joan-hervas.itch.io/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="itch.io"
-                className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 h-10 rounded-lg border border-border bg-background text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95 transition-transform"
-              >
+              </SocialLink>
+              <SocialLink href="https://joan-hervas.itch.io/" label="itch.io">
                 <Gamepad2 className="h-4 w-4 shrink-0" />
                 <span>itch.io</span>
-              </a>
+              </SocialLink>
             </div>
           </div>
 

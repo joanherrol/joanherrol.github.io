@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Download, ImageIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useLocale } from "@/lib/i18n";
 
 export function About() {
@@ -38,21 +39,26 @@ export function About() {
           </div>
 
           <div className="flex justify-end items-center gap-3 mt-12">
-            <Link
-              href="/gallery"
-              className="group inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-md transition-all duration-200 hover:bg-foreground hover:text-background hover:border-foreground active:scale-95"
+            <Button
+              variant="secondary"
+              className="h-10 text-base hover:bg-foreground hover:text-background hover:border-foreground"
+              asChild
             >
-              <ImageIcon className="h-4 w-4" />
-              <span>{t.about.galleryButton}</span>
-            </Link>
-            <a
-              href={cvHref}
-              download
-              className="group inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-md transition-all duration-200 hover:bg-foreground hover:text-background hover:border-foreground active:scale-95"
+              <Link href="/gallery">
+                <ImageIcon className="h-4 w-4" />
+                {t.about.galleryButton}
+              </Link>
+            </Button>
+            <Button
+              variant="secondary"
+              className="h-10 text-base hover:bg-foreground hover:text-background hover:border-foreground"
+              asChild
             >
-              <Download className="h-4 w-4" />
-              <span>{t.about.downloadCV}</span>
-            </a>
+              <a href={cvHref} download>
+                <Download className="h-4 w-4" />
+                {t.about.downloadCV}
+              </a>
+            </Button>
           </div>
         </div>
       </div>

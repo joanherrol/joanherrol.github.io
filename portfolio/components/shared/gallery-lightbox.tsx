@@ -37,7 +37,6 @@ export function GalleryLightbox({
     panY: number;
   } | null>(null);
   const didDragRef = useRef(false);
-  const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
 
@@ -137,95 +136,34 @@ export function GalleryLightbox({
     }
   };
 
-  const getTouchDist = (touches: React.TouchList) => {
-    const dx = touches[0].clientX - touches[1].clientX;
-    const dy = touches[0].clientY - touches[1].clientY;
-    return Math.sqrt(dx * dx + dy * dy);
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      pinchRef.current = {
-        dist: getTouchDist(e.touches),
-        zoom: zoomRef.current,
-      };
-      dragRef.current = null;
-    } else if (e.touches.length === 1 && detailMode) {
-      const t = e.touches[0];
-      didDragRef.current = false;
-      dragRef.current = {
-        startX: t.clientX,
-        startY: t.clientY,
-        panX: panRef.current.x,
-        panY: panRef.current.y,
-      };
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2 && pinchRef.current) {
-      const scale = getTouchDist(e.touches) / pinchRef.current.dist;
-      zoomRef.current = Math.min(4, Math.max(1, pinchRef.current.zoom * scale));
-      applyTransform(zoomRef.current, panRef.current.x, panRef.current.y);
-    } else if (e.touches.length === 1 && detailMode && dragRef.current) {
-      const t = e.touches[0];
-      const dx = t.clientX - dragRef.current.startX;
-      const dy = t.clientY - dragRef.current.startY;
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDragRef.current = true;
-      panRef.current = {
-        x: dragRef.current.panX + dx,
-        y: dragRef.current.panY + dy,
-      };
-      applyTransform(zoomRef.current, panRef.current.x, panRef.current.y);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    pinchRef.current = null;
-    dragRef.current = null;
-  };
-
-  const handleImageClick = () => {
-    didDragRef.current = false;
-  };
-
-  // Desktop only: click outside image closes
-  const handleBackdropClick = () => {
-    onClose();
-  };
-
-  const zoomIcon = detailMode ? (
-    <ZoomOut className="w-6 h-6" />
-  ) : (
-    <ZoomIn className="w-6 h-6" />
-  );
-
   return (
     <div className="fixed inset-0 z-50 bg-black/95 flex flex-col">
       {/* Backdrop — click outside image to close */}
-      <div className="absolute inset-0 z-0" onClick={handleBackdropClick} />
+      <div className="absolute inset-0 z-0" onClick={onClose} />
 
-      {/* Chevrons */}
-      <button
-        className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors cursor-pointer z-10"
-        onClick={(e) => {
-          e.stopPropagation();
-          onPrev();
-        }}
-        aria-label="Previous"
-      >
-        <ChevronLeft className="w-10 h-10" />
-      </button>
-      <button
-        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors cursor-pointer z-10"
-        onClick={(e) => {
-          e.stopPropagation();
-          onNext();
-        }}
-        aria-label="Next"
-      >
-        <ChevronRight className="w-10 h-10" />
-      </button>
+      {/* Chevrons — aligned to max-w-7xl container edges */}
+      <div className="absolute inset-x-0 top-[calc(50%-8vh)] -translate-y-1/2 z-10 max-w-7xl mx-auto px-6 flex justify-between pointer-events-none">
+        <button
+          className="pointer-events-auto text-white/50 hover:text-white transition-colors cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onPrev();
+          }}
+          aria-label="Previous"
+        >
+          <ChevronLeft className="w-10 h-10" />
+        </button>
+        <button
+          className="pointer-events-auto text-white/50 hover:text-white transition-colors cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onNext();
+          }}
+          aria-label="Next"
+        >
+          <ChevronRight className="w-10 h-10" />
+        </button>
+      </div>
 
       {/* Image area */}
       <div
@@ -237,11 +175,8 @@ export function GalleryLightbox({
         onMouseMove={handleMouseMove}
         onMouseUp={stopDrag}
         onMouseLeave={stopDrag}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
       >
-        <div className="relative" onClick={handleImageClick}>
+        <div className="relative">
           {!imgLoaded && (
             <div className="absolute inset-0 animate-pulse bg-white/10 rounded-xl" />
           )}
@@ -263,10 +198,10 @@ export function GalleryLightbox({
 
       {/* Bottom bar */}
       <div
-        className="absolute bottom-0 inset-x-0 z-10 bg-background/80 backdrop-blur-sm border-t border-border px-4 h-[16vh] flex flex-col"
+        className="absolute bottom-0 inset-x-0 z-10 bg-background/80 backdrop-blur-sm border-t border-border h-[16vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start gap-6 flex-1 pt-3">
+        <div className="flex items-start gap-6 flex-1 pt-3 max-w-7xl mx-auto px-6 w-full">
           <div className="flex-1 flex justify-center overflow-hidden">
             <div className="max-w-lg w-full">
               <h2 className="text-white text-lg font-semibold">{title}</h2>
@@ -274,11 +209,15 @@ export function GalleryLightbox({
             </div>
           </div>
           <button
-            className="flex-shrink-0 self-center p-2 text-white/70 hover:text-white transition-colors cursor-pointer mr-4"
+            className="flex-shrink-0 self-center p-2 text-white/70 hover:text-white transition-colors cursor-pointer"
             onClick={() => (detailMode ? exitDetail() : enterDetail())}
             aria-label={detailMode ? "Exit zoom" : "Zoom in"}
           >
-            {zoomIcon}
+            {detailMode ? (
+              <ZoomOut className="w-6 h-6" />
+            ) : (
+              <ZoomIn className="w-6 h-6" />
+            )}
           </button>
         </div>
         <p className="text-white/30 text-xs text-center pb-2">

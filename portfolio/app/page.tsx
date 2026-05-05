@@ -10,7 +10,21 @@ import { Footer } from "@/components/shared/footer";
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
+      <Navbar
+        leftType="brand"
+        links={[
+          { id: "home" },
+          { id: "about" },
+          { id: "projects" },
+          { id: "skills" },
+          { id: "education" },
+          { id: "contact" },
+        ]}
+        labelGroup="nav"
+        homeId="home"
+        homePath="/"
+        initialActiveId="home"
+      />
       <main className="flex-1">
         <Hero />
         <About />

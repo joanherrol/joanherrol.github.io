@@ -1,4 +1,4 @@
-import { BackNavbar } from "@/components/shared/back-navbar";
+import { Navbar } from "@/components/shared/navbar";
 import { ShowcaseSection } from "@/components/proovit-sections/showcase-section";
 import { FunctionalitySection } from "@/components/proovit-sections/functionality-section";
 import { TechSection } from "@/components/proovit-sections/tech-section";
@@ -8,9 +8,17 @@ import { Footer } from "@/components/shared/footer";
 export default function ProovitPage() {
   return (
     <div className="flex flex-col min-h-screen">
-      <BackNavbar
+      <Navbar
+        leftType="back"
         backTo="/#projects"
-        sectionLinks={["showcase", "functionality", "design", "tech"]}
+        links={[
+          { id: "showcase" },
+          { id: "functionality" },
+          { id: "design" },
+          { id: "tech" },
+        ]}
+        labelGroup="proovit"
+        initialActiveId="showcase"
       />
       <main className="flex-1">
         <ShowcaseSection />
