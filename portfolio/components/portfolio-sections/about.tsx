@@ -24,7 +24,7 @@ export function About() {
           <div className="flex flex-col md:flex-row gap-12 items-stretch">
             <div className="shrink-0 relative w-full max-w-xs mx-auto md:max-w-none md:mx-0 md:w-48 rounded-xl overflow-hidden aspect-[3/4] md:aspect-auto min-h-[200px]">
               <Image
-                src="/imgs/portrait.png"
+                src="/imgs/portrait.jpg"
                 alt="Joan Hervás"
                 fill
                 className="object-cover"
