@@ -29,6 +29,7 @@ export function About() {
                 fill
                 sizes="192px"
                 className="object-cover"
+                loading="eager"
               />
             </div>
 
