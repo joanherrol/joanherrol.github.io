@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { copy } from "@/lib/copy";
-import { Player, useShoot } from "@/components/retro/player";
+import {
+  Player,
+  usePlayerSpritePreload,
+  useShoot,
+} from "@/components/retro/player";
 
 // One art pixel per font pixel.
 function useHeroScale() {
@@ -21,6 +25,7 @@ function useHeroScale() {
 
 export function Hero() {
   const scale = useHeroScale();
+  usePlayerSpritePreload();
   const { shooting, bullets, shoot } = useShoot();
 
   return (

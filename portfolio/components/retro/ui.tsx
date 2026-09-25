@@ -99,7 +99,6 @@ export const dropdown = {
 
 const LIGHTS = ["bg-[#ff004d]", "bg-[#ffec27]", "bg-[#00e436]"];
 
-/** Cream window title bar with traffic lights. */
 export function TitleBar({ title }: { title: string }) {
   return (
     <div className="flex items-center gap-2 border-b-[3px] border-black bg-cream px-3 py-2 text-black">

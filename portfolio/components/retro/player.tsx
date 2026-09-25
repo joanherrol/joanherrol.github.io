@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { PixelSprite, type SpriteSheet } from "@/components/retro/pixel-sprite";
+import { preload } from "react-dom";
+import {
+  PixelSprite,
+  preloadSprites,
+  type SpriteSheet,
+} from "@/components/retro/pixel-sprite";
 
 const FRAME = { frameWidth: 8, frameHeight: 10 };
 const GUN_FRAME = { frameWidth: 6, frameHeight: 6 };
@@ -38,6 +43,19 @@ const WEAPON_SPRITES = {
     fps: 12,
   },
 } satisfies Record<string, SpriteSheet>;
+
+const ALL_SPRITES = [
+  ...Object.values(PLAYER_SPRITES),
+  ...Object.values(WEAPON_SPRITES),
+];
+
+export function usePlayerSpritePreload() {
+  for (const { src } of ALL_SPRITES) preload(src, { as: "image" });
+}
+
+export function preloadPlayerSprites() {
+  preloadSprites(ALL_SPRITES);
+}
 
 const HURT_TINT = "#ff004d";
 

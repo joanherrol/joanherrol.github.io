@@ -18,6 +18,7 @@ export function LevelMenu({ levels }: { levels: Level[] }) {
   useDismiss(rootRef, open, close);
 
   useEffect(() => {
+    if (!open) return;
     const update = () => {
       const middle = window.innerHeight / 2;
       let current = 0;
@@ -30,7 +31,7 @@ export function LevelMenu({ levels }: { levels: Level[] }) {
     update();
     window.addEventListener("scroll", update, { passive: true });
     return () => window.removeEventListener("scroll", update);
-  }, [levels]);
+  }, [levels, open]);
 
   const go = (id: string) => {
     setOpen(false);

@@ -1,4 +1,8 @@
-import { PixelSprite, type SpriteSheet } from "@/components/retro/pixel-sprite";
+import {
+  PixelSprite,
+  preloadSpritesWhenIdle,
+  type SpriteSheet,
+} from "@/components/retro/pixel-sprite";
 import {
   loadSpritePixels,
   spritePixels,
@@ -167,6 +171,26 @@ function sheet(kind: EnemyKind, animation: EnemyAnimation): SpriteSheet {
   };
 }
 
+function shadowSheet(kind: EnemyKind): SpriteSheet {
+  return {
+    src: `/imgs/Enemies/Enemy${kind.id}/Enemy${kind.id}Shadow.png`,
+    frameWidth: kind.shadowWidth,
+    frameHeight: kind.shadowHeight,
+    frames: 1,
+  };
+}
+
+export function preloadEnemySprites() {
+  preloadSpritesWhenIdle(
+    ENEMIES.flatMap((kind) => [
+      ...(["idle", "walk", "hit", "attack"] as const).map((a) =>
+        sheet(kind, a),
+      ),
+      shadowSheet(kind),
+    ]),
+  );
+}
+
 export function loadEnemyPixels(kind: EnemyKind) {
   loadSpritePixels(
     sheet(kind, "idle").src,
@@ -200,12 +224,7 @@ export function Enemy({
       style={{ width: kind.width * scale, height: kind.height * scale }}
     >
       <PixelSprite
-        sheet={{
-          src: `/imgs/Enemies/Enemy${kind.id}/Enemy${kind.id}Shadow.png`,
-          frameWidth: kind.shadowWidth,
-          frameHeight: kind.shadowHeight,
-          frames: 1,
-        }}
+        sheet={shadowSheet(kind)}
         scale={scale}
         flipX={kind.flipX}
         className="absolute"

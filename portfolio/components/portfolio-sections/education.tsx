@@ -62,7 +62,7 @@ export function Education() {
                 {e.description}
               </p>
             </div>
-            <div className="col-span-2 flex flex-row items-center gap-3 sm:col-span-1 sm:flex-col sm:items-end">
+            <div className="col-span-2 flex flex-row items-center justify-between gap-3 sm:col-span-1 sm:flex-col sm:items-end sm:justify-start">
               <span className="text-body">{e.period}</span>
               {e.gpa && (
                 <span className="card-accent flex items-center gap-2 px-2 py-1 text-body uppercase">

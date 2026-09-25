@@ -201,6 +201,7 @@
 
 :root {
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes blink {
   50% {
@@ -231,7 +232,6 @@
   animation: pixel-bullet 1000ms linear both;
 }
 
-/* Moves the companion with the scroll, one whole pixel per step. */
 @keyframes companion-track {
   from {
     transform: translateY(var(--track-from));
@@ -239,6 +239,9 @@
   to {
     transform: translateY(var(--track-to));
   }
+}
+.companion-track {
+  will-change: transform;
 }
 .companion-track.is-scroll-driven {
   animation: companion-track auto steps(var(--track-steps), jump-none) both;
@@ -249,8 +252,8 @@
 .companion-drop {
   display: block;
   transition:
-    transform 300ms var(--ease-out),
-    opacity 200ms ease-out;
+    transform 500ms var(--ease-soft),
+    opacity 350ms ease-out;
 }
 .companion-drop.is-hidden {
   transform: translateX(-160%);
@@ -258,8 +261,8 @@
 }
 .enemy-drop {
   transition:
-    transform 300ms var(--ease-out),
-    opacity 200ms ease-out;
+    transform 500ms var(--ease-soft),
+    opacity 350ms ease-out;
 }
 .enemy-drop.is-hidden {
   transform: translateX(160%);
@@ -297,8 +300,8 @@ html[data-reveal="on"]
 }
 [data-reveal] {
   transition:
-    opacity 450ms var(--ease-out),
-    transform 450ms var(--ease-out);
+    opacity 700ms var(--ease-soft),
+    transform 700ms var(--ease-soft);
 }
 
 @media (prefers-reduced-motion: reduce) {

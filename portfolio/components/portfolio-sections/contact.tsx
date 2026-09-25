@@ -79,10 +79,11 @@ export function Contact() {
                 href={social.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${CARD} h-[48px] gap-3 px-4 text-body`}
+                aria-label={social.label}
+                className={`${CARD} h-[48px] w-[48px] justify-center gap-3 sm:w-auto sm:px-4 text-body`}
               >
                 <PixelIcon name={social.icon} size={3} />
-                {social.label}
+                <span className="hidden sm:inline">{social.label}</span>
               </a>
             </li>
           ))}

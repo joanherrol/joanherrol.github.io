@@ -27,19 +27,35 @@ type PixelSpriteProps = {
 const TINT_ALPHA = 0.7;
 
 const imageCache = new Map<string, Promise<HTMLImageElement>>();
+const loadedImages = new Map<string, HTMLImageElement>();
 
 function loadImage(src: string) {
   let promise = imageCache.get(src);
   if (!promise) {
     promise = new Promise((resolve, reject) => {
       const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = reject;
       img.src = src;
+      img
+        .decode()
+        .then(() => {
+          loadedImages.set(src, img);
+          resolve(img);
+        })
+        .catch(reject);
     });
     imageCache.set(src, promise);
   }
   return promise;
+}
+
+export function preloadSprites(sheets: SpriteSheet[]) {
+  for (const { src } of sheets) loadImage(src).catch(() => {});
+}
+
+export function preloadSpritesWhenIdle(sheets: SpriteSheet[]) {
+  const run = () => preloadSprites(sheets);
+  if ("requestIdleCallback" in window) requestIdleCallback(run);
+  else setTimeout(run, 200);
 }
 
 // Draws each art pixel as a whole block of device pixels, crisp at any scale.
@@ -125,7 +141,10 @@ export function PixelSprite({
     const tick = (t: number) => {
       if (last === 0) last = t;
       if (t - last >= 1000 / rate) {
-        if (!loop && frame === frames - 1) return;
+        if (!loop && frame === frames - 1) {
+          raf = 0;
+          return;
+        }
         frame = (frame + 1) % frames;
         last = t;
         draw();
@@ -133,17 +152,35 @@ export function PixelSprite({
       raf = requestAnimationFrame(tick);
     };
 
-    const reducedMotion = prefersReducedMotion();
-
-    resize();
-    loadImage(src).then((loaded) => {
-      if (cancelled) return;
-      img = loaded;
-      draw();
-      if (playing && frames > 1 && !reducedMotion) {
-        raf = requestAnimationFrame(tick);
+    const animates = playing && frames > 1 && !prefersReducedMotion();
+    let onScreen = true;
+    const start = () => {
+      if (raf || !img || !animates || !onScreen) return;
+      last = 0;
+      raf = requestAnimationFrame(tick);
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting;
+      if (onScreen) start();
+      else {
+        cancelAnimationFrame(raf);
+        raf = 0;
       }
     });
+    observer.observe(canvas);
+
+    const show = (loaded: HTMLImageElement) => {
+      img = loaded;
+      resize();
+      draw();
+      start();
+    };
+    const ready = loadedImages.get(src);
+    if (ready) show(ready);
+    else
+      loadImage(src).then((loaded) => {
+        if (!cancelled) show(loaded);
+      });
 
     const onResize = () => {
       resize();
@@ -153,6 +190,7 @@ export function PixelSprite({
 
     return () => {
       cancelled = true;
+      observer.disconnect();
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", onResize);
       redrawRef.current = () => {};

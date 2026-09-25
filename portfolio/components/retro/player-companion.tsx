@@ -6,6 +6,7 @@ import {
   MUZZLE,
   PLAYER_SPRITES,
   Player,
+  preloadPlayerSprites,
   useShoot,
 } from "@/components/retro/player";
 import {
@@ -22,6 +23,7 @@ import {
   IDLE_CYCLE_MS,
   loadEnemyPixels,
   nextEnemy,
+  preloadEnemySprites,
   ENEMIES,
   type EnemyAnimation,
 } from "@/components/retro/enemy";
@@ -30,9 +32,17 @@ const PHONE_SCALE = 3;
 const PHONE_EDGE = 20;
 const PHONE_SHOW_AT = 0.6;
 
-function phoneStart() {
+function phoneStart(vh: number) {
   const last = document.querySelector<HTMLElement>("main > section:last-child");
-  return last ? last.offsetTop - window.innerHeight * PHONE_SHOW_AT : 0;
+  return last ? last.offsetTop - vh * PHONE_SHOW_AT : 0;
+}
+
+// Unlike innerHeight, these ignore mobile toolbars sliding in and out.
+function viewportHeights(probe: HTMLElement) {
+  probe.style.height = "100svh";
+  const small = probe.offsetHeight;
+  probe.style.height = "100lvh";
+  return { small, large: probe.offsetHeight };
 }
 const TOP = 72;
 const BOTTOM = 12;
@@ -194,6 +204,8 @@ export function PlayerCompanion() {
   const [playerBurst, setPlayerBurst] = useState<BurstPiece[] | null>(null);
 
   useEffect(() => {
+    preloadPlayerSprites();
+    preloadEnemySprites();
     ENEMIES.forEach(loadEnemyPixels);
     const { src, frameWidth, frameHeight } = PLAYER_SPRITES.idle;
     loadSpritePixels(src, frameWidth, frameHeight, true);
@@ -219,71 +231,83 @@ export function PlayerCompanion() {
   }, []);
 
   useEffect(() => {
-    let stopTimer: ReturnType<typeof setTimeout> | undefined;
-    let raf = 0;
-
-    // Where supported, a scroll-driven CSS animation moves them in step with
-    // the scroll (smooth on iOS); otherwise they follow scroll events.
     const scrollDriven = CSS.supports("animation-timeline", "scroll()");
+    const tracks = [trackRef.current, enemyTrackRef.current];
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:fixed;top:0;width:0;visibility:hidden";
+    document.body.append(probe);
+    let m = { start: 0, max: 0, top: 0, bottom: 0, showAt: 0 };
+    let key = "";
 
-    const place = () => {
-      const tracks = [trackRef, enemyTrackRef].map((r) => r.current);
-      if (tracks.some((t) => !t)) return;
-      const vh = window.innerHeight;
-      const max = document.documentElement.scrollHeight - vh;
-      const start = atBottomOnly ? Math.min(phoneStart(), max) : 0;
-      const bottom = Math.round(vh - BOTTOM - BOX_HEIGHT * scale);
-      const top = Math.round(atBottomOnly ? vh / 2 : TOP);
-      if (scrollDriven) {
-        for (const t of tracks) {
-          t!.classList.add("is-scroll-driven");
-          t!.style.setProperty("--track-from", `${top}px`);
-          t!.style.setProperty("--track-to", `${bottom}px`);
-          t!.style.setProperty("--track-steps", `${Math.max(2, bottom - top)}`);
-          t!.style.setProperty("--range-start", `${start}px`);
-          t!.style.setProperty("--range-end", `${max}px`);
-        }
-        return;
+    const measure = () => {
+      const { small, large } = viewportHeights(probe);
+      const height = document.documentElement.scrollHeight;
+      const next = `${window.innerWidth} ${small} ${large} ${height}`;
+      if (next === key) return;
+      key = next;
+      const max = height - large;
+      const start = atBottomOnly ? Math.min(phoneStart(small), max) : 0;
+      m = {
+        start,
+        max,
+        top: Math.round(atBottomOnly ? small / 2 : TOP),
+        bottom: Math.round(small - BOTTOM - BOX_HEIGHT * scale),
+        showAt: atBottomOnly ? start : small * 0.6,
+      };
+      if (!scrollDriven) return;
+      for (const t of tracks) {
+        if (!t) continue;
+        t.classList.add("is-scroll-driven");
+        t.style.setProperty("--track-from", `${m.top}px`);
+        t.style.setProperty("--track-to", `${m.bottom}px`);
+        t.style.setProperty(
+          "--track-steps",
+          `${Math.max(2, m.bottom - m.top)}`,
+        );
+        t.style.setProperty("--range-start", `${m.start}px`);
+        t.style.setProperty("--range-end", `${m.max}px`);
       }
-      const span = max - start;
-      const progress =
-        span > 0
-          ? Math.min(1, Math.max(0, (window.scrollY - start) / span))
-          : 1;
-      const y = Math.round(top + progress * (bottom - top));
-      for (const t of tracks) t!.style.transform = `translateY(${y}px)`;
     };
 
-    const update = () => {
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      setVisible(
-        atBottomOnly
-          ? window.scrollY >= Math.min(phoneStart(), max)
-          : window.scrollY > window.innerHeight * 0.6,
-      );
+    const place = (scrollY: number) => {
       if (scrollDriven) return;
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(place);
+      const span = m.max - m.start;
+      const progress =
+        span > 0 ? Math.min(1, Math.max(0, (scrollY - m.start) / span)) : 1;
+      const y = Math.round(m.top + progress * (m.bottom - m.top));
+      for (const t of tracks) if (t) t.style.transform = `translateY(${y}px)`;
     };
 
+    let shown: boolean | undefined;
+    let moving = false;
     const onScroll = () => {
-      update();
-      setWalking(true);
+      const y = window.scrollY;
+      place(y);
+      const show = atBottomOnly ? y >= m.showAt : y > m.showAt;
+      if (show !== shown) setVisible((shown = show));
+      if (!moving) setWalking((moving = true));
       clearTimeout(stopTimer);
-      stopTimer = setTimeout(() => setWalking(false), 180);
+      stopTimer = setTimeout(() => setWalking((moving = false)), 180);
     };
 
     const onResize = () => {
-      update();
-      place();
+      measure();
+      place(window.scrollY);
+      const y = window.scrollY;
+      const show = atBottomOnly ? y >= m.showAt : y > m.showAt;
+      if (show !== shown) setVisible((shown = show));
     };
 
+    let stopTimer: ReturnType<typeof setTimeout> | undefined;
     onResize();
+    const observer = new ResizeObserver(onResize);
+    observer.observe(document.body);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
     return () => {
       clearTimeout(stopTimer);
-      cancelAnimationFrame(raf);
+      observer.disconnect();
+      probe.remove();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
     };
@@ -436,7 +460,32 @@ export function PlayerCompanion() {
     }, delay);
   };
 
+  // On phones they sit behind the content, so taps are hit-tested here.
+  const fireRef = useLatest(fire);
+  useEffect(() => {
+    if (!atBottomOnly) return;
+    const onClick = (e: MouseEvent) => {
+      if ((e.target as Element).closest("a, button")) return;
+      const r = trackRef.current
+        ?.querySelector("button")
+        ?.getBoundingClientRect();
+      if (
+        r &&
+        e.clientX >= r.left &&
+        e.clientX <= r.right &&
+        e.clientY >= r.top &&
+        e.clientY <= r.bottom
+      ) {
+        fireRef.current();
+      }
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, [atBottomOnly, fireRef]);
+
   if (!scale) return null;
+
+  const layer = atBottomOnly ? "z-[-1]" : "z-40";
 
   const enemyShown = visible && enemy.phase !== "gone";
   let enemyAnimation: EnemyAnimation = walking ? "walk" : "idle";
@@ -471,7 +520,7 @@ export function PlayerCompanion() {
       </div>
       <div
         ref={trackRef}
-        className="companion-track pointer-events-none fixed top-0 z-40"
+        className={`companion-track pointer-events-none fixed top-0 ${layer}`}
         style={{ left: playerLeft }}
         aria-hidden="true"
       >
@@ -499,7 +548,7 @@ export function PlayerCompanion() {
       </div>
       <div
         ref={enemyTrackRef}
-        className="companion-track pointer-events-none fixed top-0 z-40"
+        className={`companion-track pointer-events-none fixed top-0 ${layer}`}
         style={{ right: enemyRight }}
         aria-hidden="true"
       >
