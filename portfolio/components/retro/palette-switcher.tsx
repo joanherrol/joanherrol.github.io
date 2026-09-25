@@ -70,7 +70,7 @@ export function PaletteSwitcher() {
       </button>
 
       {open && (
-        <div className={`${dropdown.panel} w-[256px] sm:w-[300px]`}>
+        <div className={`${dropdown.panel} w-max sm:w-[300px]`}>
           <TitleBar title={copy.menu.palette} />
           <ul>
             {PALETTES.map((p) => (
@@ -83,9 +83,11 @@ export function PaletteSwitcher() {
                 >
                   <Swatch palette={p} size={14} />
                   {p.name}
-                  {p.id === current.id && (
-                    <PixelIcon name="check" size={3} className="ml-auto" />
-                  )}
+                  <PixelIcon
+                    name="check"
+                    size={3}
+                    className={`ml-auto ${p.id === current.id ? "" : "invisible"}`}
+                  />
                 </button>
               </li>
             ))}

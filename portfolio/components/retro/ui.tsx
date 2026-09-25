@@ -94,7 +94,7 @@ export const dropdown = {
     "pointer-events-auto flex h-[44px] cursor-pointer items-center border-[3px] border-black bg-paper shadow-[3px_3px_0_0_#000] transition-transform hover:-translate-y-[2px]",
   panel:
     "pointer-events-auto mt-3 border-[3px] border-black bg-paper shadow-[6px_6px_0_0_#000]",
-  item: "flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-left text-body uppercase tracking-wider hover:bg-pico-accent hover:text-cream",
+  item: "flex w-full cursor-pointer items-center gap-3 whitespace-nowrap px-3 py-2 text-left text-body uppercase tracking-wider hover:bg-pico-accent hover:text-cream",
 };
 
 const LIGHTS = ["bg-[#ff004d]", "bg-[#ffec27]", "bg-[#00e436]"];

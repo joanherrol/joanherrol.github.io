@@ -56,7 +56,7 @@ export function LevelMenu({ levels }: { levels: Level[] }) {
       {open && (
         <nav
           aria-label={copy.menu.title}
-          className={`${dropdown.panel} w-[22rem] max-w-[calc(100vw-1.5rem)] sm:w-[27rem]`}
+          className={`${dropdown.panel} w-max max-w-[calc(100vw-1.5rem)]`}
         >
           <TitleBar title={copy.menu.title} />
           <ul>
@@ -69,7 +69,7 @@ export function LevelMenu({ levels }: { levels: Level[] }) {
                   onFocus={() => setHovered(i)}
                   className={dropdown.item}
                 >
-                  <span className="flex w-[40px] shrink-0 justify-center">
+                  <span className="flex h-[33px] w-[40px] shrink-0 items-center justify-center">
                     {hovered === i && (
                       <Player animation="idle" scale={3} flipX />
                     )}
