@@ -167,7 +167,7 @@
   left: 0;
   right: 0;
   top: calc(var(--band) * -1);
-  z-index: 1;
+  z-index: -1;
   height: var(--band);
   background: linear-gradient(90deg, var(--paper) 50%, transparent 0) 0 0 /
     calc(var(--band) * 2) var(--band) repeat-x;
