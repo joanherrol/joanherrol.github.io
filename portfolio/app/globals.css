@@ -225,11 +225,20 @@
 .pixel-bullet.is-left {
   --dir: -1;
 }
-.enemy-bullet {
-  --dir: -1;
-  background: #ff004d;
-  box-shadow: 0 calc(var(--px) * var(--floor, 5)) var(--pico-black);
+.shot {
   animation: pixel-bullet 1000ms linear both;
+}
+.shot.is-left {
+  --dir: -1;
+}
+.player-bullet {
+  background: var(--pico-white);
+}
+.enemy-bullet {
+  background: #ff004d;
+}
+.shot-shadow {
+  background: var(--pico-black);
 }
 
 @keyframes companion-track {
@@ -310,7 +319,7 @@ html[data-reveal="on"]
   }
   .blink,
   .pixel-bullet,
-  .enemy-bullet {
+  .shot {
     animation: none;
   }
   .companion-drop,

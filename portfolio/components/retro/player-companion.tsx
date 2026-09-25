@@ -21,7 +21,7 @@ import {
   type EnemyAnimation,
 } from "@/components/retro/enemy";
 
-const PHONE_SCALE = 3;
+const PHONE_SCALE = 4;
 const PHONE_EDGE = 20;
 const PHONE_SHOW_AT = 0.6;
 
@@ -436,15 +436,14 @@ export function PlayerCompanion() {
       const current = enemyRef.current;
       if (current.kind !== kind || current.phase !== "alive") return;
       if (walkingRef.current) return;
+      const sprite = enemyTrackRef.current
+        ?.querySelector(".enemy-drop canvas:last-child")
+        ?.getBoundingClientRect();
+      if (!sprite) return;
       const vw = window.innerWidth;
-      const x = vw - enemyRight - (kind.width + 2) * scale;
-      const row =
-        BOX_HEIGHT -
-        (kind.lift ?? 0) -
-        kind.height +
-        (kind.sink ?? 0) +
-        kind.muzzleTop;
-      const y = trackY() + row * scale;
+      const x = Math.round(sprite.left + sprite.width / 2 - scale);
+      const y = Math.round(sprite.top + kind.muzzleTop * scale);
+      const row = (y - trackY()) / scale;
       const id = addShot({ from: "enemy", x, y, floor: FLOOR_ROW - row });
       const target = playerLeft + (BODY_WIDTH / 2) * scale;
       const delay = Math.max(0, ((x + scale - target) / vw) * BULLET_MS);
@@ -454,7 +453,7 @@ export function PlayerCompanion() {
         }
       }, delay);
     },
-    [scale, enemyRight, playerLeft, addShot, playerHit, enemyRef, walkingRef],
+    [scale, playerLeft, addShot, playerHit, enemyRef, walkingRef],
   );
 
   const attackReady =
@@ -525,6 +524,28 @@ export function PlayerCompanion() {
 
   const layer = atBottomOnly ? "z-[-1]" : "z-40";
 
+  const renderShot = (shot: Shot, part: "bullet" | "shadow") => {
+    const size = (shot.from === "enemy" ? 2 : 1) * scale;
+    const look =
+      part === "shadow"
+        ? "shot-shadow"
+        : shot.from === "enemy"
+          ? "enemy-bullet"
+          : "player-bullet";
+    return (
+      <span
+        key={shot.id}
+        className={`shot absolute ${look} ${shot.from === "enemy" ? "is-left" : ""}`}
+        style={{
+          left: shot.x,
+          top: shot.y + (part === "shadow" ? shot.floor * scale : 0),
+          width: size,
+          height: size,
+        }}
+      />
+    );
+  };
+
   const enemyShown = visible && enemy.phase !== "gone";
   let enemyAnimation: EnemyAnimation = walking ? "walk" : "idle";
   if (enemy.attacking && !walking) enemyAnimation = "attack";
@@ -536,25 +557,7 @@ export function PlayerCompanion() {
         className="pointer-events-none fixed inset-0 z-[-1]"
         aria-hidden="true"
       >
-        {shots.map((shot) => {
-          const size = (shot.from === "enemy" ? 2 : 1) * scale;
-          return (
-            <span
-              key={shot.id}
-              className={`absolute ${shot.from === "enemy" ? "enemy-bullet" : "pixel-bullet"}`}
-              style={
-                {
-                  left: shot.x,
-                  top: shot.y,
-                  width: size,
-                  height: size,
-                  "--px": `${scale}px`,
-                  "--floor": shot.floor,
-                } as React.CSSProperties
-              }
-            />
-          );
-        })}
+        {shots.map((shot) => renderShot(shot, "shadow"))}
       </div>
       <div
         ref={trackRef}
@@ -617,6 +620,23 @@ export function PlayerCompanion() {
           </div>
         </div>
       </div>
+      {/* Bullets draw over the enemy but under the page content. On desktop,
+          where the enemy sits above the content, a copy clipped to its lane
+          covers it. */}
+      <div
+        className="pointer-events-none fixed inset-0 z-[-1]"
+        aria-hidden="true"
+      >
+        {shots.map((shot) => renderShot(shot, "bullet"))}
+      </div>
+      {!atBottomOnly && (
+        <div
+          className="pointer-events-none fixed inset-0 z-40 [clip-path:inset(0_0_0_calc(100%_-_var(--lane-right)))]"
+          aria-hidden="true"
+        >
+          {shots.map((shot) => renderShot(shot, "bullet"))}
+        </div>
+      )}
     </>
   );
 }
