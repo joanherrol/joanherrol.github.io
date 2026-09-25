@@ -154,7 +154,6 @@ type EnemyState = {
 export function PlayerCompanion() {
   const trackRef = useRef<HTMLDivElement>(null);
   const enemyTrackRef = useRef<HTMLDivElement>(null);
-  const trackY = useRef(0);
   const [walking, setWalking] = useState(false);
   const walkingRef = useLatest(walking);
   const [scale, setScale] = useState(0);
@@ -223,21 +222,35 @@ export function PlayerCompanion() {
     let stopTimer: ReturnType<typeof setTimeout> | undefined;
     let raf = 0;
 
+    // Where supported, a scroll-driven CSS animation moves them in step with
+    // the scroll (smooth on iOS); otherwise they follow scroll events.
+    const scrollDriven = CSS.supports("animation-timeline", "scroll()");
+
     const place = () => {
       const tracks = [trackRef, enemyTrackRef].map((r) => r.current);
       if (tracks.some((t) => !t)) return;
       const vh = window.innerHeight;
       const max = document.documentElement.scrollHeight - vh;
       const start = atBottomOnly ? Math.min(phoneStart(), max) : 0;
+      const bottom = Math.round(vh - BOTTOM - BOX_HEIGHT * scale);
+      const top = Math.round(atBottomOnly ? vh / 2 : TOP);
+      if (scrollDriven) {
+        for (const t of tracks) {
+          t!.classList.add("is-scroll-driven");
+          t!.style.setProperty("--track-from", `${top}px`);
+          t!.style.setProperty("--track-to", `${bottom}px`);
+          t!.style.setProperty("--track-steps", `${Math.max(2, bottom - top)}`);
+          t!.style.setProperty("--range-start", `${start}px`);
+          t!.style.setProperty("--range-end", `${max}px`);
+        }
+        return;
+      }
       const span = max - start;
       const progress =
         span > 0
           ? Math.min(1, Math.max(0, (window.scrollY - start) / span))
           : 1;
-      const bottom = vh - BOTTOM - BOX_HEIGHT * scale;
-      const top = atBottomOnly ? vh / 2 : TOP;
       const y = Math.round(top + progress * (bottom - top));
-      trackY.current = y;
       for (const t of tracks) t!.style.transform = `translateY(${y}px)`;
     };
 
@@ -248,6 +261,7 @@ export function PlayerCompanion() {
           ? window.scrollY >= Math.min(phoneStart(), max)
           : window.scrollY > window.innerHeight * 0.6,
       );
+      if (scrollDriven) return;
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(place);
     };
@@ -259,14 +273,19 @@ export function PlayerCompanion() {
       stopTimer = setTimeout(() => setWalking(false), 180);
     };
 
-    update();
+    const onResize = () => {
+      update();
+      place();
+    };
+
+    onResize();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", update);
+    window.addEventListener("resize", onResize);
     return () => {
       clearTimeout(stopTimer);
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", update);
+      window.removeEventListener("resize", onResize);
     };
   }, [scale, atBottomOnly]);
 
@@ -346,6 +365,7 @@ export function PlayerCompanion() {
     [removeShot, playerRef, visibleRef],
   );
 
+  const trackY = () => trackRef.current?.getBoundingClientRect().top ?? 0;
   const playerLeft = atBottomOnly ? PHONE_EDGE : 2 * scale;
   const enemyRight = atBottomOnly ? PHONE_EDGE : 2 * scale;
 
@@ -362,12 +382,12 @@ export function PlayerCompanion() {
         kind.height +
         (kind.sink ?? 0) +
         kind.muzzleTop;
-      const y = trackY.current + row * scale;
+      const y = trackY() + row * scale;
       const id = addShot({ from: "enemy", x, y, floor: FLOOR_ROW - row });
       const target = playerLeft + (BODY_WIDTH / 2) * scale;
       const delay = Math.max(0, ((x + scale - target) / vw) * BULLET_MS);
       setTimeout(() => {
-        if (overlaps(y, 2 * scale, trackY.current, BODY_HEIGHT * scale)) {
+        if (overlaps(y, 2 * scale, trackY(), BODY_HEIGHT * scale)) {
           playerHit(id);
         }
       }, delay);
@@ -402,14 +422,14 @@ export function PlayerCompanion() {
     if (shoot() === null) return;
     const vw = window.innerWidth;
     const x = playerLeft + MUZZLE.right * scale;
-    const y = trackY.current + MUZZLE.top * scale;
+    const y = trackY() + MUZZLE.top * scale;
     const id = addShot({ from: "player", x, y, floor: FLOOR_ROW - MUZZLE.top });
     const target = vw - enemyRight - (enemyRef.current.kind.width / 2) * scale;
     const delay = Math.max(0, ((target - x - scale / 2) / vw) * BULLET_MS);
     setTimeout(() => {
       const { kind } = enemyRef.current;
       const top =
-        trackY.current +
+        trackY() +
         (BOX_HEIGHT - (kind.lift ?? 0) - kind.height + (kind.sink ?? 0)) *
           scale;
       if (overlaps(y, scale, top, kind.height * scale)) hit(id);
@@ -451,7 +471,7 @@ export function PlayerCompanion() {
       </div>
       <div
         ref={trackRef}
-        className="pointer-events-none fixed top-0 z-40"
+        className="companion-track pointer-events-none fixed top-0 z-40"
         style={{ left: playerLeft }}
         aria-hidden="true"
       >
@@ -479,7 +499,7 @@ export function PlayerCompanion() {
       </div>
       <div
         ref={enemyTrackRef}
-        className="pointer-events-none fixed top-0 z-40"
+        className="companion-track pointer-events-none fixed top-0 z-40"
         style={{ right: enemyRight }}
         aria-hidden="true"
       >

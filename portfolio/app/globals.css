@@ -231,6 +231,21 @@
   animation: pixel-bullet 1000ms linear both;
 }
 
+/* Moves the companion with the scroll, one whole pixel per step. */
+@keyframes companion-track {
+  from {
+    transform: translateY(var(--track-from));
+  }
+  to {
+    transform: translateY(var(--track-to));
+  }
+}
+.companion-track.is-scroll-driven {
+  animation: companion-track auto steps(var(--track-steps), jump-none) both;
+  animation-timeline: scroll(root);
+  animation-range: var(--range-start) var(--range-end);
+}
+
 .companion-drop {
   display: block;
   transition:
