@@ -3,10 +3,6 @@ import {
   preloadSpritesWhenIdle,
   type SpriteSheet,
 } from "@/components/retro/pixel-sprite";
-import {
-  loadSpritePixels,
-  spritePixels,
-} from "@/components/retro/sprite-pixels";
 
 type EnemyKind = {
   id: number;
@@ -189,19 +185,6 @@ export function preloadEnemySprites() {
       shadowSheet(kind),
     ]),
   );
-}
-
-export function loadEnemyPixels(kind: EnemyKind) {
-  loadSpritePixels(
-    sheet(kind, "idle").src,
-    kind.width,
-    kind.height,
-    kind.flipX,
-  );
-}
-
-export function enemyPixels(kind: EnemyKind) {
-  return spritePixels(sheet(kind, "idle").src, kind.flipX);
 }
 
 export function nextEnemy(current: EnemyKind) {

@@ -10,18 +10,11 @@ import {
   useShoot,
 } from "@/components/retro/player";
 import {
-  loadSpritePixels,
-  spritePixels,
-  type SpritePixel,
-} from "@/components/retro/sprite-pixels";
-import {
   attackTiming,
   ENEMY_HP,
   Enemy,
-  enemyPixels,
   HIT_MS,
   IDLE_CYCLE_MS,
-  loadEnemyPixels,
   nextEnemy,
   preloadEnemySprites,
   ENEMIES,
@@ -76,8 +69,38 @@ type BurstPiece = {
   dy: number;
 };
 
+type Pixel = { x: number; y: number; color: string };
+
+// Reads the frame on screen, so a burst never waits on a download.
+function canvasPixels(
+  canvas: HTMLCanvasElement | null | undefined,
+  width: number,
+  height: number,
+): Pixel[] {
+  const ctx = canvas?.width ? canvas.getContext("2d") : null;
+  if (!canvas || !ctx) return [];
+  const block = canvas.width / width;
+  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  const pixels: Pixel[] = [];
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i =
+        (Math.floor((y + 0.5) * block) * canvas.width +
+          Math.floor((x + 0.5) * block)) *
+        4;
+      if (data[i + 3] < 128) continue;
+      pixels.push({
+        x,
+        y,
+        color: `rgb(${data[i]} ${data[i + 1]} ${data[i + 2]})`,
+      });
+    }
+  }
+  return pixels;
+}
+
 function burstPieces(
-  pixels: SpritePixel[],
+  pixels: Pixel[],
   width: number,
   height: number,
 ): BurstPiece[] {
@@ -206,9 +229,6 @@ export function PlayerCompanion() {
   useEffect(() => {
     preloadPlayerSprites();
     preloadEnemySprites();
-    ENEMIES.forEach(loadEnemyPixels);
-    const { src, frameWidth, frameHeight } = PLAYER_SPRITES.idle;
-    loadSpritePixels(src, frameWidth, frameHeight, true);
   }, []);
   const [hurt, setHurt] = useState(false);
   const hurtTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -339,7 +359,17 @@ export function PlayerCompanion() {
       const { kind } = current;
       setBurst({
         kind,
-        pieces: burstPieces(enemyPixels(kind), kind.width, kind.height),
+        pieces: burstPieces(
+          canvasPixels(
+            enemyTrackRef.current?.querySelector(
+              ".enemy-drop canvas:last-child",
+            ),
+            kind.width,
+            kind.height,
+          ),
+          kind.width,
+          kind.height,
+        ),
       });
       slideInAfterBurst(
         () =>
@@ -374,9 +404,17 @@ export function PlayerCompanion() {
       }
       clearTimeout(hurtTimer.current);
       setHurt(false);
-      const { src, frameWidth, frameHeight } = PLAYER_SPRITES.idle;
+      const { frameWidth, frameHeight } = PLAYER_SPRITES.idle;
       setPlayerBurst(
-        burstPieces(spritePixels(src, true), frameWidth, frameHeight),
+        burstPieces(
+          canvasPixels(
+            trackRef.current?.querySelector("button canvas.top-0"),
+            frameWidth,
+            frameHeight,
+          ),
+          frameWidth,
+          frameHeight,
+        ),
       );
       slideInAfterBurst(
         () => setPlayer({ hp: PLAYER_HP, phase: "gone" }),
