@@ -1,8 +1,10 @@
-"use client";
-
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { useLocale } from "@/lib/i18n";
+import { copy } from "@/lib/copy";
+import {
+  Mark,
+  Section,
+  SectionLabel,
+  SectionTitle,
+} from "@/components/retro/ui";
 
 const skillGroups = [
   {
@@ -28,62 +30,55 @@ const skillGroups = [
 ];
 
 export function Skills() {
-  const { t } = useLocale();
   return (
-    <section id="skills" className="min-h-screen flex flex-col bg-muted/30">
-      <div className="max-w-5xl mx-auto px-6 w-full flex-1 flex flex-col pt-32 pb-16">
-        <p className="text-sm text-muted-foreground uppercase tracking-widest mb-8">
-          {t.nav.skills}
-        </p>
+    <Section id="skills" tone="dark">
+      <SectionLabel>{copy.skills.label}</SectionLabel>
+      <SectionTitle>
+        {copy.skills.titleStart} <Mark>{copy.skills.titleMark}</Mark>
+      </SectionTitle>
 
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="space-y-0">
-            {skillGroups.map((g, i) => (
-              <div key={i}>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-12 py-10">
-                  <p
-                    className={`text-xs uppercase tracking-widest shrink-0 w-36 ${
-                      g.featured
-                        ? "font-bold text-foreground"
-                        : "font-medium text-muted-foreground"
-                    }`}
-                  >
-                    {t.skills.categories[i]}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {g.skills.map((s) => (
-                      <Badge
-                        key={s}
-                        variant={g.featured ? "default" : "secondary"}
-                        className={g.featured ? "text-sm px-3 py-1" : ""}
-                      >
-                        {s}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-                {i < skillGroups.length - 1 && <Separator />}
-              </div>
-            ))}
-          </div>
-
-          <Separator className="my-8" />
-
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-12">
-            <p className="text-xs uppercase tracking-widest font-medium text-muted-foreground shrink-0 w-36">
-              {t.skills.languagesLabel}
+      <div className="mt-(--gap-lg) grid gap-(--gap-md) md:grid-cols-2 md:gap-x-7">
+        {skillGroups.map((g, i) => (
+          <div
+            key={copy.skills.categories[i]}
+            data-reveal
+            className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-start gap-3 md:grid-cols-1 md:gap-1"
+          >
+            <p className="text-body uppercase tracking-[0.2em] opacity-70">
+              {copy.skills.categories[i]}
             </p>
-            <div className="flex flex-wrap gap-6">
-              {t.skills.languagesList.map((l) => (
-                <span key={l.name} className="text-sm">
-                  <span className="font-medium">{l.name}</span>
-                  <span className="text-muted-foreground"> — {l.note}</span>
-                </span>
+            <ul className="flex flex-wrap gap-2 sm:gap-2">
+              {g.skills.map((s) => (
+                <li
+                  key={s}
+                  className={`px-2 py-1 text-body leading-none sm:px-2 sm:py-1 ${
+                    g.featured ? "card-accent" : "card-cream"
+                  }`}
+                >
+                  {s}
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
+        ))}
+
+        <div
+          data-reveal
+          className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-start gap-3 md:grid-cols-1 md:gap-1"
+        >
+          <p className="text-body uppercase tracking-[0.2em] opacity-70">
+            {copy.skills.languagesLabel}
+          </p>
+          <ul className="flex flex-wrap gap-x-7 gap-y-2 text-body">
+            {copy.skills.languagesList.map((l) => (
+              <li key={l.name}>
+                <span>{l.name}</span>{" "}
+                <span className="text-body uppercase text-pop">{l.note}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
-    </section>
+    </Section>
   );
 }

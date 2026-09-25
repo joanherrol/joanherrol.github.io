@@ -1,8 +1,12 @@
-"use client";
-
 import Image from "next/image";
-import { Separator } from "@/components/ui/separator";
-import { useLocale } from "@/lib/i18n";
+import { copy } from "@/lib/copy";
+import { PixelIcon } from "@/components/retro/pixel-icon";
+import {
+  Mark,
+  Section,
+  SectionLabel,
+  SectionTitle,
+} from "@/components/retro/ui";
 
 const educationMeta = [
   {
@@ -23,55 +27,53 @@ const educationMeta = [
 ];
 
 export function Education() {
-  const { t } = useLocale();
-  const education = t.education.items.map((item, i) => ({
+  const education = copy.education.items.map((item, i) => ({
     ...item,
     ...educationMeta[i],
   }));
 
   return (
-    <section id="education" className="min-h-screen flex flex-col">
-      <div className="max-w-5xl mx-auto px-6 w-full flex-1 flex flex-col pt-32 pb-16">
-        <p className="text-sm text-muted-foreground uppercase tracking-widest mb-8">
-          {t.nav.education}
-        </p>
+    <Section id="education" tone="alt">
+      <SectionLabel>{copy.education.label}</SectionLabel>
+      <SectionTitle>
+        {copy.education.titleStart} <Mark>{copy.education.titleMark}</Mark>
+      </SectionTitle>
 
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="space-y-0">
-            {education.map((e, i) => (
-              <div key={e.institution}>
-                <div className="flex flex-col sm:flex-row gap-8 items-start py-12">
-                  <div className="shrink-0 w-20 h-20 relative rounded-lg overflow-hidden bg-muted">
-                    <Image
-                      src={e.logo}
-                      alt={e.institution}
-                      fill
-                      sizes="80px"
-                      className="object-contain p-2"
-                    />
-                  </div>
-                  <div className="space-y-2 flex-1">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                      <h3 className="text-lg font-semibold">{e.institution}</h3>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider shrink-0">
-                        {e.period}
-                      </p>
-                    </div>
-                    <p className="text-sm font-medium text-foreground/80">
-                      {e.degree}
-                    </p>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {e.description}
-                    </p>
-                    {e.gpa && <p className="text-sm font-semibold">{e.gpa}</p>}
-                  </div>
-                </div>
-                {i < education.length - 1 && <Separator />}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
+      <ol className="mt-(--gap-lg) flex flex-col gap-(--gap-md)">
+        {education.map((e) => (
+          <li
+            key={e.institution}
+            data-reveal
+            className="card-cream grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 p-3 shadow-[6px_6px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:gap-4 sm:p-3"
+          >
+            <div className="relative h-[48px] w-[48px] shrink-0 bg-cream sm:h-[80px] sm:w-[80px]">
+              <Image
+                src={e.logo}
+                alt={e.institution}
+                fill
+                sizes="80px"
+                className="object-contain p-1"
+              />
+            </div>
+            <div>
+              <h3 className="text-large leading-tight">{e.institution}</h3>
+              <p className="mt-1 text-body">{e.degree}</p>
+              <p className="mt-1 hidden text-body leading-snug opacity-75 [@media(min-width:80rem)_and_(min-height:55rem)]:block">
+                {e.description}
+              </p>
+            </div>
+            <div className="col-span-2 flex flex-row items-center gap-3 sm:col-span-1 sm:flex-col sm:items-end">
+              <span className="text-body">{e.period}</span>
+              {e.gpa && (
+                <span className="card-accent flex items-center gap-2 px-2 py-1 text-body uppercase">
+                  <PixelIcon name="star" size={2} />
+                  {e.gpa}
+                </span>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </Section>
   );
 }

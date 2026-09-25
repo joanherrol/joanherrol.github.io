@@ -1,0 +1,98 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "projects": "Projects",
+    "skills": "Skills",
+    "education": "Education",
+    "contact": "Contact"
+  },
+  "menu": {
+    "open": "Menu",
+    "title": "Level select",
+    "palette": "Palette"
+  },
+  "hero": {
+    "subtitle": "Frontend developer",
+    "start": "Press start",
+    "playerLabel": "Pixel art player character, idling"
+  },
+  "about": {
+    "label": "About",
+    "titleStart": "I make UI",
+    "titleMark": "feel right",
+    "body": "Three years shipping web products end to end, from API to deployment. Frontend is where I feel at home, but the full-stack is in my backpack.",
+    "downloadCV": "Download CV"
+  },
+  "projects": {
+    "items": [
+      {
+        "title": "Shoot'em Up!",
+        "description": "An arcade shooter with PICO-8 looks. Made in Unity, playable in your browser.",
+        "cta": "Play on itch.io"
+      },
+      {
+        "title": "Pug Adventure",
+        "description": "A 2D platformer starring a very determined pug.",
+        "cta": "Play on itch.io"
+      }
+    ]
+  },
+  "skills": {
+    "label": "Skills",
+    "titleStart": "What I",
+    "titleMark": "work with",
+    "categories": [
+      "Frontend",
+      "Backend",
+      "Mobile",
+      "Cloud & DevOps",
+      "Game Dev"
+    ],
+    "languagesLabel": "Languages",
+    "languagesList": [
+      {
+        "name": "English",
+        "note": "C2"
+      },
+      {
+        "name": "Spanish",
+        "note": "Native"
+      },
+      {
+        "name": "Catalan",
+        "note": "Native"
+      }
+    ]
+  },
+  "education": {
+    "label": "Education",
+    "titleStart": "Where I",
+    "titleMark": "studied",
+    "items": [
+      {
+        "degree": "Computer Science exchange",
+        "description": "Four months of AI and software engineering in South Korea.",
+        "gpa": null
+      },
+      {
+        "degree": "Bachelor's in Computer Science",
+        "description": "Algorithms, architecture, databases, networks and systems.",
+        "gpa": "GPA 8/10"
+      },
+      {
+        "degree": "High school, science & tech",
+        "description": "Maths, physics and technology.",
+        "gpa": "GPA 8.5/10"
+      }
+    ]
+  },
+  "contact": {
+    "label": "Contact",
+    "titleStart": "Let's build",
+    "titleMark": "something",
+    "phoneLabel": "Phone",
+    "emailLabel": "Email",
+    "backToTop": "Back to top"
+  }
+}

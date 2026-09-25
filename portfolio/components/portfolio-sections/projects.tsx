@@ -1,53 +1,87 @@
-"use client";
-
-import { useLocale } from "@/lib/i18n";
-import { TiltCard } from "@/components/shared/tilt-card";
+import Image from "next/image";
+import { copy } from "@/lib/copy";
+import {
+  Mark,
+  PixelButton,
+  Section,
+  SectionTitle,
+  WindowFrame,
+  SectionLabel,
+  type Tone,
+} from "@/components/retro/ui";
 
 const projectMeta = [
-  { image: "/imgs/Proovit.png", url: "/proovit" },
   {
+    id: "shootemup",
     image: "/imgs/ShootEmUp.png",
+    width: 315,
+    height: 250,
+    pixelArt: true,
     url: "https://joan-hervas.itch.io/shootemup",
   },
   {
+    id: "pug-adventure",
     image: "/imgs/PugAdventure.png",
+    width: 315,
+    height: 250,
+    pixelArt: true,
     url: "https://joan-hervas.itch.io/pug-adventure",
   },
 ];
 
+export const PROJECT_IDS = projectMeta.map((p) => p.id);
+
 export function Projects() {
-  const { t } = useLocale();
-  const projects = t.projects.items.map((item, i) => ({
+  const projects = copy.projects.items.map((item, i) => ({
     ...item,
     ...projectMeta[i],
   }));
 
   return (
-    <section id="projects" className="min-h-screen flex flex-col">
-      <div className="max-w-5xl mx-auto px-6 w-full flex-1 flex flex-col pt-32 pb-16">
-        <p className="text-sm text-muted-foreground uppercase tracking-widest mb-8">
-          {t.nav.projects}
-        </p>
-        <p className="text-base max-w-2xl mb-16">
-          {t.projects.intro}{" "}
-          <a
-            href="https://github.com/joanherrol"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-4 hover:text-foreground transition-colors"
-          >
-            {t.projects.githubLabel}
-          </a>
-          .
-        </p>
-        <div className="flex-1 flex flex-col justify-center gap-8">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {projects.map((p) => (
-              <TiltCard key={p.title} project={p} />
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
+    <>
+      {projects.map((p, i) => {
+        const tone: Tone = i % 2 === 0 ? "dark" : "alt";
+        return (
+          <Section key={p.id} id={p.id} tone={tone} className="overflow-x-clip">
+            <div className="grid items-center gap-(--gap-lg) md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-10">
+              <div>
+                <SectionLabel>2-{i + 1}</SectionLabel>
+                <SectionTitle>
+                  <Mark>{p.title}</Mark>
+                </SectionTitle>
+                <p
+                  data-reveal
+                  className="mt-(--gap-md) max-w-lg text-body leading-snug opacity-80"
+                >
+                  {p.description}
+                </p>
+                <div data-reveal className="mt-(--gap-md) flex">
+                  <PixelButton href={p.url} external icon="external">
+                    {p.cta}
+                  </PixelButton>
+                </div>
+              </div>
+
+              <WindowFrame
+                title={p.image.split("/").pop()?.toLowerCase() ?? ""}
+                className={`mx-auto mt-4 w-full max-w-[min(100%,50svh)] md:mt-0 md:max-w-none ${i % 2 === 0 ? "-rotate-1" : "rotate-1"}`}
+              >
+                <Image
+                  src={p.image}
+                  alt={p.title}
+                  width={p.width}
+                  height={p.height}
+                  sizes="(min-width: 1024px) 45vw, 90vw"
+                  className="block h-auto w-full"
+                  style={
+                    p.pixelArt ? { imageRendering: "pixelated" } : undefined
+                  }
+                />
+              </WindowFrame>
+            </div>
+          </Section>
+        );
+      })}
+    </>
   );
 }

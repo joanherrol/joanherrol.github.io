@@ -1,65 +1,102 @@
-"use client";
+import { copy } from "@/lib/copy";
+import { PixelIcon, type PixelIconName } from "@/components/retro/pixel-icon";
+import {
+  Mark,
+  Section,
+  SectionLabel,
+  SectionTitle,
+} from "@/components/retro/ui";
 
-import { MapPin, Phone, Mail } from "lucide-react";
-import { useLocale } from "@/lib/i18n";
+const EMAIL = "joanherrol@gmail.com";
 
-const contactMeta = [
+const SOCIALS: { icon: PixelIconName; label: string; href: string }[] = [
+  { icon: "github", label: "GitHub", href: "https://github.com/joanherrol" },
   {
-    icon: MapPin,
-    value: "Santa Coloma de Gramenet, Barcelona",
-    href: null as string | null,
+    icon: "linkedin",
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/in/joanhervas/",
   },
-  { icon: Phone, value: "+34 635 29 57 31", href: "tel:+34635295731" },
-  {
-    icon: Mail,
-    value: "joanherrol@gmail.com",
-    href: "mailto:joanherrol@gmail.com",
-  },
+  { icon: "itch", label: "itch.io", href: "https://joan-hervas.itch.io/" },
 ];
 
-export function Contact() {
-  const { t } = useLocale();
+const CARD =
+  "card-cream flex items-center shadow-[4px_4px_0_0_#000] transition-[translate,box-shadow] duration-100 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:bg-pico-accent hover:text-cream hover:shadow-[6px_6px_0_0_#000]";
 
-  const contactItems = [
-    { ...contactMeta[0], label: t.contact.locationLabel },
-    { ...contactMeta[1], label: t.contact.phoneLabel },
-    { ...contactMeta[2], label: t.contact.emailLabel },
+export function Contact() {
+  const details: {
+    icon: PixelIconName;
+    label: string;
+    value: string;
+    href: string;
+  }[] = [
+    {
+      icon: "phone",
+      label: copy.contact.phoneLabel,
+      value: "+34 635 29 57 31",
+      href: "tel:+34635295731",
+    },
+    {
+      icon: "mail",
+      label: copy.contact.emailLabel,
+      value: EMAIL,
+      href: `mailto:${EMAIL}`,
+    },
   ];
 
   return (
-    <section id="contact" className="min-h-screen flex flex-col bg-muted/30">
-      <div className="max-w-5xl mx-auto px-6 w-full flex-1 flex flex-col pt-32 pb-16">
-        <p className="text-sm text-muted-foreground uppercase tracking-widest mb-8">
-          {t.nav.contact}
-        </p>
+    <Section id="contact" tone="dark" className="text-center">
+      <div className="flex flex-col items-center">
+        <SectionLabel>{copy.contact.label}</SectionLabel>
+        <SectionTitle>
+          {copy.contact.titleStart} <Mark>{copy.contact.titleMark}</Mark>
+        </SectionTitle>
+        <ul
+          data-reveal
+          className="mt-(--gap-lg) grid w-fit gap-4 text-left sm:grid-cols-2 sm:gap-7"
+        >
+          {details.map((d) => (
+            <li key={d.label}>
+              <a href={d.href} className={`${CARD} gap-4 px-4 py-3`}>
+                <PixelIcon name={d.icon} size={3} />
+                <span className="min-w-0">
+                  <span className="block text-body uppercase tracking-widest">
+                    {d.label}
+                  </span>
+                  <span className="mt-1 block text-body">{d.value}</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
 
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {contactItems.map(({ icon: Icon, label, value, href }) => {
-              const card = (
-                <div className="group flex flex-col gap-4 rounded-xl border border-border bg-background/60 backdrop-blur-sm p-6 transition-all duration-200 hover:border-foreground/20 hover:-translate-y-1 hover:shadow-lg">
-                  <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center transition-colors duration-200 group-hover:bg-foreground group-hover:text-background">
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                      {label}
-                    </p>
-                    <p className="text-sm font-medium mt-1">{value}</p>
-                  </div>
-                </div>
-              );
-              return href ? (
-                <a key={label} href={href}>
-                  {card}
-                </a>
-              ) : (
-                <div key={label}>{card}</div>
-              );
-            })}
-          </div>
-        </div>
+        <ul
+          data-reveal
+          className="mt-(--gap-md) flex flex-wrap justify-center gap-4"
+        >
+          {SOCIALS.map((social) => (
+            <li key={social.label}>
+              <a
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${CARD} h-[48px] gap-3 px-4 text-body`}
+              >
+                <PixelIcon name={social.icon} size={3} />
+                {social.label}
+              </a>
+            </li>
+          ))}
+        </ul>
       </div>
-    </section>
+
+      <footer className="mt-(--gap-lg) flex flex-col items-center gap-3 text-body uppercase tracking-widest">
+        <span className="opacity-70">
+          © {new Date().getFullYear()} Joan Hervás Roldán
+        </span>
+        <a href="#home" className="hover:text-pop">
+          {copy.contact.backToTop}
+        </a>
+      </footer>
+    </Section>
   );
 }
