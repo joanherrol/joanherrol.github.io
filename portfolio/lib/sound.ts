@@ -21,7 +21,7 @@ type SoundName = keyof typeof SOUNDS;
 const STORAGE_KEY = "sound";
 // Repeated sounds vary their pitch by up to this much so they never drone.
 const DEFAULT_JITTER = 0.06;
-const MASTER_VOLUME = 0.5;
+const MASTER_VOLUME = 0.25;
 
 let enabled = false;
 let context: AudioContext | null = null;
