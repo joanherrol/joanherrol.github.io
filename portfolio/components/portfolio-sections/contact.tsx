@@ -1,9 +1,9 @@
 import { copy } from "@/lib/copy";
 import { PixelIcon, type PixelIconName } from "@/components/retro/pixel-icon";
+import { ContinuePrompt } from "@/components/retro/continue-prompt";
 import {
   Mark,
   Section,
-  SectionLabel,
   SectionTitle,
 } from "@/components/retro/ui";
 
@@ -46,9 +46,10 @@ export function Contact() {
   return (
     <Section id="contact" tone="dark" className="text-center">
       <div className="flex flex-col items-center">
-        <SectionLabel>{copy.contact.label}</SectionLabel>
         <SectionTitle>
-          {copy.contact.titleStart} <Mark>{copy.contact.titleMark}</Mark>
+          {copy.contact.titleStart}
+          <br />
+          <Mark>{copy.contact.titleMark}</Mark>
         </SectionTitle>
         <ul
           data-reveal
@@ -90,12 +91,17 @@ export function Contact() {
         </ul>
       </div>
 
-      <footer className="mt-(--gap-lg) flex flex-col items-center gap-3 text-body uppercase tracking-widest">
+      <footer className="mt-(--gap-lg) flex flex-col items-center gap-18 text-body uppercase tracking-widest">
         <span className="opacity-70">
           © {new Date().getFullYear()} Joan Hervás Roldán
         </span>
-        <a href="#home" className="hover:text-pop">
-          {copy.contact.backToTop}
+        <a
+          href="#home"
+          className="text-large tracking-normal hover:text-pop"
+        >
+          <span aria-live="polite">
+            <ContinuePrompt />
+          </span>
         </a>
       </footer>
     </Section>

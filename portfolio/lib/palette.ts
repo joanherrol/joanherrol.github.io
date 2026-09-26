@@ -38,9 +38,9 @@ export const PALETTES: Palette[] = [
   {
     id: "moss",
     name: "Moss",
-    bg: PICO8_SECRET.darkBrown,
-    bg2: PICO8_SECRET.darkerGrey,
-    accent: PICO8_SECRET.mediumGreen,
+    bg: PICO8_SECRET.darkerGrey,
+    bg2: PICO8_SECRET.darkBrown,
+    accent: PICO8.darkGreen,
   },
   {
     id: "coral",

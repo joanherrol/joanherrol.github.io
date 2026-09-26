@@ -88,11 +88,9 @@
     ]
   },
   "contact": {
-    "label": "Contact",
     "titleStart": "Let's build",
-    "titleMark": "something",
+    "titleMark": "together",
     "phoneLabel": "Phone",
-    "emailLabel": "Email",
-    "backToTop": "Back to top"
+    "emailLabel": "Email"
   }
 }
