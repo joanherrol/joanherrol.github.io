@@ -609,8 +609,6 @@ export function PlayerCompanion() {
   const trackY = () => trackRef.current?.getBoundingClientRect().top ?? 0;
   const playerLeft = edge;
   const enemyRight = edge;
-  // Slow phone bullets are already a pixel out by their first frame.
-  const muzzleBack = atBottomOnly ? scale : 0;
 
   const shootBack = useCallback(
     (kind: EnemyState["kind"]) => {
@@ -621,7 +619,7 @@ export function PlayerCompanion() {
         ?.querySelector(".enemy-drop canvas:last-child")
         ?.getBoundingClientRect();
       if (!sprite) return;
-      const x = Math.round(sprite.left + sprite.width / 2 - scale + muzzleBack);
+      const x = Math.round(sprite.left + sprite.width / 2);
       const y = Math.round(sprite.top + kind.muzzleTop * scale);
       const row = (y - trackY()) / scale;
       const id = addShot({ from: "enemy", x, y, floor: FLOOR_ROW - row });
@@ -633,7 +631,7 @@ export function PlayerCompanion() {
         "is-flash",
       );
     },
-    [scale, muzzleBack, addShot, addSpark, enemyRef, walkingRef],
+    [scale, addShot, addSpark, enemyRef, walkingRef],
   );
 
   const playerBody = useCallback((): Target | undefined => {
@@ -759,7 +757,7 @@ export function PlayerCompanion() {
     if (!visible || player.phase !== "alive") return;
     if (shoot() === null) return;
     playSound("shot");
-    const x = playerLeft + MUZZLE.right * scale - muzzleBack;
+    const x = playerLeft + MUZZLE.right * scale;
     const y = trackY() + MUZZLE.top * scale;
     const id = addShot({ from: "player", x, y, floor: FLOOR_ROW - MUZZLE.top });
     addSpark(x, y, flashPieces(1, FLASH_COLORS.player, id), "is-flash");

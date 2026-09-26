@@ -69,8 +69,8 @@ export const BULLET_MS = 1000;
 
 const GUN = { left: -5, right: 7, top: 2 };
 const GUN_SHADOW = { left: -6, right: 5, top: 9 };
-// Right against the gun tip in its recoil frame.
-export const MUZZLE = { left: -4, right: 11, top: 4 };
+// On the gun tip in its recoil frame, so the first moving frame looks flush.
+export const MUZZLE = { left: -3, right: 10, top: 4 };
 
 type PlayerAnimation = "idle" | "walk";
 
