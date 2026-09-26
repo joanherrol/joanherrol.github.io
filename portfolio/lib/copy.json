@@ -10,7 +10,8 @@
   "menu": {
     "open": "Menu",
     "title": "Level select",
-    "palette": "Palette"
+    "palette": "Palette",
+    "sound": "Sound"
   },
   "hero": {
     "subtitle": "Frontend developer",

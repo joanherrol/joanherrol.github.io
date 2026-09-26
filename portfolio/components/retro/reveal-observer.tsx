@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { prefersReducedMotion } from "@/lib/motion";
 
 const STAGGER_MS = 80;
+const REVEAL_AT = 0.15;
 
 export function RevealObserver() {
   useEffect(() => {
@@ -14,13 +15,14 @@ export function RevealObserver() {
       (entries) => {
         // Blocks arriving together follow each other, top first.
         const shown = entries
-          .filter((e) => e.intersectionRatio > 0.1)
+          .filter((e) => e.intersectionRatio >= REVEAL_AT)
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
         shown.forEach((entry, i) => {
           const el = entry.target as HTMLElement;
           el.style.transitionDelay = `${i * STAGGER_MS}ms`;
           el.classList.add("is-revealed");
         });
+        // Hide only once fully off screen, so nothing vanishes in view.
         for (const entry of entries) {
           if (entry.isIntersecting) continue;
           const el = entry.target as HTMLElement;
@@ -30,15 +32,20 @@ export function RevealObserver() {
             entry.boundingClientRect.top < 0 ? "above" : "below";
         }
       },
-      { threshold: [0, 0.1], rootMargin: "0px 0px -6% 0px" },
+      { threshold: [0, REVEAL_AT] },
     );
 
-    const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
+    const elements =
+      document.querySelectorAll<HTMLElement>("body [data-reveal]");
     elements.forEach((el) => observer.observe(el));
     root.dataset.reveal = "on";
 
-    // Zooming can move blocks into view without an observer callback.
+    // Zooming can move blocks into view without an observer callback. Only
+    // width changes count: mobile toolbars resize the height mid-scroll.
+    let width = window.innerWidth;
     const onResize = () => {
+      if (window.innerWidth === width) return;
+      width = window.innerWidth;
       for (const el of elements) {
         const r = el.getBoundingClientRect();
         if (r.bottom > 0 && r.top < window.innerHeight) {

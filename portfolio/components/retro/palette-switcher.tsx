@@ -12,6 +12,8 @@ import { copy } from "@/lib/copy";
 import { PixelIcon } from "@/components/retro/pixel-icon";
 import { dropdown, PixelArt, TitleBar } from "@/components/retro/ui";
 import { useDismiss } from "@/components/retro/use-dismiss";
+import { SoundToggle } from "@/components/retro/sound-toggle";
+import { playSound } from "@/lib/sound";
 
 function readSaved(): Palette {
   try {
@@ -55,6 +57,7 @@ export function PaletteSwitcher() {
   }, []);
 
   const choose = (p: Palette) => {
+    playSound("ui");
     setCurrent(p);
     setOpen(false);
     applyPalette(p);
@@ -66,42 +69,48 @@ export function PaletteSwitcher() {
   return (
     <div
       ref={rootRef}
-      className="tone-light pointer-events-none fixed left-3 top-3 z-50 flex flex-col items-start bg-transparent!"
+      className="tone-light pointer-events-none fixed left-3 top-3 z-50 flex items-start gap-3 bg-transparent!"
     >
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        aria-label={`${copy.menu.palette}: ${current.name}`}
-        className={`${dropdown.trigger} px-2 text-body`}
-      >
-        <Swatch palette={current} />
-      </button>
+      <SoundToggle />
+      <div className="flex flex-col items-start">
+        <button
+          type="button"
+          onClick={() => {
+            setOpen((o) => !o);
+            playSound("ui");
+          }}
+          aria-expanded={open}
+          aria-label={`${copy.menu.palette}: ${current.name}`}
+          className={`${dropdown.trigger} px-2 text-body`}
+        >
+          <Swatch palette={current} />
+        </button>
 
-      {open && (
-        <div className={`${dropdown.panel} w-max sm:w-[300px]`}>
-          <TitleBar title={copy.menu.palette} />
-          <ul>
-            {PALETTES.map((p) => (
-              <li key={p.id}>
-                <button
-                  type="button"
-                  onClick={() => choose(p)}
-                  aria-pressed={p.id === current.id}
-                  className={dropdown.item}
-                >
-                  <Swatch palette={p} />
-                  {p.name}
-                  <PixelIcon
-                    name="check"
-                    className={`ml-auto ${p.id === current.id ? "" : "invisible"}`}
-                  />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {open && (
+          <div className={`${dropdown.panel} w-max sm:w-[300px]`}>
+            <TitleBar title={copy.menu.palette} />
+            <ul>
+              {PALETTES.map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    onClick={() => choose(p)}
+                    aria-pressed={p.id === current.id}
+                    className={dropdown.item}
+                  >
+                    <Swatch palette={p} />
+                    {p.name}
+                    <PixelIcon
+                      name="check"
+                      className={`ml-auto ${p.id === current.id ? "" : "invisible"}`}
+                    />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

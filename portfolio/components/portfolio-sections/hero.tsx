@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { copy } from "@/lib/copy";
 import { artPx } from "@/lib/pixel";
+import { playSound } from "@/lib/sound";
 import {
   Player,
   usePlayerSpritePreload,
@@ -28,6 +29,9 @@ export function Hero() {
   const scale = useHeroScale();
   usePlayerSpritePreload();
   const { shooting, bullets, shoot } = useShoot();
+  const fire = () => {
+    if (shoot() !== null) playSound("shot");
+  };
 
   return (
     <section
@@ -43,7 +47,7 @@ export function Hero() {
           <span className="text-mark relative mt-[0.125em] inline-block px-[0.125em] pt-[0.125em]">
             <button
               type="button"
-              onClick={shoot}
+              onClick={fire}
               className="absolute bottom-full cursor-pointer"
               style={{ right: `calc(0.125em + ${scale}px)` }}
               aria-label={copy.hero.playerLabel}
@@ -68,7 +72,11 @@ export function Hero() {
       </div>
 
       <div className="flex flex-1 items-center justify-center text-large uppercase">
-        <a href="#about" className="blink hover:text-pop">
+        <a
+          href="#about"
+          onClick={() => playSound("start")}
+          className="blink hover:text-pop"
+        >
           {copy.hero.start}
         </a>
       </div>

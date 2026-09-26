@@ -315,16 +315,24 @@
 .is-spark .pixel-burst {
   animation-duration: 250ms, 180ms;
 }
+.is-flash .pixel-burst {
+  animation-duration: 200ms, 200ms;
+  animation-timing-function: var(--ease-out), ease-in;
+}
 
-html[data-reveal="on"] [data-reveal]:not(.is-revealed) {
+html[data-reveal="on"] body [data-reveal]:not(.is-revealed) {
   opacity: 0;
-  transform: translateY(32px);
+  transform: translate3d(0, 32px, 0);
 }
 html[data-reveal="on"]
+  body
   [data-reveal][data-reveal-from="above"]:not(.is-revealed) {
-  transform: translateY(-32px);
+  transform: translate3d(0, -32px, 0);
 }
-[data-reveal] {
+/* Own GPU layer, so fades never repaint text; body scoped because <html>
+   carries data-reveal too and would break fixed positioning. */
+body [data-reveal] {
+  will-change: opacity, transform;
   transition:
     opacity 900ms var(--ease-out),
     transform 1100ms var(--ease-soft);
@@ -341,7 +349,8 @@ html[data-reveal="on"]
   }
   .companion-drop,
   .enemy-drop,
-  [data-reveal] {
+  body [data-reveal] {
+    will-change: auto;
     transition: none;
   }
   .pixel-burst {

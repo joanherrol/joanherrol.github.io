@@ -1,12 +1,17 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { Fragment, useCallback, useRef, useState } from "react";
 import { preload } from "react-dom";
 import {
   PixelSprite,
   preloadSprites,
   type SpriteSheet,
 } from "@/components/retro/pixel-sprite";
+import {
+  FLASH_COLORS,
+  flashPieces,
+  PixelBurst,
+} from "@/components/retro/pixel-burst";
 
 const FRAME = { frameWidth: 8, frameHeight: 10 };
 const GUN_FRAME = { frameWidth: 6, frameHeight: 6 };
@@ -64,7 +69,8 @@ export const BULLET_MS = 1000;
 
 const GUN = { left: -5, right: 7, top: 2 };
 const GUN_SHADOW = { left: -6, right: 5, top: 9 };
-export const MUZZLE = { left: -5, right: 12, top: 4 };
+// Right against the gun tip in its recoil frame.
+export const MUZZLE = { left: -4, right: 11, top: 4 };
 
 type PlayerAnimation = "idle" | "walk";
 
@@ -185,21 +191,28 @@ function Bullets({
   floor?: number;
 }>) {
   const side = flipX ? "right" : "left";
+  const muzzle = { left: MUZZLE[side] * scale, top: MUZZLE.top * scale };
   return bullets.map((id) => (
-    <span
-      key={id}
-      aria-hidden="true"
-      className={`pixel-bullet absolute ${flipX ? "" : "is-left"}`}
-      style={
-        {
-          left: MUZZLE[side] * scale,
-          top: MUZZLE.top * scale,
-          width: scale,
-          height: scale,
-          "--floor": floor,
-        } as React.CSSProperties
-      }
-    />
+    <Fragment key={id}>
+      <span
+        aria-hidden="true"
+        className={`pixel-bullet absolute ${flipX ? "" : "is-left"}`}
+        style={
+          {
+            ...muzzle,
+            width: scale,
+            height: scale,
+            "--floor": floor,
+          } as React.CSSProperties
+        }
+      />
+      <PixelBurst
+        pieces={flashPieces(flipX ? 1 : -1, FLASH_COLORS.player, id)}
+        scale={scale}
+        className="is-flash"
+        style={muzzle}
+      />
+    </Fragment>
   ));
 }
 

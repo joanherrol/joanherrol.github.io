@@ -26,6 +26,8 @@ type PixelSpriteProps = {
 };
 
 const TINT_ALPHA = 0.7;
+// A frame may draw this early, so the refresh nearest its due time takes it.
+const EARLY_MS = 8;
 
 const imageCache = new Map<string, Promise<HTMLImageElement>>();
 const loadedImages = new Map<string, HTMLImageElement>();
@@ -96,6 +98,7 @@ export function PixelSprite({
     let frame = startFrame % frames;
     let last = 0;
     let raf = 0;
+    let wake = 0;
     let cancelled = false;
     let blockSize = 1;
 
@@ -142,35 +145,43 @@ export function PixelSprite({
     redrawRef.current = draw;
 
     // Fixed steps keep frames in sync with timers set from the frame rate.
+    // Sleeps between frames instead of waking on every display refresh.
     const step = 1000 / rate;
     const tick = (t: number) => {
+      raf = 0;
       if (last === 0 || t - last > step * frames) last = t;
-      if (t - last >= step) {
-        if (!loop && frame === frames - 1) {
-          raf = 0;
-          return;
-        }
+      if (t - last >= step - EARLY_MS) {
+        if (!loop && frame === frames - 1) return;
         frame = (frame + 1) % frames;
         last += step;
         draw();
       }
-      raf = requestAnimationFrame(tick);
+      wake = window.setTimeout(
+        () => {
+          wake = 0;
+          raf = requestAnimationFrame(tick);
+        },
+        Math.max(0, last + step - EARLY_MS - performance.now()),
+      );
+    };
+    const stop = () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(wake);
+      raf = 0;
+      wake = 0;
     };
 
     const animates = playing && frames > 1 && !prefersReducedMotion();
     let onScreen = true;
     const start = () => {
-      if (raf || !img || !animates || !onScreen) return;
+      if (raf || wake || !img || !animates || !onScreen) return;
       last = 0;
       raf = requestAnimationFrame(tick);
     };
     const observer = new IntersectionObserver(([entry]) => {
       onScreen = entry.isIntersecting;
       if (onScreen) start();
-      else {
-        cancelAnimationFrame(raf);
-        raf = 0;
-      }
+      else stop();
     });
     observer.observe(canvas);
 
@@ -196,7 +207,7 @@ export function PixelSprite({
     return () => {
       cancelled = true;
       observer.disconnect();
-      cancelAnimationFrame(raf);
+      stop();
       window.removeEventListener("resize", onResize);
       redrawRef.current = () => {};
     };

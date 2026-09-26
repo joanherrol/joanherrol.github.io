@@ -23,6 +23,13 @@ import {
   type EnemyAnimation,
 } from "@/components/retro/enemy";
 import { artPx, devicePx } from "@/lib/pixel";
+import { playSound } from "@/lib/sound";
+import {
+  FLASH_COLORS,
+  flashPieces,
+  PixelBurst,
+  type BurstPiece,
+} from "@/components/retro/pixel-burst";
 
 const PHONE_SCALE = 4;
 const PHONE_SHOW_AT = 0.6;
@@ -163,14 +170,6 @@ function sparkPieces(color: string, [nx, ny]: [number, number]): BurstPiece[] {
 function overlaps(top: number, height: number, top2: number, height2: number) {
   return top < top2 + height2 && top2 < top + height;
 }
-type BurstPiece = {
-  x: number;
-  y: number;
-  color: string;
-  dx: number;
-  dy: number;
-};
-
 type Pixel = { x: number; y: number; color: string };
 
 // Reads the frame on screen, so a burst never waits on a download.
@@ -220,42 +219,6 @@ function burstPieces(
       dy: Math.round(Math.sin(angle) * distance),
     };
   });
-}
-
-function PixelBurst({
-  pieces,
-  scale,
-  top = 0,
-  className = "",
-  style,
-}: Readonly<{
-  pieces: BurstPiece[];
-  scale: number;
-  top?: number;
-  className?: string;
-  style?: React.CSSProperties;
-}>) {
-  return (
-    <div className={`absolute ${className}`} style={style}>
-      {pieces.map((p, i) => (
-        <span
-          key={i}
-          className="pixel-burst absolute"
-          style={
-            {
-              left: p.x * scale,
-              top: (p.y + top) * scale,
-              width: scale,
-              height: scale,
-              background: p.color,
-              "--dx": `${p.dx * scale}px`,
-              "--dy": `${p.dy * scale}px`,
-            } as React.CSSProperties
-          }
-        />
-      ))}
-    </div>
-  );
 }
 
 type Phase = "alive" | "bursting" | "gone";
@@ -324,11 +287,21 @@ export function PlayerCompanion() {
     setShots((all) => all.filter((s) => s.id !== id));
   }, []);
   const [sparks, setSparks] = useState<
-    { id: number; x: number; y: number; pieces: BurstPiece[] }[]
+    { id: number; x: number; y: number; pieces: BurstPiece[]; look: string }[]
   >([]);
-  const dropSpark = useCallback((id: number) => {
-    setSparks((all) => all.filter((sp) => sp.id !== id));
-  }, []);
+  const nextSpark = useRef(0);
+  const addSpark = useCallback(
+    (x: number, y: number, pieces: BurstPiece[], look = "is-spark") => {
+      const id = nextSpark.current++;
+      setSparks((all) => [...all, { id, x, y, pieces, look }]);
+      setTimeout(
+        () => setSparks((all) => all.filter((sp) => sp.id !== id)),
+        SPARK_MS,
+      );
+      return id;
+    },
+    [],
+  );
   const addShot = useCallback(
     (shot: Omit<Shot, "id">) => {
       const id = nextShot.current++;
@@ -377,16 +350,13 @@ export function PlayerCompanion() {
         removeShot(shot.id);
         const r = cover.rect;
         const normal = hitNormal(box, prev, r, before.get(cover.key), dir);
-        const id = shot.id;
-        setSparks((all) => [
-          ...all,
-          {
-            id,
-            ...sparkOrigin(box, r, normal, scale),
-            pieces: sparkPieces(enemyShot ? "#ff004d" : "#fff1e8", normal),
-          },
-        ]);
-        setTimeout(dropSpark, SPARK_MS, id);
+        const at = sparkOrigin(box, r, normal, scale);
+        playSound("spark");
+        addSpark(
+          at.x,
+          at.y,
+          sparkPieces(enemyShot ? "#ff004d" : "#fff1e8", normal),
+        );
       }
       for (const id of last.keys()) if (!live.current.has(id)) last.delete(id);
       before = new Map(covers.map((c) => [c.key, c.rect]));
@@ -394,7 +364,7 @@ export function PlayerCompanion() {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [flying, scale, removeShot, dropSpark]);
+  }, [flying, scale, removeShot, addSpark]);
 
   const [enemy, setEnemy] = useState<EnemyState>({
     kind: ENEMIES[0],
@@ -556,6 +526,7 @@ export function PlayerCompanion() {
       };
       enemyRef.current = next;
       setEnemy(next);
+      playSound(hp > 0 ? "hit" : "explode");
       if (hp > 0) {
         setTimeout(
           () =>
@@ -588,8 +559,10 @@ export function PlayerCompanion() {
             attacking: false,
             idleFrom: 0,
           })),
-        () =>
-          setEnemy((e) => (e.phase === "gone" ? { ...e, phase: "alive" } : e)),
+        () => {
+          playSound("spawn");
+          setEnemy((e) => (e.phase === "gone" ? { ...e, phase: "alive" } : e));
+        },
       );
       setTimeout(() => setBurst(null), BURST_MS);
       return true;
@@ -614,6 +587,7 @@ export function PlayerCompanion() {
       const next = { hp, phase: (hp > 0 ? "alive" : "bursting") as Phase };
       playerRef.current = next;
       setPlayer(next);
+      playSound(hp > 0 ? "playerHit" : "lose");
       if (hp > 0) {
         setHurt(true);
         clearTimeout(hurtTimer.current);
@@ -663,6 +637,13 @@ export function PlayerCompanion() {
       const y = Math.round(sprite.top + kind.muzzleTop * scale);
       const row = (y - trackY()) / scale;
       const id = addShot({ from: "enemy", x, y, floor: FLOOR_ROW - row });
+      playSound("enemyShot");
+      addSpark(
+        x,
+        y + scale / 2,
+        flashPieces(-1, FLASH_COLORS.enemy, id),
+        "is-flash",
+      );
       // Hits a third of the way in.
       const target = playerLeft + ((BODY_WIDTH * 2) / 3) * scale;
       const delay = Math.max(0, ((x + scale - target) / vw) * BULLET_MS);
@@ -672,7 +653,7 @@ export function PlayerCompanion() {
         }
       }, delay);
     },
-    [scale, playerLeft, addShot, playerHit, enemyRef, walkingRef],
+    [scale, playerLeft, addShot, addSpark, playerHit, enemyRef, walkingRef],
   );
 
   const attackReady =
@@ -703,10 +684,12 @@ export function PlayerCompanion() {
   const fire = () => {
     if (!visible || player.phase !== "alive") return;
     if (shoot() === null) return;
+    playSound("shot");
     const vw = window.innerWidth;
     const x = playerLeft + MUZZLE.right * scale;
     const y = trackY() + MUZZLE.top * scale;
     const id = addShot({ from: "player", x, y, floor: FLOOR_ROW - MUZZLE.top });
+    addSpark(x, y, flashPieces(1, FLASH_COLORS.player, id), "is-flash");
     const target =
       vw - enemyRight - ((enemyRef.current.kind.width * 2) / 3) * scale;
     const delay = Math.max(0, ((target - x - scale / 2) / vw) * BULLET_MS);
@@ -856,7 +839,7 @@ export function PlayerCompanion() {
             key={sp.id}
             pieces={sp.pieces}
             scale={scale}
-            className="is-spark"
+            className={sp.look}
             style={{ left: sp.x, top: sp.y }}
           />
         ))}
