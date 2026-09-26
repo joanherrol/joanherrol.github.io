@@ -24,10 +24,8 @@ function readSaved(): Palette {
   }
 }
 
-// Three colour chips split by black pixels.
 const CHIPS = Array.from({ length: 6 }, () => "bbbbbb#gggggg#aaaaaa");
 
-// One art pixel per font pixel of the surrounding text.
 function Swatch({ palette }: Readonly<{ palette: Palette }>) {
   return (
     <PixelArt
@@ -71,7 +69,7 @@ export function PaletteSwitcher() {
       ref={rootRef}
       className="tone-light pointer-events-none fixed left-3 top-3 z-50 flex items-start gap-3 bg-transparent!"
     >
-      <div className="flex flex-col items-start">
+      <div className="relative">
         <button
           type="button"
           onClick={() => {
@@ -86,7 +84,9 @@ export function PaletteSwitcher() {
         </button>
 
         {open && (
-          <div className={`${dropdown.panel} w-max sm:w-[300px]`}>
+          <div
+            className={`${dropdown.panel} absolute left-0 top-full w-max sm:w-[300px]`}
+          >
             <TitleBar title={copy.menu.palette} />
             <ul>
               {PALETTES.map((p) => (

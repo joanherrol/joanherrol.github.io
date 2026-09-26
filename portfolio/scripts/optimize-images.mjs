@@ -1,4 +1,4 @@
-// Run with `npm run images` after adding or changing images in public/imgs.
+// Run with `npm run images` after adding or changing images in assets/images.
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";

@@ -80,11 +80,6 @@ const SPARK_MS = 250;
 
 type Cover = { key: string; rect: DOMRect };
 
-function isRevealed(el: Element) {
-  const block = el.closest("body [data-reveal]");
-  return !block || block.classList.contains("is-revealed");
-}
-
 function onScreen(rect: DOMRect) {
   return rect.width > 0 && rect.bottom > 0 && rect.top < window.innerHeight;
 }
@@ -92,12 +87,11 @@ function onScreen(rect: DOMRect) {
 function coverRects(): Cover[] {
   const covers: Cover[] = [];
   document.querySelectorAll(COVER).forEach((el, i) => {
-    if (isRevealed(el))
-      covers.push({ key: `c${i}`, rect: el.getBoundingClientRect() });
+    covers.push({ key: `c${i}`, rect: el.getBoundingClientRect() });
   });
   const range = document.createRange();
   document.querySelectorAll(TITLES).forEach((title, i) => {
-    if (!isRevealed(title) || !onScreen(title.getBoundingClientRect())) return;
+    if (!onScreen(title.getBoundingClientRect())) return;
     const walker = document.createTreeWalker(title, NodeFilter.SHOW_TEXT);
     for (let n = 0, node = walker.nextNode(); node; node = walker.nextNode()) {
       if (node.parentElement?.closest("button")) continue;
@@ -107,6 +101,38 @@ function coverRects(): Cover[] {
     }
   });
   return covers.filter((c) => onScreen(c.rect));
+}
+
+type Box = { x: number; y: number; size: number };
+type Target = { left: number; top: number; width: number; height: number };
+
+// The cover a bullet flying in `dir` reaches within `lead` pixels.
+function findCover(covers: Cover[], box: Box, dir: number, lead: number) {
+  const left = dir > 0 ? box.x : box.x - lead;
+  const right = box.x + box.size + (dir > 0 ? lead : 0);
+  return covers.find(
+    ({ rect: r }) =>
+      right > r.left &&
+      left < r.right &&
+      box.y + box.size > r.top &&
+      box.y < r.bottom,
+  );
+}
+
+// Characters are hit a third of the way in from the side the bullet comes.
+function crosses(box: Box, dir: number, lead: number, target?: Target) {
+  if (!target?.width) return false;
+  if (!overlaps(box.y, box.size, target.top, target.height)) return false;
+  const right = target.left + target.width;
+  if (dir > 0) {
+    return (
+      box.x + box.size + lead >= target.left + target.width / 3 && box.x < right
+    );
+  }
+  return (
+    box.x - lead <= target.left + (target.width * 2) / 3 &&
+    box.x + box.size > target.left
+  );
 }
 
 // The struck face is the one the bullet crossed last this frame.
@@ -136,23 +162,23 @@ function hitNormal(
   return left > right ? [-1, 0] : [1, 0];
 }
 
-// The pixel just outside the struck face, level with the bullet.
+// Centred on the bullet, just outside the face it struck.
 function sparkOrigin(
-  box: { x: number; y: number },
+  box: { x: number; y: number; size: number },
   rect: DOMRect,
   [nx, ny]: [number, number],
   scale: number,
 ) {
   const clamp = (v: number, lo: number, hi: number) =>
     Math.min(Math.max(v, lo), hi);
-  let x = clamp(box.x, rect.left, rect.right - scale);
-  let y = clamp(box.y, rect.top, rect.bottom - scale);
+  const middle = (box.size - scale) / 2;
+  let x = clamp(box.x + middle, rect.left, rect.right - scale);
+  let y = clamp(box.y + middle, rect.top, rect.bottom - scale);
   if (nx) x = nx < 0 ? rect.left - scale : rect.right;
   if (ny) y = ny < 0 ? rect.top - scale : rect.bottom;
   return { x, y };
 }
 
-// A few pixels bouncing off the struck face.
 function sparkPieces(color: string, [nx, ny]: [number, number]): BurstPiece[] {
   return Array.from({ length: 6 }, (_, i) => {
     const along = 2 + Math.random() * 4;
@@ -281,7 +307,7 @@ export function PlayerCompanion() {
   const { shooting, shoot } = useShoot();
   const [shots, setShots] = useState<Shot[]>([]);
   const nextShot = useRef(0);
-  const live = useRef(new Map<number, Shot & { t0: number; vw: number }>());
+  const live = useRef(new Map<number, Shot & { vw: number }>());
   const removeShot = useCallback((id: number) => {
     live.current.delete(id);
     setShots((all) => all.filter((s) => s.id !== id));
@@ -308,7 +334,6 @@ export function PlayerCompanion() {
       live.current.set(id, {
         ...shot,
         id,
-        t0: performance.now(),
         vw: window.innerWidth,
       });
       setShots((all) => [
@@ -320,51 +345,6 @@ export function PlayerCompanion() {
     },
     [removeShot],
   );
-  // While bullets fly, check them against the page's cards each frame.
-  const flying = shots.length > 0;
-  useEffect(() => {
-    if (!flying) return;
-    let raf = 0;
-    let before = new Map<string, DOMRect>();
-    const last = new Map<number, { x: number; y: number }>();
-    const tick = (t: number) => {
-      const covers = coverRects();
-      for (const shot of live.current.values()) {
-        const enemyShot = shot.from === "enemy";
-        const dir = enemyShot ? -1 : 1;
-        const box = {
-          x: shot.x + dir * shot.vw * ((t - shot.t0) / BULLET_MS),
-          y: shot.y,
-          size: (enemyShot ? 2 : 1) * scale,
-        };
-        const prev = last.get(shot.id);
-        last.set(shot.id, box);
-        const cover = covers.find(
-          ({ rect: r }) =>
-            box.x + box.size > r.left &&
-            box.x < r.right &&
-            box.y + box.size > r.top &&
-            box.y < r.bottom,
-        );
-        if (!cover) continue;
-        removeShot(shot.id);
-        const r = cover.rect;
-        const normal = hitNormal(box, prev, r, before.get(cover.key), dir);
-        const at = sparkOrigin(box, r, normal, scale);
-        playSound("spark");
-        addSpark(
-          at.x,
-          at.y,
-          sparkPieces(enemyShot ? "#ff004d" : "#fff1e8", normal),
-        );
-      }
-      for (const id of last.keys()) if (!live.current.has(id)) last.delete(id);
-      before = new Map(covers.map((c) => [c.key, c.rect]));
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [flying, scale, removeShot, addSpark]);
 
   const [enemy, setEnemy] = useState<EnemyState>({
     kind: ENEMIES[0],
@@ -474,6 +454,7 @@ export function PlayerCompanion() {
     const reveal = (y: number) => {
       const show = atBottomOnly ? y >= m.showAt : y > m.showAt;
       if (show === shown) return;
+      if (show && shown !== undefined) playSound("slide");
       shown = show;
       setVisible(show);
     };
@@ -587,7 +568,11 @@ export function PlayerCompanion() {
       const next = { hp, phase: (hp > 0 ? "alive" : "bursting") as Phase };
       playerRef.current = next;
       setPlayer(next);
-      playSound(hp > 0 ? "playerHit" : "lose");
+      if (hp > 0) playSound("playerHit");
+      else {
+        playSound("explode");
+        playSound("lose");
+      }
       if (hp > 0) {
         setHurt(true);
         clearTimeout(hurtTimer.current);
@@ -610,8 +595,10 @@ export function PlayerCompanion() {
       );
       slideInAfterBurst(
         () => setPlayer({ hp: PLAYER_HP, phase: "gone" }),
-        () =>
-          setPlayer((p) => (p.phase === "gone" ? { ...p, phase: "alive" } : p)),
+        () => {
+          playSound("slide");
+          setPlayer((p) => (p.phase === "gone" ? { ...p, phase: "alive" } : p));
+        },
         PLAYER_RESPAWN_MS,
       );
       setTimeout(() => setPlayerBurst(null), BURST_MS);
@@ -632,7 +619,6 @@ export function PlayerCompanion() {
         ?.querySelector(".enemy-drop canvas:last-child")
         ?.getBoundingClientRect();
       if (!sprite) return;
-      const vw = window.innerWidth;
       const x = Math.round(sprite.left + sprite.width / 2 - scale);
       const y = Math.round(sprite.top + kind.muzzleTop * scale);
       const row = (y - trackY()) / scale;
@@ -644,17 +630,103 @@ export function PlayerCompanion() {
         flashPieces(-1, FLASH_COLORS.enemy, id),
         "is-flash",
       );
-      // Hits a third of the way in.
-      const target = playerLeft + ((BODY_WIDTH * 2) / 3) * scale;
-      const delay = Math.max(0, ((x + scale - target) / vw) * BULLET_MS);
-      setTimeout(() => {
-        if (overlaps(y, 2 * scale, trackY(), BODY_HEIGHT * scale)) {
-          playerHit(id);
-        }
-      }, delay);
     },
-    [scale, playerLeft, addShot, addSpark, playerHit, enemyRef, walkingRef],
+    [scale, addShot, addSpark, enemyRef, walkingRef],
   );
+
+  const playerBody = useCallback((): Target | undefined => {
+    const r = trackRef.current?.getBoundingClientRect();
+    if (!r) return undefined;
+    return {
+      left: r.left,
+      top: r.top,
+      width: BODY_WIDTH * scale,
+      height: BODY_HEIGHT * scale,
+    };
+  }, [scale]);
+  const enemyBody = useCallback(
+    () =>
+      enemyTrackRef.current
+        ?.querySelector(".enemy-drop canvas:last-child")
+        ?.getBoundingClientRect(),
+    [],
+  );
+  // A bullet stopped by cover sparks off the face it struck.
+  const block = useCallback(
+    (
+      shot: Shot,
+      box: Box,
+      prev: Box | undefined,
+      cover: Cover,
+      coverBefore: DOMRect | undefined,
+    ) => {
+      removeShot(shot.id);
+      const dir = shot.from === "enemy" ? -1 : 1;
+      const normal = hitNormal(box, prev, cover.rect, coverBefore, dir);
+      const at = sparkOrigin(box, cover.rect, normal, scale);
+      playSound("spark");
+      addSpark(
+        at.x,
+        at.y,
+        sparkPieces(shot.from === "enemy" ? "#ff004d" : "#fff1e8", normal),
+      );
+    },
+    [removeShot, addSpark, scale],
+  );
+
+  // Moves one bullet's collision state on by a frame of `dt` ms.
+  const advance = useCallback(
+    (
+      shot: Shot & { vw: number },
+      dt: number,
+      covers: Cover[],
+      last: Map<number, Box>,
+      before: Map<string, DOMRect>,
+    ) => {
+      const rect = document
+        .querySelector(`[data-shot="${shot.id}"]`)
+        ?.getBoundingClientRect();
+      if (!rect) return;
+      const enemyShot = shot.from === "enemy";
+      const dir = enemyShot ? -1 : 1;
+      const box = { x: rect.left, y: rect.top, size: rect.width };
+      const lead = ((shot.vw / BULLET_MS) * dt) / 2;
+      const prev = last.get(shot.id);
+      last.set(shot.id, box);
+      const cover = findCover(covers, box, dir, lead);
+      if (cover) {
+        block(shot, box, prev, cover, before.get(cover.key));
+      } else if (
+        crosses(box, dir, lead, enemyShot ? playerBody() : enemyBody())
+      ) {
+        (enemyShot ? playerHit : hit)(shot.id);
+      }
+    },
+    [block, playerBody, enemyBody, hit, playerHit],
+  );
+
+  // While bullets fly, test their on-screen boxes half a frame ahead.
+  const flying = shots.length > 0;
+  useEffect(() => {
+    if (!flying) return;
+    let raf = 0;
+    let lastT = 0;
+    let before = new Map<string, DOMRect>();
+    const last = new Map<number, Box>();
+    const tick = (t: number) => {
+      const dt = lastT ? Math.min(t - lastT, 50) : 16;
+      lastT = t;
+      const covers = coverRects();
+      for (const shot of live.current.values()) {
+        advance(shot, dt, covers, last, before);
+      }
+      for (const id of last.keys()) if (!live.current.has(id)) last.delete(id);
+      before = new Map(covers.map((c) => [c.key, c.rect]));
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [flying, advance]);
 
   const attackReady =
     visible &&
@@ -685,21 +757,10 @@ export function PlayerCompanion() {
     if (!visible || player.phase !== "alive") return;
     if (shoot() === null) return;
     playSound("shot");
-    const vw = window.innerWidth;
     const x = playerLeft + MUZZLE.right * scale;
     const y = trackY() + MUZZLE.top * scale;
     const id = addShot({ from: "player", x, y, floor: FLOOR_ROW - MUZZLE.top });
     addSpark(x, y, flashPieces(1, FLASH_COLORS.player, id), "is-flash");
-    const target =
-      vw - enemyRight - ((enemyRef.current.kind.width * 2) / 3) * scale;
-    const delay = Math.max(0, ((target - x - scale / 2) / vw) * BULLET_MS);
-    setTimeout(() => {
-      const { kind } = enemyRef.current;
-      const top =
-        trackY() +
-        (BOX_HEIGHT - enemyLift(kind) - kind.height + (kind.sink ?? 0)) * scale;
-      if (overlaps(y, scale, top, kind.height * scale)) hit(id);
-    }, delay);
   };
 
   // On phones they sit behind the content, so taps are hit-tested here.
@@ -729,13 +790,18 @@ export function PlayerCompanion() {
 
   const layer = atBottomOnly ? "z-[-1]" : "z-40";
 
-  const renderShot = (shot: Shot, part: "bullet" | "shadow") => {
+  const renderShot = (
+    shot: Shot,
+    part: "bullet" | "shadow",
+    tracked = false,
+  ) => {
     const size = (shot.from === "enemy" ? 2 : 1) * scale;
     const bullet = shot.from === "enemy" ? "enemy-bullet" : "player-bullet";
     const look = part === "shadow" ? "shot-shadow" : bullet;
     return (
       <span
         key={shot.id}
+        data-shot={tracked ? shot.id : undefined}
         className={`shot absolute ${look} ${shot.from === "enemy" ? "is-left" : ""}`}
         style={{
           left: shot.x,
@@ -828,7 +894,7 @@ export function PlayerCompanion() {
         className="pointer-events-none fixed inset-0 z-[-1]"
         aria-hidden="true"
       >
-        {shots.map((shot) => renderShot(shot, "bullet"))}
+        {shots.map((shot) => renderShot(shot, "bullet", true))}
       </div>
       <div
         className="pointer-events-none fixed inset-0 z-40"

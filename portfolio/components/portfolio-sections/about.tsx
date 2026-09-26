@@ -36,7 +36,7 @@ export function About() {
 
         <ConsoleFrame
           title="P1"
-          className="mx-auto mt-4 w-full max-w-[min(92%,56svh)] lg:mt-0 rotate-2 sm:max-w-[min(34rem,80svh)]"
+          className="mx-auto mt-4 w-full max-w-[min(92%,56svh)] lg:mt-0 rotate-2 sm:max-w-[min(32rem,80svh)]"
         >
           <div className="relative aspect-square">
             <Image

@@ -10,7 +10,6 @@ import { Contact } from "@/components/portfolio-sections/contact";
 import { LevelMenu } from "@/components/retro/level-menu";
 import { PaletteSwitcher } from "@/components/retro/palette-switcher";
 import { PlayerCompanion } from "@/components/retro/player-companion";
-import { RevealObserver } from "@/components/retro/reveal-observer";
 import { SectionHash } from "@/components/retro/section-hash";
 import { SoftSnap } from "@/components/retro/soft-snap";
 import { copy } from "@/lib/copy";
@@ -42,7 +41,6 @@ export default function Home() {
         <Contact />
       </main>
       <PlayerCompanion />
-      <RevealObserver />
       <SoftSnap />
       <SectionHash />
     </div>

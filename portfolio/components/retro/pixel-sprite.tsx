@@ -26,7 +26,7 @@ type PixelSpriteProps = {
 };
 
 const TINT_ALPHA = 0.7;
-// A frame may draw this early, so the refresh nearest its due time takes it.
+// Frames may draw this early, so the nearest refresh takes them.
 const EARLY_MS = 8;
 
 const imageCache = new Map<string, Promise<HTMLImageElement>>();
@@ -107,7 +107,6 @@ export function PixelSprite({
       blockSize = Math.max(1, Math.round(scale * dpr));
       canvas.width = w * blockSize;
       canvas.height = h * blockSize;
-      // Whole device pixels per art pixel, even at fractional zoom.
       canvas.style.width = `${canvas.width / dpr}px`;
       canvas.style.height = `${canvas.height / dpr}px`;
     };
@@ -144,8 +143,7 @@ export function PixelSprite({
     };
     redrawRef.current = draw;
 
-    // Fixed steps keep frames in sync with timers set from the frame rate.
-    // Sleeps between frames instead of waking on every display refresh.
+    // Fixed steps stay in sync with timers; it sleeps between frames.
     const step = 1000 / rate;
     const tick = (t: number) => {
       raf = 0;

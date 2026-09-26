@@ -5,7 +5,6 @@
   --font-pixel: var(--font-display);
 
   --color-paper: var(--paper);
-  --color-ink: var(--ink);
   --color-pop: var(--pop);
   --color-pico-accent: var(--pico-accent);
   --color-cream: var(--pico-white);
@@ -21,8 +20,10 @@
   /* One font pixel of text-body, for borders next to body text. */
   --text-px: calc(var(--ipx) * 2);
   --text-large: calc(var(--ipx) * 24);
+  /* One font pixel of text-large, for pixel art beside large text. */
+  --large-px: calc(var(--text-large) / 8);
   /* Height of the pixel teeth above each section. */
-  --band: calc(var(--ipx) * 12);
+  --band: calc(var(--text-px) * 4);
 
   --section-py: round(clamp(2.5rem, 8.5svh, 8rem), var(--grid));
   --gap-sm: round(clamp(0.5rem, 2svh, 1.25rem), var(--grid));
@@ -45,7 +46,6 @@
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-reveal: cubic-bezier(0.33, 1, 0.68, 1);
 }
 @media (width >= 40rem) {
   :root {
@@ -70,12 +70,16 @@
   }
 }
 
+/* Solid one-pixel shadow along the whole left and underside. */
 .text-drop {
-  text-shadow: -0.125em 0.125em var(--pico-black);
+  text-shadow:
+    -0.125em 0 var(--pico-black),
+    0 0.125em var(--pico-black),
+    -0.125em 0.125em var(--pico-black);
 }
 
-/* Accent outline plus black shadow; 1/8em is one font pixel, so font sizes
-   are multiples of 8 art pixels (--ipx) to keep it on whole pixels. */
+/* Accent outline plus a black shadow along its whole left and underside;
+   1/8em is one font pixel, so font sizes are multiples of 8 art pixels. */
 .text-mark {
   --u: 0.125em;
   --n: calc(var(--u) * -1);
@@ -98,7 +102,9 @@
     0 var(--uu) var(--pico-black),
     var(--nn) var(--uu) var(--pico-black),
     var(--n) 0 var(--pico-black),
-    var(--nn) 0 var(--pico-black);
+    var(--nn) 0 var(--pico-black),
+    var(--nn) var(--n) var(--pico-black),
+    var(--u) var(--uu) var(--pico-black);
 }
 
 @layer components {
@@ -213,8 +219,8 @@
   }
 
   :focus-visible {
-    outline: 3px solid var(--pico-accent);
-    outline-offset: 3px;
+    outline: var(--text-px) solid var(--pico-accent);
+    outline-offset: var(--text-px);
   }
 }
 
@@ -321,24 +327,22 @@
   animation-timing-function: var(--ease-out), ease-in;
 }
 
-html[data-reveal="on"] body [data-reveal]:not(.is-revealed) {
-  opacity: 0;
-  transform: translate3d(0, 24px, 0);
+/* Blocks fade up as they enter, driven by scroll on the compositor so it
+   stays smooth on phones. Without support they simply show. */
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0);
+  }
 }
-html[data-reveal="on"]
-  body
-  [data-reveal][data-reveal-from="above"]:not(.is-revealed) {
-  transform: translate3d(0, -24px, 0);
-}
-/* Body scoped: <html> carries data-reveal too. A short ease-out keeps the
-   slow sub-pixel tail brief, and the layer lives only while it animates. */
-body [data-reveal] {
-  transition:
-    opacity 500ms var(--ease-reveal),
-    transform 650ms var(--ease-reveal);
-}
-body [data-reveal].is-animating {
-  will-change: opacity, transform;
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-reveal] {
+      animation: reveal ease-out both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -351,8 +355,7 @@ body [data-reveal].is-animating {
     animation: none;
   }
   .companion-drop,
-  .enemy-drop,
-  body [data-reveal] {
+  .enemy-drop {
     transition: none;
   }
   .pixel-burst {

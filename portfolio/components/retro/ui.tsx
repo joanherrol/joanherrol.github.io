@@ -68,7 +68,7 @@ export function Mark({ children }: Readonly<{ children: ReactNode }>) {
 }
 
 const buttonClasses =
-  "card-accent inline-flex items-center justify-center gap-1.5 px-3 py-2 text-body uppercase leading-none tracking-[0.125em] sm:gap-2 sm:px-4 sm:py-3 sm:text-large pixel-shadow-2 transition-[translate,box-shadow] duration-100 hover:pixel-lift-1 hover:pixel-shadow-3 sm:border-(length:--px) sm:[--px:calc(var(--ipx)*4)] active:pixel-press-2 active:shadow-none";
+  "card-accent inline-flex items-center justify-center gap-1.5 px-3 py-2 text-body uppercase leading-none tracking-[0.125em] sm:gap-2 sm:px-4 sm:py-3 sm:text-large pixel-shadow-2 transition-[translate,box-shadow] duration-100 hover:pixel-lift-1 hover:pixel-shadow-3 sm:border-(length:--px) sm:[--px:calc(var(--ipx)*4)] active:pixel-press-1 active:pixel-shadow-1";
 
 export function PixelButton({
   href,
@@ -98,7 +98,7 @@ export function PixelButton({
 
 export const dropdown = {
   trigger:
-    "pixel-box pointer-events-auto flex h-[round(44px,var(--text-px))] cursor-pointer items-center border-(length:--text-px) border-black bg-paper pixel-shadow-2 transition-[translate,box-shadow] duration-100 hover:pixel-lift-1 hover:pixel-shadow-3",
+    "pixel-box pointer-events-auto flex h-[round(44px,var(--text-px))] cursor-pointer items-center border-(length:--text-px) border-black bg-paper pixel-shadow-2 transition-[translate,box-shadow] duration-100 hover:pixel-lift-1 hover:pixel-shadow-3 active:pixel-press-1 active:pixel-shadow-1",
   panel:
     "pixel-box pointer-events-auto mt-3 border-(length:--text-px) border-black bg-paper pixel-shadow-3",
   item: "flex w-full cursor-pointer items-center gap-3 whitespace-nowrap px-3 py-2 text-left text-body uppercase leading-none tracking-[0.125em] hover:bg-pico-accent hover:text-cream",
@@ -217,32 +217,32 @@ export function ConsoleFrame({
 }>) {
   return (
     <figure data-reveal className={`@container ${className}`}>
-      <div className="flex items-center gap-[4cqw] border-(length:--text-px) border-black bg-cream px-[4cqw] py-[5cqw] text-black pixel-shadow-4">
+      <div className="flex items-center justify-between gap-[round(4cqw,var(--text-px))] border-(length:--text-px) border-black bg-cream px-[round(4cqw,var(--text-px))] py-[round(5cqw,var(--text-px))] text-black pixel-shadow-4">
         <PixelArt
           rows={DPAD}
           colors={{ "#": "#000" }}
-          className="w-[round(down,14cqw,calc(var(--ipx)*13))] shrink-0"
+          className="w-[calc(var(--large-px)*13)] shrink-0"
         />
-        <div className="min-w-0 flex-1 border-(length:--text-px) border-black bg-black px-[2.5cqw] pb-[2.5cqw]">
-          <div className="flex items-center gap-[1.5cqw] py-[1.5cqw] font-pixel text-[2.5cqw] uppercase leading-none text-cream">
+        <div className="min-w-0 flex-1 border-(length:--text-px) border-black bg-black px-[calc(var(--text-px)*3)] pb-[calc(var(--text-px)*3)]">
+          <div className="flex items-center gap-[0.5em] py-[0.375em] text-body uppercase leading-none tracking-[0.125em] text-cream">
             <span
-              className="aspect-square w-[1.5cqw] bg-pico-accent"
+              className="size-[0.625em] shrink-0 border-[0.125em] border-black bg-pico-accent"
               aria-hidden="true"
             />
             {title}
           </div>
           {children}
         </div>
-        <div className="relative aspect-square w-[15cqw] shrink-0">
+        <div className="relative size-[calc(var(--large-px)*17)] shrink-0">
           <PixelArt
             rows={ROUND_BUTTON}
             colors={BUTTON_COLORS}
-            className="absolute bottom-[1cqw] left-0 w-[round(down,7cqw,calc(var(--ipx)*9))]"
+            className="absolute bottom-0 left-0 w-[calc(var(--large-px)*9)]"
           />
           <PixelArt
             rows={ROUND_BUTTON}
             colors={BUTTON_COLORS}
-            className="absolute right-0 top-[1cqw] w-[round(down,7cqw,calc(var(--ipx)*9))]"
+            className="absolute right-0 top-0 w-[calc(var(--large-px)*9)]"
           />
         </div>
       </div>

@@ -20,7 +20,6 @@ export function ContinuePrompt() {
     });
     observer.observe(prompt);
 
-    // The link around the prompt inserts the coin.
     const link = prompt.closest("a");
     const insertCoin = () => playSound("coin");
     link?.addEventListener("click", insertCoin);

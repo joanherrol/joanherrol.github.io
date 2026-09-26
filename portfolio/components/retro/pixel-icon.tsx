@@ -121,7 +121,7 @@ export function PixelIcon({ name, className }: Readonly<PixelIconProps>) {
   return (
     <svg
       viewBox={`0 0 ${cols} ${rows.length}`}
-      // One icon pixel per font pixel of the surrounding text.
+      // One icon pixel per font pixel.
       width={`${cols / 8}em`}
       height={`${rows.length / 8}em`}
       fill="currentColor"

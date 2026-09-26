@@ -16,7 +16,7 @@ const SOCIALS: { icon: PixelIconName; label: string; href: string }[] = [
 ];
 
 const CARD =
-  "card-cream flex items-center pixel-shadow-2 transition-[translate,box-shadow] duration-100 hover:pixel-lift-1 hover:bg-pico-accent hover:text-cream hover:pixel-shadow-3";
+  "card-cream flex items-center pixel-shadow-2 transition-[translate,box-shadow] duration-100 hover:pixel-lift-1 hover:bg-pico-accent hover:text-cream hover:pixel-shadow-3 active:pixel-press-1 active:pixel-shadow-1";
 
 export function Contact() {
   const details: {

@@ -1,27 +1,49 @@
 // Web Audio sound effects. Off by default; files load only once turned on.
 
-type Sound = { file: string; volume: number; rate?: number; jitter?: number };
+// Loudness of each file's loud part in dBFS, so levels below compare fairly.
+const LOUDNESS = {
+  GunShot: -8,
+  HitBody: -16.8,
+  BloodExplosion: -16.6,
+  PlayerHit: -10.8,
+  Lose: -24,
+  Spawn: -12.8,
+  Dash: -16.5,
+  Slam: -12.5,
+  MenuSelect: -12,
+  Start: -20,
+  CoinPickUp: -7.9,
+};
 
+type Sound = {
+  file: keyof typeof LOUDNESS;
+  /** Target loudness in dB. */
+  level: number;
+  rate?: number;
+  jitter?: number;
+};
+
+// Pitches follow the original game.
 const SOUNDS = {
-  shot: { file: "GunShot", volume: 0.3, jitter: 0.08 },
-  enemyShot: { file: "GunShot", volume: 0.22, rate: 0.72, jitter: 0.08 },
-  hit: { file: "HitBody", volume: 0.35, jitter: 0.1 },
-  explode: { file: "Explosion", volume: 0.35, jitter: 0.1 },
-  playerHit: { file: "PlayerHit", volume: 0.4, jitter: 0.08 },
-  lose: { file: "Lose", volume: 0.4, jitter: 0 },
-  spawn: { file: "Spawn", volume: 0.2 },
-  spark: { file: "FootStep", volume: 0.15, rate: 1.6, jitter: 0.1 },
-  ui: { file: "MenuSelect", volume: 0.35 },
-  start: { file: "Start", volume: 0.35, jitter: 0 },
-  coin: { file: "CoinPickUp", volume: 0.35 },
+  shot: { file: "GunShot", level: -40, rate: 0.85, jitter: 0.06 },
+  enemyShot: { file: "GunShot", level: -42, rate: 1.6, jitter: 0.06 },
+  hit: { file: "HitBody", level: -38, rate: 1.1, jitter: 0.09 },
+  explode: { file: "BloodExplosion", level: -34 },
+  playerHit: { file: "PlayerHit", level: -36, rate: 1.25, jitter: 0.2 },
+  lose: { file: "Lose", level: -36, jitter: 0 },
+  spawn: { file: "Spawn", level: -40 },
+  slide: { file: "Dash", level: -40, jitter: 0.1 },
+  spark: { file: "Slam", level: -40, rate: 7.1, jitter: 0.015 },
+  ui: { file: "MenuSelect", level: -38 },
+  start: { file: "Start", level: -36, jitter: 0 },
+  coin: { file: "CoinPickUp", level: -38 },
 } satisfies Record<string, Sound>;
 
 type SoundName = keyof typeof SOUNDS;
 
 const STORAGE_KEY = "sound";
-// Repeated sounds vary their pitch by up to this much so they never drone.
+// Pitch variation, so repeated sounds never drone.
 const DEFAULT_JITTER = 0.06;
-const MASTER_VOLUME = 0.25;
 
 let enabled = false;
 let context: AudioContext | null = null;
@@ -94,9 +116,9 @@ export function restoreSound() {
 
 export function playSound(name: SoundName) {
   if (!enabled || !context) return;
+  const sound: Sound = SOUNDS[name];
   const ctx = context;
   if (ctx.state === "suspended") void ctx.resume();
-  const sound: Sound = SOUNDS[name];
   void load(sound.file)?.then((buffer) => {
     if (!buffer || !enabled) return;
     const source = ctx.createBufferSource();
@@ -105,7 +127,7 @@ export function playSound(name: SoundName) {
     source.playbackRate.value =
       (sound.rate ?? 1) * (1 + (Math.random() * 2 - 1) * jitter);
     const gain = ctx.createGain();
-    gain.gain.value = sound.volume * MASTER_VOLUME;
+    gain.gain.value = 10 ** ((sound.level - LOUDNESS[sound.file]) / 20);
     source.connect(gain).connect(ctx.destination);
     source.start();
   });
