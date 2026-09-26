@@ -20,7 +20,7 @@ export function RevealObserver() {
         shown.forEach((entry, i) => {
           const el = entry.target as HTMLElement;
           el.style.transitionDelay = `${i * STAGGER_MS}ms`;
-          el.classList.add("is-revealed");
+          el.classList.add("is-animating", "is-revealed");
         });
         // Hide only once fully off screen, so nothing vanishes in view.
         for (const entry of entries) {
@@ -38,6 +38,15 @@ export function RevealObserver() {
     const elements =
       document.querySelectorAll<HTMLElement>("body [data-reveal]");
     elements.forEach((el) => observer.observe(el));
+
+    // Drops the temporary layer once the slide finishes.
+    const onEnd = (e: TransitionEvent) => {
+      if (e.target !== e.currentTarget || e.propertyName !== "transform") {
+        return;
+      }
+      (e.currentTarget as HTMLElement).classList.remove("is-animating");
+    };
+    for (const el of elements) el.addEventListener("transitionend", onEnd);
     root.dataset.reveal = "on";
 
     // Zooming can move blocks into view without an observer callback. Only
@@ -57,6 +66,7 @@ export function RevealObserver() {
 
     return () => {
       observer.disconnect();
+      for (const el of elements) el.removeEventListener("transitionend", onEnd);
       window.removeEventListener("resize", onResize);
       delete root.dataset.reveal;
     };
