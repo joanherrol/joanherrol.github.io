@@ -71,7 +71,6 @@ export function PaletteSwitcher() {
       ref={rootRef}
       className="tone-light pointer-events-none fixed left-3 top-3 z-50 flex items-start gap-3 bg-transparent!"
     >
-      <SoundToggle />
       <div className="flex flex-col items-start">
         <button
           type="button"
@@ -111,6 +110,7 @@ export function PaletteSwitcher() {
           </div>
         )}
       </div>
+      <SoundToggle />
     </div>
   );
 }
