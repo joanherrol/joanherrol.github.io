@@ -117,9 +117,13 @@ export function restoreSound() {
 /** Clicking anything with data-sound plays the sound it names. */
 export function listenForSoundClicks() {
   const onClick = (e: MouseEvent) => {
-    const name = (e.target as Element | null)?.closest<HTMLElement>(
+    const el = (e.target as Element | null)?.closest<HTMLElement>(
       "[data-sound]",
-    )?.dataset.sound;
+    );
+    // Phones open downloads at once, so the sound would play on return.
+    if (el?.matches("a[download]") && matchMedia("(pointer: coarse)").matches)
+      return;
+    const name = el?.dataset.sound;
     if (name && name in SOUNDS) playSound(name as SoundName);
   };
   document.addEventListener("click", onClick);
