@@ -37,7 +37,7 @@ export function Hero() {
       <div className="flex-[1.07_1_0%]" />
       {/* The subtitle (w-0 min-w-full) wraps within the name's width. */}
       <div className="mx-auto flex w-fit flex-col items-center text-center">
-        <h1 className="text-drop text-left font-pixel text-[clamp(2.25rem,8vw,5.5rem)] uppercase leading-none">
+        <h1 className="text-drop text-left font-pixel text-[length:round(clamp(2.25rem,8vw,5.5rem),8px)] uppercase leading-none">
           <span className="block px-[0.15em]">Joan</span>
           <span className="text-mark relative mt-[0.125em] inline-block px-[0.15em] pt-[0.125em]">
             <button
