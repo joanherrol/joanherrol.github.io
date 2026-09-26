@@ -44,14 +44,14 @@ export function Skills() {
             data-reveal
             className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-start gap-3 md:grid-cols-1 md:gap-1"
           >
-            <p className="text-body uppercase tracking-[0.2em] opacity-70">
+            <p className="text-body uppercase tracking-[0.25em] opacity-70">
               {copy.skills.categories[i]}
             </p>
             <ul className="flex flex-wrap gap-2 sm:gap-2">
               {g.skills.map((s) => (
                 <li
                   key={s}
-                  className={`px-2 py-1 text-body leading-none sm:px-2 sm:py-1 ${
+                  className={`px-1.5 py-1 text-body leading-none sm:px-2 ${
                     g.featured ? "card-accent" : "card-cream"
                   }`}
                 >
@@ -66,7 +66,7 @@ export function Skills() {
           data-reveal
           className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-start gap-3 md:grid-cols-1 md:gap-1"
         >
-          <p className="text-body uppercase tracking-[0.2em] opacity-70">
+          <p className="text-body uppercase tracking-[0.25em] opacity-70">
             {copy.skills.languagesLabel}
           </p>
           <ul className="flex flex-wrap gap-x-7 gap-y-2 text-body">

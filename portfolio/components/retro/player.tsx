@@ -94,7 +94,7 @@ export function Player({
   bullets = [],
   label,
   className = "",
-}: PlayerProps) {
+}: Readonly<PlayerProps>) {
   const side = flipX ? "right" : "left";
   const tint = hurt ? HURT_TINT : undefined;
 
@@ -178,12 +178,12 @@ function Bullets({
   scale,
   flipX = false,
   floor = 5,
-}: {
+}: Readonly<{
   bullets: number[];
   scale: number;
   flipX?: boolean;
   floor?: number;
-}) {
+}>) {
   const side = flipX ? "right" : "left";
   return bullets.map((id) => (
     <span

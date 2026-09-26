@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Press_Start_2P, Tiny5 } from "next/font/google";
 import "./globals.css";
 import { paletteBootScript } from "@/lib/palette";
+import { pixelBootScript } from "@/lib/pixel";
 
 const display = Press_Start_2P({
   variable: "--font-display",
@@ -34,6 +35,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <script dangerouslySetInnerHTML={{ __html: paletteBootScript }} />
+        <script dangerouslySetInnerHTML={{ __html: pixelBootScript }} />
         {children}
       </body>
     </html>

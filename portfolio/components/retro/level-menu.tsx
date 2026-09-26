@@ -9,7 +9,7 @@ import { useDismiss } from "@/components/retro/use-dismiss";
 
 export type Level = { id: string; label: string; code: string };
 
-export function LevelMenu({ levels }: { levels: Level[] }) {
+export function LevelMenu({ levels }: Readonly<{ levels: Level[] }>) {
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -47,9 +47,9 @@ export function LevelMenu({ levels }: { levels: Level[] }) {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className={`${dropdown.trigger} gap-3 px-3 text-body uppercase tracking-widest`}
+        className={`${dropdown.trigger} gap-3 px-3 text-body uppercase tracking-[0.125em]`}
       >
-        <PixelIcon name={open ? "close" : "menu"} size={2} />
+        <PixelIcon name={open ? "close" : "menu"} size="text" />
         {copy.menu.open}
       </button>
 

@@ -14,15 +14,17 @@ import {
   ENEMY_HP,
   Enemy,
   HIT_MS,
-  IDLE_CYCLE_MS,
+  IDLE_FRAME_MS,
+  IDLE_FRAMES,
   nextEnemy,
   preloadEnemySprites,
   ENEMIES,
+  type EnemyKind,
   type EnemyAnimation,
 } from "@/components/retro/enemy";
+import { artPx, devicePx } from "@/lib/pixel";
 
 const PHONE_SCALE = 4;
-const PHONE_EDGE = 20;
 const PHONE_SHOW_AT = 0.6;
 
 function phoneStart(vh: number) {
@@ -40,7 +42,7 @@ function viewportHeights(probe: HTMLElement) {
 const TOP = 72;
 const BOTTOM = 12;
 const BURST_MS = 500;
-const IDLE_CYCLES_PER_ATTACK = 4;
+const IDLE_CYCLES_PER_ATTACK = 3;
 const PLAYER_HP = 3;
 const PLAYER_RESPAWN_MS = 2000;
 const HURT_MS = 300;
@@ -48,6 +50,12 @@ const BODY_WIDTH = 8;
 const BODY_HEIGHT = 10;
 const BOX_HEIGHT = 11;
 const FLOOR_ROW = 9;
+const PLAYER_SHADOW_TOP = 9;
+
+// Rows to raise an enemy so its shadow top lines up with the player's.
+function enemyLift(kind: EnemyKind) {
+  return BOX_HEIGHT - PLAYER_SHADOW_TOP - kind.shadowHeight + kind.shadowTop;
+}
 
 // Shots keep their screen height: scrolling dodges them.
 type Shot = {
@@ -57,6 +65,100 @@ type Shot = {
   y: number;
   floor: number;
 };
+
+// Page elements that stop bullets; titles block with their glyphs only.
+const COVER = ".card-cream, .card-accent, main figure";
+const TITLES = "main h1, main h2";
+const SPARK_MS = 250;
+
+type Cover = { key: string; rect: DOMRect };
+
+function isRevealed(el: Element) {
+  const block = el.closest("body [data-reveal]");
+  return !block || block.classList.contains("is-revealed");
+}
+
+function onScreen(rect: DOMRect) {
+  return rect.width > 0 && rect.bottom > 0 && rect.top < window.innerHeight;
+}
+
+function coverRects(): Cover[] {
+  const covers: Cover[] = [];
+  document.querySelectorAll(COVER).forEach((el, i) => {
+    if (isRevealed(el))
+      covers.push({ key: `c${i}`, rect: el.getBoundingClientRect() });
+  });
+  const range = document.createRange();
+  document.querySelectorAll(TITLES).forEach((title, i) => {
+    if (!isRevealed(title) || !onScreen(title.getBoundingClientRect())) return;
+    const walker = document.createTreeWalker(title, NodeFilter.SHOW_TEXT);
+    for (let n = 0, node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (node.parentElement?.closest("button")) continue;
+      range.selectNodeContents(node);
+      for (const rect of range.getClientRects())
+        covers.push({ key: `t${i}.${n++}`, rect });
+    }
+  });
+  return covers.filter((c) => onScreen(c.rect));
+}
+
+// The struck face is the one the bullet crossed last this frame.
+function hitNormal(
+  box: { x: number; y: number; size: number },
+  prev: { x: number; y: number } | undefined,
+  rect: DOMRect,
+  before: DOMRect | undefined,
+  dir: number,
+): [number, number] {
+  if (!prev || !before) return [-dir, 0];
+  const entry = (gapBefore: number, gapNow: number) =>
+    gapBefore > 0 ? gapBefore / (gapBefore - gapNow) : -1;
+  const left = entry(
+    before.left - prev.x - box.size,
+    rect.left - box.x - box.size,
+  );
+  const right = entry(prev.x - before.right, box.x - rect.right);
+  const top = entry(
+    before.top - prev.y - box.size,
+    rect.top - box.y - box.size,
+  );
+  const bottom = entry(prev.y - before.bottom, box.y - rect.bottom);
+  const across = Math.max(left, right);
+  if (Math.max(top, bottom) > across) return top > bottom ? [0, -1] : [0, 1];
+  if (across < 0) return [-dir, 0];
+  return left > right ? [-1, 0] : [1, 0];
+}
+
+// The pixel just outside the struck face, level with the bullet.
+function sparkOrigin(
+  box: { x: number; y: number },
+  rect: DOMRect,
+  [nx, ny]: [number, number],
+  scale: number,
+) {
+  const clamp = (v: number, lo: number, hi: number) =>
+    Math.min(Math.max(v, lo), hi);
+  let x = clamp(box.x, rect.left, rect.right - scale);
+  let y = clamp(box.y, rect.top, rect.bottom - scale);
+  if (nx) x = nx < 0 ? rect.left - scale : rect.right;
+  if (ny) y = ny < 0 ? rect.top - scale : rect.bottom;
+  return { x, y };
+}
+
+// A few pixels bouncing off the struck face.
+function sparkPieces(color: string, [nx, ny]: [number, number]): BurstPiece[] {
+  return Array.from({ length: 6 }, (_, i) => {
+    const along = 2 + Math.random() * 4;
+    const across = (Math.random() - 0.5) * 8;
+    return {
+      x: 0,
+      y: 0,
+      color: i % 3 ? color : "#fff1e8",
+      dx: Math.round(nx * along - ny * across),
+      dy: Math.round(ny * along + nx * across),
+    };
+  });
+}
 
 function overlaps(top: number, height: number, top2: number, height2: number) {
   return top < top2 + height2 && top2 < top + height;
@@ -126,13 +228,13 @@ function PixelBurst({
   top = 0,
   className = "",
   style,
-}: {
+}: Readonly<{
   pieces: BurstPiece[];
   scale: number;
   top?: number;
   className?: string;
   style?: React.CSSProperties;
-}) {
+}>) {
   return (
     <div className={`absolute ${className}`} style={style}>
       {pieces.map((p, i) => (
@@ -177,12 +279,31 @@ function slideInAfterBurst(
   }, after);
 }
 
+// Idle loops, then on to the idle frame closest to the attack's first frame.
+function attackWait({ kind, idleFrom }: EnemyState) {
+  const target = kind.attackFromIdle ?? 0;
+  const frames =
+    IDLE_CYCLES_PER_ATTACK * IDLE_FRAMES +
+    ((target - idleFrom + IDLE_FRAMES) % IDLE_FRAMES);
+  return frames * IDLE_FRAME_MS;
+}
+
 type EnemyState = {
   kind: (typeof ENEMIES)[number];
   hp: number;
   phase: Phase | "hit";
   attacking: boolean;
+  idleFrom: number;
 };
+
+function enemyAnimationFor(
+  enemy: EnemyState,
+  walking: boolean,
+): EnemyAnimation {
+  if (enemy.phase === "hit") return "hit";
+  if (walking) return "walk";
+  return enemy.attacking ? "attack" : "idle";
+}
 
 export function PlayerCompanion() {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -191,29 +312,96 @@ export function PlayerCompanion() {
   const walkingRef = useLatest(walking);
   const [scale, setScale] = useState(0);
   const [atBottomOnly, setAtBottomOnly] = useState(false);
+  const [edge, setEdge] = useState(0);
   const [visible, setVisible] = useState(false);
   const visibleRef = useLatest(visible);
   const { shooting, shoot } = useShoot();
   const [shots, setShots] = useState<Shot[]>([]);
   const nextShot = useRef(0);
-  const removeShot = useCallback(
-    (id: number) => setShots((all) => all.filter((s) => s.id !== id)),
-    [],
-  );
+  const live = useRef(new Map<number, Shot & { t0: number; vw: number }>());
+  const removeShot = useCallback((id: number) => {
+    live.current.delete(id);
+    setShots((all) => all.filter((s) => s.id !== id));
+  }, []);
+  const [sparks, setSparks] = useState<
+    { id: number; x: number; y: number; pieces: BurstPiece[] }[]
+  >([]);
+  const dropSpark = useCallback((id: number) => {
+    setSparks((all) => all.filter((sp) => sp.id !== id));
+  }, []);
   const addShot = useCallback(
     (shot: Omit<Shot, "id">) => {
       const id = nextShot.current++;
-      setShots((all) => [...all, { ...shot, id }]);
+      live.current.set(id, {
+        ...shot,
+        id,
+        t0: performance.now(),
+        vw: window.innerWidth,
+      });
+      setShots((all) => [
+        ...all,
+        { ...shot, id, x: devicePx(shot.x), y: devicePx(shot.y) },
+      ]);
       setTimeout(() => removeShot(id), BULLET_MS);
       return id;
     },
     [removeShot],
   );
+  // While bullets fly, check them against the page's cards each frame.
+  const flying = shots.length > 0;
+  useEffect(() => {
+    if (!flying) return;
+    let raf = 0;
+    let before = new Map<string, DOMRect>();
+    const last = new Map<number, { x: number; y: number }>();
+    const tick = (t: number) => {
+      const covers = coverRects();
+      for (const shot of live.current.values()) {
+        const enemyShot = shot.from === "enemy";
+        const dir = enemyShot ? -1 : 1;
+        const box = {
+          x: shot.x + dir * shot.vw * ((t - shot.t0) / BULLET_MS),
+          y: shot.y,
+          size: (enemyShot ? 2 : 1) * scale,
+        };
+        const prev = last.get(shot.id);
+        last.set(shot.id, box);
+        const cover = covers.find(
+          ({ rect: r }) =>
+            box.x + box.size > r.left &&
+            box.x < r.right &&
+            box.y + box.size > r.top &&
+            box.y < r.bottom,
+        );
+        if (!cover) continue;
+        removeShot(shot.id);
+        const r = cover.rect;
+        const normal = hitNormal(box, prev, r, before.get(cover.key), dir);
+        const id = shot.id;
+        setSparks((all) => [
+          ...all,
+          {
+            id,
+            ...sparkOrigin(box, r, normal, scale),
+            pieces: sparkPieces(enemyShot ? "#ff004d" : "#fff1e8", normal),
+          },
+        ]);
+        setTimeout(dropSpark, SPARK_MS, id);
+      }
+      for (const id of last.keys()) if (!live.current.has(id)) last.delete(id);
+      before = new Map(covers.map((c) => [c.key, c.rect]));
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [flying, scale, removeShot, dropSpark]);
+
   const [enemy, setEnemy] = useState<EnemyState>({
     kind: ENEMIES[0],
     hp: ENEMY_HP,
     phase: "alive",
     attacking: false,
+    idleFrom: 0,
   });
   const [burst, setBurst] = useState<{
     kind: EnemyState["kind"];
@@ -243,7 +431,13 @@ export function PlayerCompanion() {
           ),
         ) || 0;
       setAtBottomOnly(laneScale === 0);
-      setScale(laneScale || PHONE_SCALE);
+      setScale(devicePx(laneScale || PHONE_SCALE));
+      // Same inset as the corner menus.
+      const probe = document.createElement("div");
+      probe.style.cssText = "position:fixed;width:calc(var(--grid) * 3)";
+      document.body.append(probe);
+      setEdge(probe.getBoundingClientRect().width);
+      probe.remove();
     };
     read();
     window.addEventListener("resize", read);
@@ -253,6 +447,8 @@ export function PlayerCompanion() {
   useEffect(() => {
     const scrollDriven = CSS.supports("animation-timeline", "scroll()");
     const tracks = [trackRef.current, enemyTrackRef.current];
+    const step = artPx();
+    const snap = (px: number) => Math.round(px / step) * step;
     const probe = document.createElement("div");
     probe.style.cssText = "position:fixed;top:0;width:0;visibility:hidden";
     document.body.append(probe);
@@ -270,8 +466,8 @@ export function PlayerCompanion() {
       m = {
         start,
         max,
-        top: Math.round(atBottomOnly ? small / 2 : TOP),
-        bottom: Math.round(small - BOTTOM - BOX_HEIGHT * scale),
+        top: snap(atBottomOnly ? small / 2 : TOP),
+        bottom: snap(small - BOTTOM - BOX_HEIGHT * scale),
         showAt: atBottomOnly ? start : small * 0.6,
       };
       if (!scrollDriven) return;
@@ -280,9 +476,10 @@ export function PlayerCompanion() {
         t.classList.add("is-scroll-driven");
         t.style.setProperty("--track-from", `${m.top}px`);
         t.style.setProperty("--track-to", `${m.bottom}px`);
+        // jump-none: n steps make n - 1 moves of one art pixel each.
         t.style.setProperty(
           "--track-steps",
-          `${Math.max(2, m.bottom - m.top)}`,
+          `${Math.max(2, Math.round((m.bottom - m.top) / step) + 1)}`,
         );
         t.style.setProperty("--range-start", `${m.start}px`);
         t.style.setProperty("--range-end", `${m.max}px`);
@@ -294,28 +491,38 @@ export function PlayerCompanion() {
       const span = m.max - m.start;
       const progress =
         span > 0 ? Math.min(1, Math.max(0, (scrollY - m.start) / span)) : 1;
-      const y = Math.round(m.top + progress * (m.bottom - m.top));
+      const y = m.top + snap(progress * (m.bottom - m.top));
       for (const t of tracks) if (t) t.style.transform = `translateY(${y}px)`;
     };
 
     let shown: boolean | undefined;
     let moving = false;
+    const setMoving = (value: boolean) => {
+      moving = value;
+      setWalking(value);
+    };
+    const reveal = (y: number) => {
+      const show = atBottomOnly ? y >= m.showAt : y > m.showAt;
+      if (show === shown) return;
+      shown = show;
+      setVisible(show);
+    };
     const onScroll = () => {
       const y = window.scrollY;
       place(y);
-      const show = atBottomOnly ? y >= m.showAt : y > m.showAt;
-      if (show !== shown) setVisible((shown = show));
-      if (!moving) setWalking((moving = true));
+      reveal(y);
+      if (!moving) {
+        setMoving(true);
+        setEnemy((e) => (e.idleFrom ? { ...e, idleFrom: 0 } : e));
+      }
       clearTimeout(stopTimer);
-      stopTimer = setTimeout(() => setWalking((moving = false)), 180);
+      stopTimer = setTimeout(() => setMoving(false), 180);
     };
 
     const onResize = () => {
       measure();
       place(window.scrollY);
-      const y = window.scrollY;
-      const show = atBottomOnly ? y >= m.showAt : y > m.showAt;
-      if (show !== shown) setVisible((shown = show));
+      reveal(window.scrollY);
     };
 
     let stopTimer: ReturnType<typeof setTimeout> | undefined;
@@ -333,18 +540,19 @@ export function PlayerCompanion() {
     };
   }, [scale, atBottomOnly]);
 
-  const hit = useCallback(
-    (shot: number) => {
+  const damageEnemy = useCallback(
+    (amount: number) => {
       const current = enemyRef.current;
-      if (!visibleRef.current) return;
-      if (current.phase === "bursting" || current.phase === "gone") return;
-      removeShot(shot);
-      const hp = current.hp - 1;
+      if (!visibleRef.current) return false;
+      if (current.phase === "bursting" || current.phase === "gone")
+        return false;
+      const hp = Math.max(0, current.hp - amount);
       const next: EnemyState = {
         ...current,
         hp,
         phase: hp > 0 ? "hit" : "bursting",
         attacking: false,
+        idleFrom: 0,
       };
       enemyRef.current = next;
       setEnemy(next);
@@ -354,7 +562,7 @@ export function PlayerCompanion() {
             setEnemy((e) => (e.phase === "hit" ? { ...e, phase: "alive" } : e)),
           HIT_MS,
         );
-        return;
+        return true;
       }
       const { kind } = current;
       setBurst({
@@ -378,18 +586,28 @@ export function PlayerCompanion() {
             hp: ENEMY_HP,
             phase: "gone",
             attacking: false,
+            idleFrom: 0,
           })),
         () =>
           setEnemy((e) => (e.phase === "gone" ? { ...e, phase: "alive" } : e)),
       );
       setTimeout(() => setBurst(null), BURST_MS);
+      return true;
     },
-    [removeShot, enemyRef, visibleRef],
+    [enemyRef, visibleRef],
   );
+  const hit = useCallback(
+    (shot: number) => {
+      if (live.current.has(shot) && damageEnemy(1)) removeShot(shot);
+    },
+    [damageEnemy, removeShot],
+  );
+  const explode = () => damageEnemy(ENEMY_HP);
 
   const playerHit = useCallback(
     (shot: number) => {
       const current = playerRef.current;
+      if (!live.current.has(shot)) return;
       if (!visibleRef.current || current.phase !== "alive") return;
       removeShot(shot);
       const hp = current.hp - 1;
@@ -428,8 +646,8 @@ export function PlayerCompanion() {
   );
 
   const trackY = () => trackRef.current?.getBoundingClientRect().top ?? 0;
-  const playerLeft = atBottomOnly ? PHONE_EDGE : 2 * scale;
-  const enemyRight = atBottomOnly ? PHONE_EDGE : 2 * scale;
+  const playerLeft = edge;
+  const enemyRight = edge;
 
   const shootBack = useCallback(
     (kind: EnemyState["kind"]) => {
@@ -445,7 +663,8 @@ export function PlayerCompanion() {
       const y = Math.round(sprite.top + kind.muzzleTop * scale);
       const row = (y - trackY()) / scale;
       const id = addShot({ from: "enemy", x, y, floor: FLOOR_ROW - row });
-      const target = playerLeft + (BODY_WIDTH / 2) * scale;
+      // Hits a third of the way in.
+      const target = playerLeft + ((BODY_WIDTH * 2) / 3) * scale;
       const delay = Math.max(0, ((x + scale - target) / vw) * BULLET_MS);
       setTimeout(() => {
         if (overlaps(y, 2 * scale, trackY(), BODY_HEIGHT * scale)) {
@@ -467,14 +686,17 @@ export function PlayerCompanion() {
     const timer = setTimeout(() => {
       const { kind } = enemyRef.current;
       const { duration, shots } = attackTiming(kind);
+      const idleFrom = kind.idleAfterAttack ?? 0;
       setEnemy((e) => ({ ...e, attacking: true }));
       setTimeout(
         () =>
-          setEnemy((e) => (e.kind === kind ? { ...e, attacking: false } : e)),
+          setEnemy((e) =>
+            e.kind === kind ? { ...e, attacking: false, idleFrom } : e,
+          ),
         duration,
       );
       for (const at of shots) setTimeout(() => shootBack(kind), at);
-    }, IDLE_CYCLES_PER_ATTACK * IDLE_CYCLE_MS);
+    }, attackWait(enemyRef.current));
     return () => clearTimeout(timer);
   }, [attackReady, shootBack, enemyRef]);
 
@@ -485,40 +707,40 @@ export function PlayerCompanion() {
     const x = playerLeft + MUZZLE.right * scale;
     const y = trackY() + MUZZLE.top * scale;
     const id = addShot({ from: "player", x, y, floor: FLOOR_ROW - MUZZLE.top });
-    const target = vw - enemyRight - (enemyRef.current.kind.width / 2) * scale;
+    const target =
+      vw - enemyRight - ((enemyRef.current.kind.width * 2) / 3) * scale;
     const delay = Math.max(0, ((target - x - scale / 2) / vw) * BULLET_MS);
     setTimeout(() => {
       const { kind } = enemyRef.current;
       const top =
         trackY() +
-        (BOX_HEIGHT - (kind.lift ?? 0) - kind.height + (kind.sink ?? 0)) *
-          scale;
+        (BOX_HEIGHT - enemyLift(kind) - kind.height + (kind.sink ?? 0)) * scale;
       if (overlaps(y, scale, top, kind.height * scale)) hit(id);
     }, delay);
   };
 
   // On phones they sit behind the content, so taps are hit-tested here.
-  const fireRef = useLatest(fire);
+  const tapRef = useLatest({ fire, explode });
   useEffect(() => {
     if (!atBottomOnly) return;
-    const onClick = (e: MouseEvent) => {
-      if ((e.target as Element).closest("a, button")) return;
-      const r = trackRef.current
-        ?.querySelector("button")
-        ?.getBoundingClientRect();
-      if (
-        r &&
+    const under = (e: MouseEvent, track: HTMLElement | null) => {
+      const r = track?.querySelector("button")?.getBoundingClientRect();
+      return (
+        !!r &&
         e.clientX >= r.left &&
         e.clientX <= r.right &&
         e.clientY >= r.top &&
         e.clientY <= r.bottom
-      ) {
-        fireRef.current();
-      }
+      );
+    };
+    const onClick = (e: MouseEvent) => {
+      if ((e.target as Element).closest("a, button")) return;
+      if (under(e, trackRef.current)) tapRef.current.fire();
+      else if (under(e, enemyTrackRef.current)) tapRef.current.explode();
     };
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
-  }, [atBottomOnly, fireRef]);
+  }, [atBottomOnly, tapRef]);
 
   if (!scale) return null;
 
@@ -526,12 +748,8 @@ export function PlayerCompanion() {
 
   const renderShot = (shot: Shot, part: "bullet" | "shadow") => {
     const size = (shot.from === "enemy" ? 2 : 1) * scale;
-    const look =
-      part === "shadow"
-        ? "shot-shadow"
-        : shot.from === "enemy"
-          ? "enemy-bullet"
-          : "player-bullet";
+    const bullet = shot.from === "enemy" ? "enemy-bullet" : "player-bullet";
+    const look = part === "shadow" ? "shot-shadow" : bullet;
     return (
       <span
         key={shot.id}
@@ -547,9 +765,7 @@ export function PlayerCompanion() {
   };
 
   const enemyShown = visible && enemy.phase !== "gone";
-  let enemyAnimation: EnemyAnimation = walking ? "walk" : "idle";
-  if (enemy.attacking && !walking) enemyAnimation = "attack";
-  if (enemy.phase === "hit") enemyAnimation = "hit";
+  const enemyAnimation = enemyAnimationFor(enemy, walking);
 
   return (
     <>
@@ -601,37 +817,53 @@ export function PlayerCompanion() {
               top={burst.kind.sink ?? 0}
               className="right-0"
               style={{
-                bottom: (burst.kind.lift ?? 0) * scale,
+                bottom: enemyLift(burst.kind) * scale,
                 width: burst.kind.width * scale,
                 height: burst.kind.height * scale,
               }}
             />
           )}
-          <div
-            className={`enemy-drop absolute right-0 ${enemyShown ? "" : "is-hidden"} ${enemy.phase === "bursting" || enemy.phase === "gone" ? "is-snapped" : ""}`}
-            style={{ bottom: (enemy.kind.lift ?? 0) * scale }}
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={explode}
+            className={`enemy-drop absolute right-0 cursor-pointer ${enemyShown ? "pointer-events-auto" : "is-hidden"} ${enemy.phase === "bursting" || enemy.phase === "gone" ? "is-snapped" : ""}`}
+            style={{ bottom: enemyLift(enemy.kind) * scale }}
           >
             <Enemy
               key={enemy.kind.id}
               kind={enemy.kind}
               scale={scale}
               animation={enemyAnimation}
+              startFrame={enemyAnimation === "idle" ? enemy.idleFrom : 0}
             />
-          </div>
+          </button>
         </div>
       </div>
-      {/* Bullets draw over the enemy but under the page content. On desktop,
-          where the enemy sits above the content, a copy clipped to its lane
-          covers it. */}
+      {/* Over the enemy, under the content; on desktop via a lane-clipped copy. */}
       <div
         className="pointer-events-none fixed inset-0 z-[-1]"
         aria-hidden="true"
       >
         {shots.map((shot) => renderShot(shot, "bullet"))}
       </div>
+      <div
+        className="pointer-events-none fixed inset-0 z-40"
+        aria-hidden="true"
+      >
+        {sparks.map((sp) => (
+          <PixelBurst
+            key={sp.id}
+            pieces={sp.pieces}
+            scale={scale}
+            className="is-spark"
+            style={{ left: sp.x, top: sp.y }}
+          />
+        ))}
+      </div>
       {!atBottomOnly && (
         <div
-          className="pointer-events-none fixed inset-0 z-40 [clip-path:inset(0_0_0_calc(100%_-_var(--lane-right)))]"
+          className="pointer-events-none fixed inset-0 z-40 [clip-path:inset(0_0_0_calc(100%-var(--lane)))]"
           aria-hidden="true"
         >
           {shots.map((shot) => renderShot(shot, "bullet"))}

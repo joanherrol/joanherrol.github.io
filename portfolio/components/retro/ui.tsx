@@ -9,24 +9,24 @@ export function Section({
   edge = true,
   className = "",
   children,
-}: {
+}: Readonly<{
   id: string;
   tone: Tone;
   edge?: boolean;
   className?: string;
   children: ReactNode;
-}) {
+}>) {
   return (
     <section
       id={id}
-      className={`tone-${tone} section-paper relative flex min-h-screen-band flex-col justify-center py-(--section-py) pl-(--lane) pr-(--lane-right) ${edge ? "pixel-edge" : ""} ${className}`}
+      className={`tone-${tone} section-paper relative flex min-h-screen-band flex-col justify-center py-(--section-py) px-(--lane) ${edge ? "pixel-edge" : ""} ${className}`}
     >
       <div className="relative mx-auto w-full max-w-6xl">{children}</div>
     </section>
   );
 }
 
-export function SectionLabel({ children }: { children: ReactNode }) {
+export function SectionLabel({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <p
       data-reveal
@@ -40,28 +40,28 @@ export function SectionLabel({ children }: { children: ReactNode }) {
 export function SectionTitle({
   children,
   as: Tag = "h2",
-}: {
+}: Readonly<{
   children: ReactNode;
   as?: "h1" | "h2";
-}) {
+}>) {
   return (
     <Tag
       data-reveal
       // 8 grid units tall; 9px line height leaves a 1px gap between lines.
-      className="text-drop mt-(--gap-sm) font-pixel text-[length:calc(var(--grid)*8)] uppercase leading-[1.125] text-balance"
+      className="text-drop mt-(--gap-sm) font-pixel text-[calc(var(--grid)*8)] uppercase leading-[1.125] text-balance"
     >
       {children}
     </Tag>
   );
 }
 
-export function Mark({ children }: { children: ReactNode }) {
+export function Mark({ children }: Readonly<{ children: ReactNode }>) {
   // Taller lines make room for the outline and shadow.
-  return <span className="text-mark leading-[1.375]">{children}</span>;
+  return <span className="text-mark leading-snug">{children}</span>;
 }
 
 const buttonClasses =
-  "card-accent inline-flex items-center justify-center gap-2 px-4 py-3 text-body uppercase leading-none tracking-wider sm:gap-3 sm:px-5 sm:py-4 sm:text-large shadow-[4px_4px_0_0_#000] transition-[translate,box-shadow] duration-100 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[6px_6px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none";
+  "card-accent inline-flex items-center justify-center gap-1.5 px-3 py-2 text-body uppercase leading-none tracking-[0.125em] sm:gap-2 sm:px-4 sm:py-3 sm:text-large pixel-shadow-2 transition-[translate,box-shadow] duration-100 hover:pixel-lift-1 hover:pixel-shadow-3 sm:border-(length:--px) sm:[--px:calc(var(--ipx)*4)] active:pixel-press-2 active:shadow-none";
 
 export function PixelButton({
   href,
@@ -69,13 +69,13 @@ export function PixelButton({
   icon,
   external,
   download,
-}: {
+}: Readonly<{
   href: string;
   children: ReactNode;
   icon?: PixelIconName;
   external?: boolean;
   download?: boolean;
-}) {
+}>) {
   return (
     <a
       href={href}
@@ -84,32 +84,34 @@ export function PixelButton({
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
     >
       {children}
-      {icon && <PixelIcon name={icon} size={3} />}
+      {icon && <PixelIcon name={icon} size="text" />}
     </a>
   );
 }
 
 export const dropdown = {
   trigger:
-    "pointer-events-auto flex h-[44px] cursor-pointer items-center border-[3px] border-black bg-paper shadow-[3px_3px_0_0_#000] transition-transform hover:-translate-y-[2px]",
+    "pixel-box pointer-events-auto flex h-[round(44px,var(--text-px))] cursor-pointer items-center border-(length:--text-px) border-black bg-paper pixel-shadow-2 transition-[translate,box-shadow] duration-100 hover:pixel-lift-1 hover:pixel-shadow-3",
   panel:
-    "pointer-events-auto mt-3 border-[3px] border-black bg-paper shadow-[6px_6px_0_0_#000]",
-  item: "flex w-full cursor-pointer items-center gap-3 whitespace-nowrap px-3 py-2 text-left text-body uppercase tracking-wider hover:bg-pico-accent hover:text-cream",
+    "pixel-box pointer-events-auto mt-3 border-(length:--text-px) border-black bg-paper pixel-shadow-3",
+  item: "flex w-full cursor-pointer items-center gap-3 whitespace-nowrap px-3 py-2 text-left text-body uppercase tracking-[0.125em] hover:bg-pico-accent hover:text-cream",
 };
 
 const LIGHTS = ["bg-[#ff004d]", "bg-[#ffec27]", "bg-[#00e436]"];
 
-export function TitleBar({ title }: { title: string }) {
+export function TitleBar({ title }: Readonly<{ title: string }>) {
   return (
-    <div className="flex items-center gap-2 border-b-[3px] border-black bg-cream px-3 py-2 text-black">
+    <div className="flex items-center gap-[0.25em] border-b-[0.125em] border-black bg-cream px-[0.5em] py-[0.375em] text-body text-black">
       {LIGHTS.map((bg) => (
         <span
           key={bg}
-          className={`h-[16px] w-[16px] border-2 border-black sm:h-[20px] sm:w-[20px] sm:border-[3px] ${bg}`}
+          className={`size-[0.625em] shrink-0 border-[0.125em] border-black ${bg}`}
           aria-hidden="true"
         />
       ))}
-      <span className="ml-2 text-body uppercase tracking-widest">{title}</span>
+      <span className="ml-[0.25em] min-w-0 truncate uppercase tracking-[0.125em]">
+        {title}
+      </span>
     </div>
   );
 }
@@ -118,16 +120,16 @@ export function WindowFrame({
   title,
   className = "",
   children,
-}: {
+}: Readonly<{
   title: string;
   className?: string;
   children: ReactNode;
-}) {
+}>) {
   return (
     <figure
       data-reveal
       // Black backing hides hairlines on tilted edges.
-      className={`border-[3px] border-black bg-black shadow-[10px_10px_0_0_#000] ${className}`}
+      className={`border-(length:--text-px) border-black bg-black pixel-shadow-4 ${className}`}
     >
       <TitleBar title={title} />
       {children}
@@ -135,15 +137,15 @@ export function WindowFrame({
   );
 }
 
-function PixelArt({
+export function PixelArt({
   rows,
   colors,
   className = "",
-}: {
+}: Readonly<{
   rows: string[];
   colors: Record<string, string>;
   className?: string;
-}) {
+}>) {
   const paths: Record<string, string> = {};
   rows.forEach((row, y) =>
     [...row].forEach((ch, x) => {
@@ -153,6 +155,7 @@ function PixelArt({
   return (
     <svg
       viewBox={`0 0 ${rows[0].length} ${rows.length}`}
+      shapeRendering="crispEdges"
       aria-hidden="true"
       className={className}
     >
@@ -200,20 +203,20 @@ export function ConsoleFrame({
   title,
   className = "",
   children,
-}: {
+}: Readonly<{
   title: string;
   className?: string;
   children: ReactNode;
-}) {
+}>) {
   return (
-    <figure data-reveal className={`[container-type:inline-size] ${className}`}>
-      <div className="flex items-center gap-[4cqw] border-[3px] border-black bg-cream px-[4cqw] py-[5cqw] text-black shadow-[10px_10px_0_0_#000]">
+    <figure data-reveal className={`@container ${className}`}>
+      <div className="flex items-center gap-[4cqw] border-(length:--text-px) border-black bg-cream px-[4cqw] py-[5cqw] text-black pixel-shadow-4">
         <PixelArt
           rows={DPAD}
           colors={{ "#": "#000" }}
-          className="w-[14cqw] shrink-0"
+          className="w-[round(down,14cqw,calc(var(--ipx)*13))] shrink-0"
         />
-        <div className="min-w-0 flex-1 border-[3px] border-black bg-black px-[2.5cqw] pb-[2.5cqw]">
+        <div className="min-w-0 flex-1 border-(length:--text-px) border-black bg-black px-[2.5cqw] pb-[2.5cqw]">
           <div className="flex items-center gap-[1.5cqw] py-[1.5cqw] font-pixel text-[2.5cqw] uppercase leading-none text-cream">
             <span
               className="aspect-square w-[1.5cqw] bg-pico-accent"
@@ -227,12 +230,12 @@ export function ConsoleFrame({
           <PixelArt
             rows={ROUND_BUTTON}
             colors={BUTTON_COLORS}
-            className="absolute bottom-[1cqw] left-0 w-[7cqw]"
+            className="absolute bottom-[1cqw] left-0 w-[round(down,7cqw,calc(var(--ipx)*9))]"
           />
           <PixelArt
             rows={ROUND_BUTTON}
             colors={BUTTON_COLORS}
-            className="absolute right-0 top-[1cqw] w-[7cqw]"
+            className="absolute right-0 top-[1cqw] w-[round(down,7cqw,calc(var(--ipx)*9))]"
           />
         </div>
       </div>

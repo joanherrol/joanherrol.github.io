@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { prefersReducedMotion } from "@/lib/motion";
 
+const STAGGER_MS = 80;
+
 export function RevealObserver() {
   useEffect(() => {
     const root = document.documentElement;
@@ -10,18 +12,25 @@ export function RevealObserver() {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) {
+        // Blocks arriving together follow each other, top first.
+        const shown = entries
+          .filter((e) => e.intersectionRatio > 0.1)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        shown.forEach((entry, i) => {
           const el = entry.target as HTMLElement;
-          if (entry.intersectionRatio > 0.1) {
-            el.classList.add("is-revealed");
-          } else if (!entry.isIntersecting) {
-            el.classList.remove("is-revealed");
-            el.dataset.revealFrom =
-              entry.boundingClientRect.top < 0 ? "above" : "below";
-          }
+          el.style.transitionDelay = `${i * STAGGER_MS}ms`;
+          el.classList.add("is-revealed");
+        });
+        for (const entry of entries) {
+          if (entry.isIntersecting) continue;
+          const el = entry.target as HTMLElement;
+          el.style.transitionDelay = "";
+          el.classList.remove("is-revealed");
+          el.dataset.revealFrom =
+            entry.boundingClientRect.top < 0 ? "above" : "below";
         }
       },
-      { threshold: [0, 0.1] },
+      { threshold: [0, 0.1], rootMargin: "0px 0px -6% 0px" },
     );
 
     const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");

@@ -16,7 +16,7 @@ const SOCIALS: { icon: PixelIconName; label: string; href: string }[] = [
 ];
 
 const CARD =
-  "card-cream flex items-center shadow-[4px_4px_0_0_#000] transition-[translate,box-shadow] duration-100 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:bg-pico-accent hover:text-cream hover:shadow-[6px_6px_0_0_#000]";
+  "card-cream flex items-center pixel-shadow-2 transition-[translate,box-shadow] duration-100 hover:pixel-lift-1 hover:bg-pico-accent hover:text-cream hover:pixel-shadow-3";
 
 export function Contact() {
   const details: {
@@ -49,17 +49,19 @@ export function Contact() {
         </SectionTitle>
         <ul
           data-reveal
-          className="mt-(--gap-lg) grid w-fit gap-4 text-left sm:grid-cols-2 sm:gap-7"
+          className="mt-(--gap-lg) grid w-fit max-w-full gap-4 text-left sm:grid-cols-[minmax(0,auto)_minmax(0,auto)] sm:gap-7"
         >
           {details.map((d) => (
-            <li key={d.label}>
-              <a href={d.href} className={`${CARD} gap-4 px-4 py-3`}>
-                <PixelIcon name={d.icon} size={3} />
+            <li key={d.label} className="min-w-0">
+              <a href={d.href} className={`${CARD} gap-4 px-4 py-3 text-body`}>
+                <PixelIcon name={d.icon} size="text" />
                 <span className="min-w-0">
-                  <span className="block text-body uppercase tracking-widest">
+                  <span className="block truncate text-body uppercase tracking-[0.125em]">
                     {d.label}
                   </span>
-                  <span className="mt-1 block text-body">{d.value}</span>
+                  <span className="mt-1 block truncate text-body">
+                    {d.value}
+                  </span>
                 </span>
               </a>
             </li>
@@ -79,7 +81,7 @@ export function Contact() {
                 aria-label={social.label}
                 className={`${CARD} h-[48px] w-[48px] justify-center gap-3 sm:w-auto sm:px-4 text-body`}
               >
-                <PixelIcon name={social.icon} size={3} />
+                <PixelIcon name={social.icon} size="text" />
                 <span className="hidden sm:inline">{social.label}</span>
               </a>
             </li>
@@ -87,7 +89,7 @@ export function Contact() {
         </ul>
       </div>
 
-      <footer className="mt-(--gap-lg) flex flex-col items-center gap-18 text-body uppercase tracking-widest">
+      <footer className="mt-(--gap-lg) flex flex-col items-center gap-18 text-body uppercase tracking-[0.125em]">
         <span className="opacity-70">
           © {new Date().getFullYear()} Joan Hervás Roldán
         </span>

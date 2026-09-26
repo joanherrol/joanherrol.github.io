@@ -50,18 +50,18 @@ export const PALETTES: Palette[] = [
     accent: PICO8_SECRET.darkPeach,
   },
   {
-    id: "dusk",
-    name: "Dusk",
-    bg: PICO8_SECRET.darkerPurple,
-    bg2: PICO8_SECRET.darkBrown,
-    accent: PICO8_SECRET.darkOrange,
-  },
-  {
     id: "plum",
     name: "Plum",
     bg: PICO8_SECRET.darkerGrey,
     bg2: PICO8_SECRET.mauve,
     accent: PICO8_SECRET.peach,
+  },
+  {
+    id: "dusk",
+    name: "Dusk",
+    bg: PICO8_SECRET.darkerPurple,
+    bg2: PICO8_SECRET.darkBrown,
+    accent: PICO8_SECRET.darkOrange,
   },
 ];
 

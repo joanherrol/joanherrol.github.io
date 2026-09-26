@@ -44,7 +44,7 @@ export function Education() {
           <li
             key={e.institution}
             data-reveal
-            className="card-cream grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 p-3 shadow-[6px_6px_0_0_#000] sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:gap-4 sm:p-3"
+            className="card-cream grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2 p-2 pixel-shadow-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:gap-4 sm:p-3"
           >
             <div className="relative h-[48px] w-[48px] shrink-0 bg-cream sm:h-[80px] sm:w-[80px]">
               <Image
@@ -62,11 +62,11 @@ export function Education() {
                 {e.description}
               </p>
             </div>
-            <div className="col-span-2 flex flex-row items-center justify-between gap-3 sm:col-span-1 sm:flex-col sm:items-end sm:justify-start">
+            <div className="col-span-2 flex flex-row items-center justify-between gap-3 max-sm:[@media(min-height:50rem)]:mt-2 sm:col-span-1 sm:flex-col sm:items-end sm:justify-start">
               <span className="text-body">{e.period}</span>
               {e.gpa && (
                 <span className="card-accent flex items-center gap-2 px-2 py-1 text-body uppercase">
-                  <PixelIcon name="star" size={2} />
+                  <PixelIcon name="star" size="text" />
                   {e.gpa}
                 </span>
               )}

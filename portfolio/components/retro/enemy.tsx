@@ -4,18 +4,24 @@ import {
   type SpriteSheet,
 } from "@/components/retro/pixel-sprite";
 
-type EnemyKind = {
+export type EnemyKind = {
   id: number;
   width: number;
   height: number;
   shadowWidth: number;
   shadowHeight: number;
+  /** First visible row of the shadow art. */
+  shadowTop: number;
   attackFrames: number;
   fireFrames: number[];
   muzzleTop: number;
-  lift?: number;
   sink?: number;
   flipX?: boolean;
+  /** Idle frames that best match the first and last attack frames. */
+  attackFromIdle?: number;
+  idleAfterAttack?: number;
+  /** Attack frames skipped because they fight the idle motion. */
+  attackStart?: number;
 };
 
 export const ENEMIES: EnemyKind[] = [
@@ -25,9 +31,11 @@ export const ENEMIES: EnemyKind[] = [
     height: 10,
     shadowWidth: 10,
     shadowHeight: 10,
+    shadowTop: 7,
     attackFrames: 8,
     fireFrames: [2, 6],
     muzzleTop: 5,
+    idleAfterAttack: 2,
   },
   {
     id: 2,
@@ -35,9 +43,12 @@ export const ENEMIES: EnemyKind[] = [
     height: 16,
     shadowWidth: 7,
     shadowHeight: 3,
+    shadowTop: 1,
     attackFrames: 7,
     fireFrames: [3, 4, 5],
     muzzleTop: 3,
+    attackFromIdle: 2,
+    idleAfterAttack: 2,
   },
   {
     id: 3,
@@ -45,6 +56,7 @@ export const ENEMIES: EnemyKind[] = [
     height: 15,
     shadowWidth: 15,
     shadowHeight: 3,
+    shadowTop: 1,
     attackFrames: 9,
     fireFrames: [8],
     muzzleTop: 8,
@@ -56,9 +68,11 @@ export const ENEMIES: EnemyKind[] = [
     height: 12,
     shadowWidth: 15,
     shadowHeight: 3,
+    shadowTop: 1,
     attackFrames: 8,
     fireFrames: [5],
     muzzleTop: 3,
+    idleAfterAttack: 5,
   },
   {
     id: 5,
@@ -66,9 +80,12 @@ export const ENEMIES: EnemyKind[] = [
     height: 15,
     shadowWidth: 10,
     shadowHeight: 3,
+    shadowTop: 1,
     attackFrames: 8,
     fireFrames: [6],
     muzzleTop: 2,
+    attackFromIdle: 2,
+    idleAfterAttack: 2,
   },
   {
     id: 6,
@@ -76,6 +93,7 @@ export const ENEMIES: EnemyKind[] = [
     height: 13,
     shadowWidth: 14,
     shadowHeight: 5,
+    shadowTop: 0,
     attackFrames: 8,
     fireFrames: [7],
     muzzleTop: 2,
@@ -86,11 +104,13 @@ export const ENEMIES: EnemyKind[] = [
     height: 16,
     shadowWidth: 12,
     shadowHeight: 5,
+    shadowTop: 2,
     attackFrames: 14,
     fireFrames: [6, 9, 12],
     muzzleTop: 6,
-    lift: -1,
     sink: -2,
+    attackFromIdle: 1,
+    attackStart: 2,
   },
   {
     id: 8,
@@ -98,10 +118,12 @@ export const ENEMIES: EnemyKind[] = [
     height: 12,
     shadowWidth: 14,
     shadowHeight: 5,
+    shadowTop: 2,
     attackFrames: 6,
     fireFrames: [3],
     muzzleTop: 8,
     sink: -1,
+    idleAfterAttack: 4,
   },
   {
     id: 9,
@@ -109,10 +131,12 @@ export const ENEMIES: EnemyKind[] = [
     height: 12,
     shadowWidth: 10,
     shadowHeight: 3,
+    shadowTop: 1,
     attackFrames: 9,
     fireFrames: [7],
     muzzleTop: 2,
     sink: -1,
+    idleAfterAttack: 4,
   },
   {
     id: 10,
@@ -120,28 +144,31 @@ export const ENEMIES: EnemyKind[] = [
     height: 12,
     shadowWidth: 16,
     shadowHeight: 3,
+    shadowTop: 1,
     attackFrames: 11,
     fireFrames: [3, 5, 7, 9],
     muzzleTop: 6,
     sink: -2,
     flipX: true,
+    idleAfterAttack: 2,
   },
 ];
 
 export const ENEMY_HP = 3;
 export const HIT_MS = 240;
 const ATTACK_FPS = 12;
-const IDLE_FRAMES = 6;
+export const IDLE_FRAMES = 6;
 const IDLE_FPS = 12;
-export const IDLE_CYCLE_MS = (IDLE_FRAMES / IDLE_FPS) * 1000;
+export const IDLE_FRAME_MS = 1000 / IDLE_FPS;
 
 export type EnemyAnimation = "idle" | "walk" | "hit" | "attack";
 
 export function attackTiming(kind: EnemyKind) {
   const frameMs = 1000 / ATTACK_FPS;
+  const start = kind.attackStart ?? 0;
   return {
-    duration: kind.attackFrames * frameMs,
-    shots: kind.fireFrames.map((f) => f * frameMs),
+    duration: (kind.attackFrames - start) * frameMs,
+    shots: kind.fireFrames.map((f) => (f - start) * frameMs),
   };
 }
 
@@ -196,11 +223,13 @@ export function Enemy({
   kind,
   scale,
   animation,
-}: {
+  startFrame = 0,
+}: Readonly<{
   kind: EnemyKind;
   scale: number;
   animation: EnemyAnimation;
-}) {
+  startFrame?: number;
+}>) {
   return (
     <div
       className="relative"
@@ -219,6 +248,9 @@ export function Enemy({
       <PixelSprite
         sheet={sheet(kind, animation)}
         loop={animation !== "attack"}
+        startFrame={
+          animation === "attack" ? (kind.attackStart ?? 0) : startFrame
+        }
         scale={scale}
         flipX={kind.flipX}
         className="absolute left-0"

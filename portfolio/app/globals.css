@@ -13,12 +13,26 @@
   --spacing: var(--grid);
 }
 
-/* Spacing grid: one section-title pixel, 3px to 7px. */
 :root {
-  --grid: round(clamp(3px, min(0.475vw, 0.75svh), 7px), 1px);
-}
+  /* One art pixel on whole device pixels (set by pixelBootScript). */
+  --ipx: 1px;
+  /* Spacing grid: one section-title pixel, 3px to 7px. */
+  --grid: round(clamp(3px, min(0.475vw, 0.75svh), 7px), var(--ipx));
+  /* One font pixel of text-body, for borders next to body text. */
+  --text-px: calc(var(--ipx) * 2);
+  --text-large: calc(var(--ipx) * 24);
+  /* Height of the pixel teeth above each section. */
+  --band: calc(var(--ipx) * 12);
 
-:root {
+  --section-py: round(clamp(2.5rem, 8.5svh, 8rem), var(--grid));
+  --gap-sm: round(clamp(0.5rem, 2svh, 1.25rem), var(--grid));
+  --gap-md: round(clamp(1rem, 3svh, 2rem), var(--grid));
+  --gap-lg: round(clamp(1rem, 4svh, 3.5rem), var(--grid));
+
+  /* Companion size (px per art pixel); equal side lanes fit the widest enemy. */
+  --companion-scale: 0;
+  --lane: calc(var(--grid) * 6);
+
   --pico-bg: #1d2b53;
   --pico-bg2: #008751;
   --pico-accent: #ff004d;
@@ -28,6 +42,31 @@
   --paper: var(--pico-bg);
   --ink: var(--pico-white);
   --pop: var(--pico-accent);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (width >= 40rem) {
+  :root {
+    --text-px: calc(var(--ipx) * 3);
+    --text-large: calc(var(--ipx) * 32);
+    --companion-scale: 4;
+    --lane: round(
+      up,
+      calc(var(--companion-scale) * 20px + var(--grid) * 3),
+      var(--grid)
+    );
+  }
+}
+@media (width >= 64rem) {
+  :root {
+    --companion-scale: 5;
+  }
+}
+@media (width >= 90rem) {
+  :root {
+    --companion-scale: 6;
+  }
 }
 
 .text-drop {
@@ -35,7 +74,7 @@
 }
 
 /* Accent outline plus black shadow; 1/8em is one font pixel, so font sizes
-   are multiples of 8px to keep it on whole pixels. */
+   are multiples of 8 art pixels (--ipx) to keep it on whole pixels. */
 .text-mark {
   --u: 0.125em;
   --n: calc(var(--u) * -1);
@@ -64,7 +103,13 @@
 @layer components {
   .card-cream,
   .card-accent {
-    border: 3px solid var(--pico-black);
+    border: var(--text-px) solid var(--pico-black);
+  }
+  /* Inside text boxes one spacing unit is two of their font pixels. */
+  .card-cream,
+  .card-accent,
+  .pixel-box {
+    --grid: calc(var(--px, var(--text-px)) * 2);
   }
   .card-cream {
     background-color: var(--pico-white);
@@ -111,52 +156,24 @@
   --pop: var(--pico-accent);
 }
 
-/* Height of the pixel teeth above each section. */
-:root {
-  --band: 12px;
+/* Hard shadows and presses in whole pixels of the element (--px). */
+@utility pixel-shadow-* {
+  box-shadow: calc(var(--px, var(--text-px)) * --value(integer))
+    calc(var(--px, var(--text-px)) * --value(integer)) 0 0 var(--pico-black);
+}
+@utility pixel-lift-* {
+  translate: calc(var(--px, var(--text-px)) * --value(integer) * -1)
+    calc(var(--px, var(--text-px)) * --value(integer) * -1);
+}
+@utility pixel-press-* {
+  translate: calc(var(--px, var(--text-px)) * --value(integer))
+    calc(var(--px, var(--text-px)) * --value(integer));
 }
 @utility text-body {
-  font-size: 1rem;
-  @media (width >= 40rem) {
-    font-size: 1.5rem;
-  }
+  font-size: calc(var(--text-px) * 8);
 }
 @utility text-large {
-  font-size: 1.5rem;
-  @media (width >= 40rem) {
-    font-size: 2rem;
-  }
-}
-
-/* Companion size (px per art pixel) and the side lanes it walks in. */
-:root {
-  --companion-scale: 0;
-  --lane: calc(var(--grid) * 6);
-  --lane-right: calc(var(--grid) * 6);
-}
-@media (width >= 40rem) {
-  :root {
-    --companion-scale: 4;
-    --lane: round(up, calc(var(--companion-scale) * 20px), var(--grid));
-    --lane-right: round(up, calc(var(--companion-scale) * 16px), var(--grid));
-  }
-}
-@media (width >= 64rem) {
-  :root {
-    --companion-scale: 5;
-  }
-}
-@media (width >= 90rem) {
-  :root {
-    --companion-scale: 6;
-  }
-}
-
-:root {
-  --section-py: round(clamp(2.5rem, 8.5svh, 8rem), var(--grid));
-  --gap-sm: round(clamp(0.5rem, 2svh, 1.25rem), var(--grid));
-  --gap-md: round(clamp(1rem, 3svh, 2rem), var(--grid));
-  --gap-lg: round(clamp(1rem, 4svh, 3.5rem), var(--grid));
+  font-size: var(--text-large);
 }
 
 @utility min-h-screen-band {
@@ -200,10 +217,6 @@
   }
 }
 
-:root {
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
-}
 @keyframes blink {
   50% {
     opacity: 0;
@@ -299,19 +312,22 @@
     pixel-burst-move 500ms var(--ease-out) forwards,
     pixel-burst-fade 500ms ease-in forwards;
 }
+.is-spark .pixel-burst {
+  animation-duration: 250ms, 180ms;
+}
 
 html[data-reveal="on"] [data-reveal]:not(.is-revealed) {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(32px);
 }
 html[data-reveal="on"]
   [data-reveal][data-reveal-from="above"]:not(.is-revealed) {
-  transform: translateY(-16px);
+  transform: translateY(-32px);
 }
 [data-reveal] {
   transition:
-    opacity 700ms var(--ease-soft),
-    transform 700ms var(--ease-soft);
+    opacity 900ms var(--ease-out),
+    transform 1100ms var(--ease-soft);
 }
 
 @media (prefers-reduced-motion: reduce) {

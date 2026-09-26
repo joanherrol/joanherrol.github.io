@@ -80,11 +80,16 @@ export type PixelIconName = keyof typeof ICONS;
 
 type PixelIconProps = {
   name: PixelIconName;
-  size?: number;
+  /** Px per icon pixel, or "text" to match the surrounding font pixel. */
+  size?: number | "text";
   className?: string;
 };
 
-export function PixelIcon({ name, size = 3, className }: PixelIconProps) {
+export function PixelIcon({
+  name,
+  size = 3,
+  className,
+}: Readonly<PixelIconProps>) {
   const rows = ICONS[name];
   const cols = rows[0].length;
 
@@ -104,8 +109,8 @@ export function PixelIcon({ name, size = 3, className }: PixelIconProps) {
   return (
     <svg
       viewBox={`0 0 ${cols} ${rows.length}`}
-      width={cols * size}
-      height={rows.length * size}
+      width={size === "text" ? `${cols / 8}em` : cols * size}
+      height={size === "text" ? `${rows.length / 8}em` : rows.length * size}
       fill="currentColor"
       shapeRendering="crispEdges"
       aria-hidden="true"

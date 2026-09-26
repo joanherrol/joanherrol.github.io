@@ -16,6 +16,7 @@ type PixelSpriteProps = {
   scale?: number;
   playing?: boolean;
   loop?: boolean;
+  startFrame?: number;
   flipX?: boolean;
   tint?: string;
   fps?: number;
@@ -64,13 +65,14 @@ export function PixelSprite({
   scale = 4,
   playing = true,
   loop = true,
+  startFrame = 0,
   flipX = false,
   tint,
   fps,
   label,
   className,
   style,
-}: PixelSpriteProps) {
+}: Readonly<PixelSpriteProps>) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const flipRef = useRef(flipX);
   const tintRef = useRef(tint);
@@ -91,19 +93,20 @@ export function PixelSprite({
     if (!canvas || !ctx) return;
 
     let img: HTMLImageElement | null = null;
-    let frame = 0;
+    let frame = startFrame % frames;
     let last = 0;
     let raf = 0;
     let cancelled = false;
     let blockSize = 1;
 
     const resize = () => {
-      blockSize = Math.max(
-        1,
-        Math.round(scale * (window.devicePixelRatio || 1)),
-      );
+      const dpr = window.devicePixelRatio || 1;
+      blockSize = Math.max(1, Math.round(scale * dpr));
       canvas.width = w * blockSize;
       canvas.height = h * blockSize;
+      // Whole device pixels per art pixel, even at fractional zoom.
+      canvas.style.width = `${canvas.width / dpr}px`;
+      canvas.style.height = `${canvas.height / dpr}px`;
     };
 
     const draw = () => {
@@ -138,15 +141,17 @@ export function PixelSprite({
     };
     redrawRef.current = draw;
 
+    // Fixed steps keep frames in sync with timers set from the frame rate.
+    const step = 1000 / rate;
     const tick = (t: number) => {
-      if (last === 0) last = t;
-      if (t - last >= 1000 / rate) {
+      if (last === 0 || t - last > step * frames) last = t;
+      if (t - last >= step) {
         if (!loop && frame === frames - 1) {
           raf = 0;
           return;
         }
         frame = (frame + 1) % frames;
-        last = t;
+        last += step;
         draw();
       }
       raf = requestAnimationFrame(tick);
@@ -195,22 +200,23 @@ export function PixelSprite({
       window.removeEventListener("resize", onResize);
       redrawRef.current = () => {};
     };
-  }, [src, w, h, frames, rate, scale, playing, loop]);
+  }, [src, w, h, frames, rate, scale, playing, loop, startFrame]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      role={label ? "img" : undefined}
-      aria-label={label}
-      aria-hidden={label ? undefined : true}
-      className={className}
-      style={{
-        width: w * scale,
-        height: h * scale,
-        imageRendering: "pixelated",
-        display: "block",
-        ...style,
-      }}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        aria-hidden="true"
+        className={className}
+        style={{
+          width: w * scale,
+          height: h * scale,
+          imageRendering: "pixelated",
+          display: "block",
+          ...style,
+        }}
+      />
+      {label && <span className="sr-only">{label}</span>}
+    </>
   );
 }

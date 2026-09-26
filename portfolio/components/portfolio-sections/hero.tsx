@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { copy } from "@/lib/copy";
+import { artPx } from "@/lib/pixel";
 import {
   Player,
   usePlayerSpritePreload,
@@ -14,7 +15,7 @@ function useHeroScale() {
   useEffect(() => {
     const update = () => {
       const fontSize = Math.min(88, Math.max(36, window.innerWidth * 0.08));
-      setScale(Math.round(fontSize / 8));
+      setScale(Math.round(fontSize / 8 / artPx()) * artPx());
     };
     update();
     window.addEventListener("resize", update);
@@ -37,14 +38,14 @@ export function Hero() {
       <div className="flex-[1.07_1_0%]" />
       {/* The subtitle (w-0 min-w-full) wraps within the name's width. */}
       <div className="mx-auto flex w-fit flex-col items-center text-center">
-        <h1 className="text-drop text-left font-pixel text-[length:round(clamp(2.25rem,8vw,5.5rem),8px)] uppercase leading-none">
-          <span className="block px-[0.15em]">Joan</span>
-          <span className="text-mark relative mt-[0.125em] inline-block px-[0.15em] pt-[0.125em]">
+        <h1 className="text-drop text-left font-pixel text-[round(clamp(2.25rem,8vw,5.5rem),calc(var(--ipx)*8))] uppercase leading-none">
+          <span className="block px-[0.125em]">Joan</span>
+          <span className="text-mark relative mt-[0.125em] inline-block px-[0.125em] pt-[0.125em]">
             <button
               type="button"
               onClick={shoot}
               className="absolute bottom-full cursor-pointer"
-              style={{ right: `calc(0.15em + ${scale}px)` }}
+              style={{ right: `calc(0.125em + ${scale}px)` }}
               aria-label={copy.hero.playerLabel}
             >
               <Player
@@ -61,7 +62,7 @@ export function Hero() {
             <span className="relative z-10">Hervás</span>
           </span>
         </h1>
-        <p className="mt-7 w-0 min-w-full text-large uppercase tracking-[0.2em] text-balance">
+        <p className="mt-7 w-0 min-w-full text-large uppercase tracking-[0.25em] text-balance">
           {copy.hero.subtitle}
         </p>
       </div>
