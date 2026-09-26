@@ -87,6 +87,7 @@ export function PixelButton({
     <a
       href={href}
       className={buttonClasses}
+      data-sound="ui"
       download={download || undefined}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
     >

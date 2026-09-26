@@ -6,7 +6,6 @@ import { PixelIcon } from "@/components/retro/pixel-icon";
 import { Player } from "@/components/retro/player";
 import { dropdown, TitleBar } from "@/components/retro/ui";
 import { useDismiss } from "@/components/retro/use-dismiss";
-import { playSound } from "@/lib/sound";
 
 type Level = { id: string; label: string; code: string };
 
@@ -35,7 +34,6 @@ export function LevelMenu({ levels }: Readonly<{ levels: Level[] }>) {
   }, [levels, open]);
 
   const go = (id: string) => {
-    playSound("start");
     setOpen(false);
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
@@ -47,10 +45,8 @@ export function LevelMenu({ levels }: Readonly<{ levels: Level[] }>) {
     >
       <button
         type="button"
-        onClick={() => {
-          setOpen((o) => !o);
-          playSound("ui");
-        }}
+        onClick={() => setOpen((o) => !o)}
+        data-sound="ui"
         aria-expanded={open}
         className={`${dropdown.trigger} gap-3 px-3 text-body uppercase tracking-[0.125em]`}
       >
@@ -70,6 +66,7 @@ export function LevelMenu({ levels }: Readonly<{ levels: Level[] }>) {
                 <button
                   type="button"
                   onClick={() => go(level.id)}
+                  data-sound="start"
                   onMouseEnter={() => setHovered(i)}
                   onFocus={() => setHovered(i)}
                   className={dropdown.item}

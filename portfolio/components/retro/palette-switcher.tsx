@@ -13,7 +13,6 @@ import { PixelIcon } from "@/components/retro/pixel-icon";
 import { dropdown, PixelArt, TitleBar } from "@/components/retro/ui";
 import { useDismiss } from "@/components/retro/use-dismiss";
 import { SoundToggle } from "@/components/retro/sound-toggle";
-import { playSound } from "@/lib/sound";
 
 function readSaved(): Palette {
   try {
@@ -55,7 +54,6 @@ export function PaletteSwitcher() {
   }, []);
 
   const choose = (p: Palette) => {
-    playSound("ui");
     setCurrent(p);
     setOpen(false);
     applyPalette(p);
@@ -72,10 +70,8 @@ export function PaletteSwitcher() {
       <div className="relative">
         <button
           type="button"
-          onClick={() => {
-            setOpen((o) => !o);
-            playSound("ui");
-          }}
+          onClick={() => setOpen((o) => !o)}
+          data-sound="ui"
           aria-expanded={open}
           aria-label={`${copy.menu.palette}: ${current.name}`}
           className={`${dropdown.trigger} px-2 text-body`}
@@ -94,6 +90,7 @@ export function PaletteSwitcher() {
                   <button
                     type="button"
                     onClick={() => choose(p)}
+                    data-sound="ui"
                     aria-pressed={p.id === current.id}
                     className={dropdown.item}
                   >

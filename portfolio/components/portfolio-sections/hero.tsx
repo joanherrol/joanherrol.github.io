@@ -72,11 +72,7 @@ export function Hero() {
       </div>
 
       <div className="flex flex-1 items-center justify-center text-large uppercase">
-        <a
-          href="#about"
-          onClick={() => playSound("start")}
-          className="blink hover:text-pop"
-        >
+        <a href="#about" data-sound="start" className="blink hover:text-pop">
           {copy.hero.start}
         </a>
       </div>

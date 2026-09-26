@@ -54,7 +54,11 @@ export function Contact() {
         >
           {details.map((d) => (
             <li key={d.label} className="min-w-0">
-              <a href={d.href} className={`${CARD} gap-4 px-4 py-3 text-body`}>
+              <a
+                href={d.href}
+                data-sound="ui"
+                className={`${CARD} gap-4 px-4 py-3 text-body`}
+              >
                 <PixelIcon name={d.icon} />
                 <span className="min-w-0">
                   <span className="block truncate text-body uppercase tracking-[0.125em]">
@@ -80,6 +84,7 @@ export function Contact() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={social.label}
+                data-sound="ui"
                 className={`${CARD} h-[48px] w-[48px] justify-center gap-3 sm:w-auto sm:px-4 text-body`}
               >
                 <PixelIcon name={social.icon} />
@@ -96,7 +101,7 @@ export function Contact() {
 
       {/* Centred above the characters, which stand at the bottom. */}
       <footer className="flex flex-1 items-center justify-center pt-(--gap-md) pb-[calc(max(var(--companion-scale),4)*11px+12px)] uppercase">
-        <a href="#home" className="text-large hover:text-pop">
+        <a href="#home" data-sound="coin" className="text-large hover:text-pop">
           <span aria-live="polite">
             <ContinuePrompt />
           </span>

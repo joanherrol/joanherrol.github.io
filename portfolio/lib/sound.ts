@@ -114,6 +114,18 @@ export function restoreSound() {
   for (const type of GESTURES) addEventListener(type, start, true);
 }
 
+/** Clicking anything with data-sound plays the sound it names. */
+export function listenForSoundClicks() {
+  const onClick = (e: MouseEvent) => {
+    const name = (e.target as Element | null)?.closest<HTMLElement>(
+      "[data-sound]",
+    )?.dataset.sound;
+    if (name && name in SOUNDS) playSound(name as SoundName);
+  };
+  document.addEventListener("click", onClick);
+  return () => document.removeEventListener("click", onClick);
+}
+
 export function playSound(name: SoundName) {
   if (!enabled || !context) return;
   const sound: Sound = SOUNDS[name];

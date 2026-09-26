@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { playSound } from "@/lib/sound";
 
 const START = 9;
 
@@ -20,14 +19,7 @@ export function ContinuePrompt() {
     });
     observer.observe(prompt);
 
-    const link = prompt.closest("a");
-    const insertCoin = () => playSound("coin");
-    link?.addEventListener("click", insertCoin);
-
-    return () => {
-      observer.disconnect();
-      link?.removeEventListener("click", insertCoin);
-    };
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {

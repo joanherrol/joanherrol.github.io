@@ -3,7 +3,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { copy } from "@/lib/copy";
 import {
-  playSound,
+  listenForSoundClicks,
   restoreSound,
   setSoundEnabled,
   soundEnabled,
@@ -15,17 +15,16 @@ import { dropdown } from "@/components/retro/ui";
 export function SoundToggle() {
   const on = useSyncExternalStore(subscribeSound, soundEnabled, () => false);
 
-  useEffect(restoreSound, []);
-
-  const toggle = () => {
-    setSoundEnabled(!on);
-    playSound("ui");
-  };
+  useEffect(() => {
+    restoreSound();
+    return listenForSoundClicks();
+  }, []);
 
   return (
     <button
       type="button"
-      onClick={toggle}
+      onClick={() => setSoundEnabled(!on)}
+      data-sound="ui"
       aria-pressed={on}
       aria-label={copy.menu.sound}
       className={`${dropdown.trigger} px-3 text-body`}
