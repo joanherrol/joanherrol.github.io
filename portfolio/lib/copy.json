@@ -27,13 +27,13 @@
   "projects": {
     "items": [
       {
-        "title": "Shoot'em Up!",
-        "description": "An arcade shooter with PICO-8 looks. Made in Unity, playable in your browser.",
+        "title": "Pug Adventure",
+        "description": "A 2D platformer starring a very determined pug.",
         "cta": "Play on itch.io"
       },
       {
-        "title": "Pug Adventure",
-        "description": "A 2D platformer starring a very determined pug.",
+        "title": "Shoot'em Up!",
+        "description": "An arcade shooter with PICO-8 looks. Made in Unity, playable in your browser.",
         "cta": "Play on itch.io"
       }
     ]

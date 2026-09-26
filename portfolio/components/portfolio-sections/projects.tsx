@@ -12,20 +12,20 @@ import {
 
 const projectMeta = [
   {
-    id: "shootemup",
-    image: "/imgs/ShootEmUp.png",
-    width: 315,
-    height: 250,
-    pixelArt: true,
-    url: "https://joan-hervas.itch.io/shootemup",
-  },
-  {
     id: "pug-adventure",
     image: "/imgs/PugAdventure.png",
     width: 315,
     height: 250,
     pixelArt: true,
     url: "https://joan-hervas.itch.io/pug-adventure",
+  },
+  {
+    id: "shootemup",
+    image: "/imgs/ShootEmUp.png",
+    width: 315,
+    height: 250,
+    pixelArt: true,
+    url: "https://joan-hervas.itch.io/shootemup",
   },
 ];
 

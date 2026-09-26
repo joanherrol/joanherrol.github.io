@@ -1,21 +1,41 @@
 // The 16-colour PICO-8 palette. https://pico-8.fandom.com/wiki/Palette
 const PICO8 = {
+  black: "#000000",
   darkBlue: "#1d2b53",
+  darkPurple: "#7e2553",
   darkGreen: "#008751",
+  brown: "#ab5236",
+  darkGrey: "#5f574f",
+  lightGrey: "#c2c3c7",
+  white: "#fff1e8",
   red: "#ff004d",
+  orange: "#ffa300",
+  yellow: "#ffec27",
+  green: "#00e436",
+  blue: "#29adff",
+  lavender: "#83769c",
+  pink: "#ff77a8",
+  peach: "#ffccaa",
 } as const;
 
-// PICO-8 secret palette: none of these appear in the sprites.
+// The 16 secret PICO-8 colours.
 const PICO8_SECRET = {
+  darkestBrown: "#291814",
+  darkerBlue: "#111d35",
   darkerPurple: "#422136",
   blueGreen: "#125359",
   darkBrown: "#742f29",
   darkerGrey: "#49333b",
+  mediumGrey: "#a28879",
+  lightYellow: "#f3ef7d",
+  darkRed: "#be1250",
   darkOrange: "#ff6c24",
-  mauve: "#754665",
-  peach: "#ff9d81",
-  darkPeach: "#ff6e59",
+  limeGreen: "#a8e72e",
   mediumGreen: "#00b543",
+  trueBlue: "#065ab5",
+  mauve: "#754665",
+  darkPeach: "#ff6e59",
+  lightPeach: "#ff9d81",
 } as const;
 
 export type Palette = {
@@ -26,42 +46,43 @@ export type Palette = {
   accent: string;
 };
 
-// Ordered so neighbours never share a background.
+// Backgrounds are muted colours no sprite uses, so characters never blend in;
+// each accent is punchy and unique. Neighbours never share a background.
 export const PALETTES: Palette[] = [
   {
     id: "shootemup",
     name: "Shoot'em",
     bg: PICO8.darkBlue,
-    bg2: PICO8.darkGreen,
+    bg2: PICO8_SECRET.darkerBlue,
     accent: PICO8.red,
   },
   {
     id: "moss",
     name: "Moss",
-    bg: PICO8_SECRET.darkerGrey,
-    bg2: PICO8_SECRET.darkBrown,
+    bg: PICO8_SECRET.darkestBrown,
+    bg2: PICO8_SECRET.darkerGrey,
     accent: PICO8.darkGreen,
   },
   {
-    id: "coral",
-    name: "Coral",
-    bg: PICO8.darkBlue,
-    bg2: PICO8_SECRET.blueGreen,
-    accent: PICO8_SECRET.darkPeach,
+    id: "midnight",
+    name: "Midnight",
+    bg: PICO8_SECRET.darkerBlue,
+    bg2: PICO8.darkBlue,
+    accent: PICO8.blue,
   },
   {
-    id: "plum",
-    name: "Plum",
+    id: "slate",
+    name: "Slate",
     bg: PICO8_SECRET.darkerGrey,
-    bg2: PICO8_SECRET.mauve,
-    accent: PICO8_SECRET.peach,
+    bg2: PICO8_SECRET.blueGreen,
+    accent: PICO8_SECRET.darkOrange,
   },
   {
-    id: "dusk",
-    name: "Dusk",
-    bg: PICO8_SECRET.darkerPurple,
-    bg2: PICO8_SECRET.darkBrown,
-    accent: PICO8_SECRET.darkOrange,
+    id: "synth",
+    name: "Synth",
+    bg: PICO8_SECRET.darkerBlue,
+    bg2: PICO8_SECRET.darkerPurple,
+    accent: PICO8.pink,
   },
 ];
 

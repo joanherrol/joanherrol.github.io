@@ -7,12 +7,15 @@ export function Section({
   id,
   tone,
   edge = true,
+  fill = false,
   className = "",
   children,
 }: Readonly<{
   id: string;
   tone: Tone;
   edge?: boolean;
+  /** Lets children split the section height with flex-1 spacers. */
+  fill?: boolean;
   className?: string;
   children: ReactNode;
 }>) {
@@ -21,7 +24,11 @@ export function Section({
       id={id}
       className={`tone-${tone} section-paper relative flex min-h-screen-band flex-col justify-center py-(--section-py) px-(--lane) ${edge ? "pixel-edge" : ""} ${className}`}
     >
-      <div className="relative mx-auto w-full max-w-6xl">{children}</div>
+      <div
+        className={`relative mx-auto w-full max-w-6xl ${fill ? "flex flex-1 flex-col" : ""}`}
+      >
+        {children}
+      </div>
     </section>
   );
 }
@@ -94,7 +101,7 @@ export const dropdown = {
     "pixel-box pointer-events-auto flex h-[round(44px,var(--text-px))] cursor-pointer items-center border-(length:--text-px) border-black bg-paper pixel-shadow-2 transition-[translate,box-shadow] duration-100 hover:pixel-lift-1 hover:pixel-shadow-3",
   panel:
     "pixel-box pointer-events-auto mt-3 border-(length:--text-px) border-black bg-paper pixel-shadow-3",
-  item: "flex w-full cursor-pointer items-center gap-3 whitespace-nowrap px-3 py-2 text-left text-body uppercase tracking-[0.125em] hover:bg-pico-accent hover:text-cream",
+  item: "flex w-full cursor-pointer items-center gap-3 whitespace-nowrap px-3 py-2 text-left text-body uppercase leading-none tracking-[0.125em] hover:bg-pico-accent hover:text-cream",
 };
 
 const LIGHTS = ["bg-[#ff004d]", "bg-[#ffec27]", "bg-[#00e436]"];

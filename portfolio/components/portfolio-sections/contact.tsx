@@ -40,7 +40,8 @@ export function Contact() {
   ];
 
   return (
-    <Section id="contact" tone="dark" className="text-center">
+    <Section id="contact" tone="dark" fill className="pb-(--band) text-center">
+      <div className="flex-1" />
       <div className="flex flex-col items-center">
         <SectionTitle>
           {copy.contact.titleStart}
@@ -87,13 +88,15 @@ export function Contact() {
             </li>
           ))}
         </ul>
+
+        <p className="mt-(--gap-md) text-body uppercase tracking-[0.125em] opacity-70">
+          © {new Date().getFullYear()} Joan Hervás Roldán
+        </p>
       </div>
 
-      <footer className="mt-(--gap-lg) flex flex-col items-center gap-18 text-body uppercase tracking-[0.125em]">
-        <span className="opacity-70">
-          © {new Date().getFullYear()} Joan Hervás Roldán
-        </span>
-        <a href="#home" className="text-large tracking-normal hover:text-pop">
+      {/* Centred above the characters, which stand at the bottom. */}
+      <footer className="flex flex-1 items-center justify-center pt-(--gap-md) pb-[calc(max(var(--companion-scale),4)*11px+12px)] uppercase">
+        <a href="#home" className="text-large hover:text-pop">
           <span aria-live="polite">
             <ContinuePrompt />
           </span>
