@@ -43,7 +43,7 @@ export function About() {
               src="/imgs/portrait.jpg"
               alt="Joan Hervás"
               fill
-              sizes="320px"
+              sizes="(min-width: 640px) 250px, 45vw"
               className="object-cover object-[center_25%]"
             />
           </div>

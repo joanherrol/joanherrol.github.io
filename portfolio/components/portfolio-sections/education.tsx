@@ -51,7 +51,7 @@ export function Education() {
                 src={e.logo}
                 alt={e.institution}
                 fill
-                sizes="80px"
+                sizes="(min-width: 640px) 80px, 48px"
                 className="object-contain p-1"
               />
             </div>
@@ -66,7 +66,7 @@ export function Education() {
               <span className="text-body">{e.period}</span>
               {e.gpa && (
                 <span className="card-accent flex items-center gap-2 px-2 py-1 text-body uppercase">
-                  <PixelIcon name="star" size="text" />
+                  <PixelIcon name="star" />
                   {e.gpa}
                 </span>
               )}

@@ -13,7 +13,7 @@ const display = Press_Start_2P({
 const body = Tiny5({
   variable: "--font-body",
   weight: "400",
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {

@@ -84,7 +84,7 @@ export function PixelButton({
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
     >
       {children}
-      {icon && <PixelIcon name={icon} size="text" />}
+      {icon && <PixelIcon name={icon} />}
     </a>
   );
 }

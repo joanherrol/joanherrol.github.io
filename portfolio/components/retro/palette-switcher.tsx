@@ -94,7 +94,6 @@ export function PaletteSwitcher() {
                   {p.name}
                   <PixelIcon
                     name="check"
-                    size="text"
                     className={`ml-auto ${p.id === current.id ? "" : "invisible"}`}
                   />
                 </button>

@@ -54,7 +54,7 @@ export function Contact() {
           {details.map((d) => (
             <li key={d.label} className="min-w-0">
               <a href={d.href} className={`${CARD} gap-4 px-4 py-3 text-body`}>
-                <PixelIcon name={d.icon} size="text" />
+                <PixelIcon name={d.icon} />
                 <span className="min-w-0">
                   <span className="block truncate text-body uppercase tracking-[0.125em]">
                     {d.label}
@@ -81,7 +81,7 @@ export function Contact() {
                 aria-label={social.label}
                 className={`${CARD} h-[48px] w-[48px] justify-center gap-3 sm:w-auto sm:px-4 text-body`}
               >
-                <PixelIcon name={social.icon} size="text" />
+                <PixelIcon name={social.icon} />
                 <span className="hidden sm:inline">{social.label}</span>
               </a>
             </li>

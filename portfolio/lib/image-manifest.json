@@ -1,0 +1,26 @@
+{
+  "/imgs/ShootEmUp.png": {
+    "base": "/imgs/opt/ShootEmUp",
+    "widths": [315]
+  },
+  "/imgs/PugAdventure.png": {
+    "base": "/imgs/opt/PugAdventure",
+    "widths": [315]
+  },
+  "/imgs/portrait.jpg": {
+    "base": "/imgs/opt/portrait",
+    "widths": [96, 160, 240, 320, 480, 640, 720]
+  },
+  "/imgs/Incheon_National_University.png": {
+    "base": "/imgs/opt/Incheon_National_University",
+    "widths": [96, 160]
+  },
+  "/imgs/fib-upc-logo.png": {
+    "base": "/imgs/opt/fib-upc-logo",
+    "widths": [96, 160, 240, 250]
+  },
+  "/imgs/monlau-esobat-cat.png": {
+    "base": "/imgs/opt/monlau-esobat-cat",
+    "widths": [96, 160]
+  }
+}
