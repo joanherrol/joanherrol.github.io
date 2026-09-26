@@ -1,11 +1,7 @@
 import { copy } from "@/lib/copy";
 import { PixelIcon, type PixelIconName } from "@/components/retro/pixel-icon";
 import { ContinuePrompt } from "@/components/retro/continue-prompt";
-import {
-  Mark,
-  Section,
-  SectionTitle,
-} from "@/components/retro/ui";
+import { Mark, Section, SectionTitle } from "@/components/retro/ui";
 
 const EMAIL = "joanherrol@gmail.com";
 
@@ -95,10 +91,7 @@ export function Contact() {
         <span className="opacity-70">
           © {new Date().getFullYear()} Joan Hervás Roldán
         </span>
-        <a
-          href="#home"
-          className="text-large tracking-normal hover:text-pop"
-        >
+        <a href="#home" className="text-large tracking-normal hover:text-pop">
           <span aria-live="polite">
             <ContinuePrompt />
           </span>

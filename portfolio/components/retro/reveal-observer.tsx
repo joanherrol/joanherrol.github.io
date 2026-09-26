@@ -24,13 +24,24 @@ export function RevealObserver() {
       { threshold: [0, 0.1] },
     );
 
-    document
-      .querySelectorAll<HTMLElement>("[data-reveal]")
-      .forEach((el) => observer.observe(el));
+    const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
+    elements.forEach((el) => observer.observe(el));
     root.dataset.reveal = "on";
+
+    // Zooming can move blocks into view without an observer callback.
+    const onResize = () => {
+      for (const el of elements) {
+        const r = el.getBoundingClientRect();
+        if (r.bottom > 0 && r.top < window.innerHeight) {
+          el.classList.add("is-revealed");
+        }
+      }
+    };
+    window.addEventListener("resize", onResize);
 
     return () => {
       observer.disconnect();
+      window.removeEventListener("resize", onResize);
       delete root.dataset.reveal;
     };
   }, []);

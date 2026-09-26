@@ -40,7 +40,16 @@
   --n: calc(var(--u) * -1);
   --nn: calc(var(--u) * -2);
   --uu: calc(var(--u) * 2);
+  --h: calc(var(--u) / 2);
+  --nh: calc(var(--u) / -2);
+  /* Black half-steps, around the shadow copy one pixel down and left. */
+  --bl: calc(var(--n) + var(--nh));
+  --br: calc(var(--n) + var(--h));
+  --bt: calc(var(--u) + var(--nh));
+  --bb: calc(var(--u) + var(--h));
   color: var(--pico-white);
+  /* Half-step copies sit inside the outline and cover the hairline seams
+     that fractional zoom leaves between pixel squares. */
   text-shadow:
     var(--u) 0 var(--pico-accent),
     var(--n) 0 var(--pico-accent),
@@ -50,6 +59,14 @@
     var(--u) var(--n) var(--pico-accent),
     var(--n) var(--u) var(--pico-accent),
     var(--n) var(--n) var(--pico-accent),
+    var(--h) 0 var(--pico-accent),
+    var(--nh) 0 var(--pico-accent),
+    0 var(--h) var(--pico-accent),
+    0 var(--nh) var(--pico-accent),
+    var(--h) var(--h) var(--pico-accent),
+    var(--h) var(--nh) var(--pico-accent),
+    var(--nh) var(--h) var(--pico-accent),
+    var(--nh) var(--nh) var(--pico-accent),
     var(--n) var(--u) var(--pico-black),
     0 var(--u) var(--pico-black),
     var(--nn) var(--u) var(--pico-black),
@@ -57,7 +74,15 @@
     0 var(--uu) var(--pico-black),
     var(--nn) var(--uu) var(--pico-black),
     var(--n) 0 var(--pico-black),
-    var(--nn) 0 var(--pico-black);
+    var(--nn) 0 var(--pico-black),
+    var(--bl) var(--u) var(--pico-black),
+    var(--br) var(--u) var(--pico-black),
+    var(--n) var(--bt) var(--pico-black),
+    var(--n) var(--bb) var(--pico-black),
+    var(--bl) var(--bt) var(--pico-black),
+    var(--bl) var(--bb) var(--pico-black),
+    var(--br) var(--bt) var(--pico-black),
+    var(--br) var(--bb) var(--pico-black);
 }
 
 @layer components {

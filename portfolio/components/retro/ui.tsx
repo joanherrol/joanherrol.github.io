@@ -105,7 +105,7 @@ export function TitleBar({ title }: { title: string }) {
       {LIGHTS.map((bg) => (
         <span
           key={bg}
-          className={`h-[12px] w-[12px] border-2 border-black ${bg}`}
+          className={`h-[16px] w-[16px] border-[3px] border-black sm:h-[20px] sm:w-[20px] ${bg}`}
           aria-hidden="true"
         />
       ))}
