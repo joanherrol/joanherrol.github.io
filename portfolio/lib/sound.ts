@@ -34,9 +34,10 @@ const SOUNDS = {
   spawn: { file: "Spawn", level: -40 },
   slide: { file: "Dash", level: -40, jitter: 0.1 },
   spark: { file: "Slam", level: -40, rate: 7.1, jitter: 0.015 },
-  ui: { file: "MenuSelect", level: -38 },
+  open: { file: "MenuSelect", level: -38, jitter: 0 },
+  confirm: { file: "MenuSelect", level: -38, rate: 1.3, jitter: 0 },
   start: { file: "Start", level: -36, jitter: 0 },
-  coin: { file: "CoinPickUp", level: -38 },
+  coin: { file: "CoinPickUp", level: -38, jitter: 0 },
 } satisfies Record<string, Sound>;
 
 type SoundName = keyof typeof SOUNDS;

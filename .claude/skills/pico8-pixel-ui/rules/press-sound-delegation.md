@@ -19,7 +19,7 @@ Every pressable plays a sound. Elements declare which one with `data-sound`, and
 **Correct:**
 
 ```tsx
-<a href="/cv.pdf" download data-sound="ui" className={buttonClasses}>CV</a>
+<a href="/cv.pdf" download="Joan_Hervas_CV.pdf" data-sound="confirm" className={buttonClasses}>CV</a>
 <a href="#about" data-sound="start">Press start</a>
 ```
 
@@ -37,4 +37,11 @@ export function listenForSoundClicks() {
 }
 ```
 
-Normalise every file to its measured loudness (`gain = 10 ** ((level - LOUDNESS[file]) / 20)`), keep levels subtle (around −40 dB), and jitter the playback rate ±6% so repeated shots don't drone. Pitch enemy shots higher than the player's (rate 1.6 against 0.85).
+UI sounds never vary in pitch: one fixed pitch for opening (menus, toggles) and a higher one for confirming (buttons, links, menu choices), with `jitter: 0`:
+
+```ts
+open: { file: "MenuSelect", level: -38, jitter: 0 },
+confirm: { file: "MenuSelect", level: -38, rate: 1.3, jitter: 0 },
+```
+
+Normalise every file to its measured loudness (`gain = 10 ** ((level - LOUDNESS[file]) / 20)`), keep levels subtle (around −40 dB), and jitter only game sounds' playback rate (±6%) so repeated shots don't drone. Pitch enemy shots higher than the player's (rate 1.6 against 0.85).

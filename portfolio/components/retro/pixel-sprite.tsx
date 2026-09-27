@@ -19,6 +19,8 @@ type PixelSpriteProps = {
   startFrame?: number;
   flipX?: boolean;
   tint?: string;
+  /** Tint only pixels of this colour (hex), e.g. a hand on a gun. */
+  tintOnly?: string;
   fps?: number;
   label?: string;
   className?: string;
@@ -50,6 +52,28 @@ function loadImage(src: string) {
   return promise;
 }
 
+function rgb(hex: string) {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return [n >> 16, (n >> 8) & 255, n & 255];
+}
+
+// Swaps one colour for another, as PICO-8 palette swaps do.
+function recolour(ctx: CanvasRenderingContext2D, from: string, to: string) {
+  const { width, height } = ctx.canvas;
+  const image = ctx.getImageData(0, 0, width, height);
+  const d = image.data;
+  const [r, g, b] = rgb(from);
+  const [nr, ng, nb] = rgb(to);
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i + 3] < 128 || d[i] !== r || d[i + 1] !== g || d[i + 2] !== b)
+      continue;
+    d[i] = nr;
+    d[i + 1] = ng;
+    d[i + 2] = nb;
+  }
+  ctx.putImageData(image, 0, 0);
+}
+
 export function preloadSprites(sheets: SpriteSheet[]) {
   for (const { src } of sheets) loadImage(src).catch(() => {});
 }
@@ -69,6 +93,7 @@ export function PixelSprite({
   startFrame = 0,
   flipX = false,
   tint,
+  tintOnly,
   fps,
   label,
   className,
@@ -130,7 +155,9 @@ export function PixelSprite({
         w * blockSize,
         h * blockSize,
       );
-      if (tintRef.current) {
+      if (tintRef.current && tintOnly) {
+        recolour(ctx, tintOnly, tintRef.current);
+      } else if (tintRef.current) {
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.globalCompositeOperation = "source-atop";
         ctx.fillStyle = tintRef.current;
@@ -206,7 +233,7 @@ export function PixelSprite({
       window.removeEventListener("resize", onResize);
       redrawRef.current = () => {};
     };
-  }, [src, w, h, frames, rate, scale, playing, loop, startFrame]);
+  }, [src, w, h, frames, rate, scale, playing, loop, startFrame, tintOnly]);
 
   return (
     <>

@@ -73,7 +73,7 @@ export function PaletteSwitcher() {
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          data-sound="ui"
+          data-sound="open"
           aria-expanded={open}
           aria-label={`${copy.menu.palette}: ${current.name}`}
           className={`${dropdown.trigger} px-4 text-body`}
@@ -92,7 +92,7 @@ export function PaletteSwitcher() {
                   <button
                     type="button"
                     onClick={() => choose(p)}
-                    data-sound="ui"
+                    data-sound="confirm"
                     aria-pressed={p.id === current.id}
                     className={`group ${dropdown.item}`}
                   >

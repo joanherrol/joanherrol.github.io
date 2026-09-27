@@ -104,7 +104,7 @@ A strict design system for flat pixel-art UIs that match PICO-8-style game chara
 ### 8. Combat: Bullets, Collisions, Effects (MEDIUM-HIGH)
 
 - `combat-bullet-layers` - Bullets move in the game loop, never past a hit; shadow, bullet and lane-clipped layers
-- `combat-covers-not-shadows` - Cards, frames, title lines and character sprites stop bullets; shadows never do
+- `combat-covers-not-shadows` - Cards, frames, title lines and character bodies stop bullets; guns and shadows never do
 - `combat-hitboxes` - Rectangles swept over the shot and the scroll; the nearest hit wins, flush for one frame, then gone
 
 ### 9. Performance (MEDIUM)

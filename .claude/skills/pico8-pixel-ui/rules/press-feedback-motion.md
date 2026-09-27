@@ -39,6 +39,19 @@ const flashHurt = (flashes: number[]) => {
   ]);
 };
 flashHurt([0, 140]);
+
+// Hand only: swap one exact colour.
+function recolour(ctx: CanvasRenderingContext2D, from: string, to: string) {
+  const image = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+  const d = image.data;
+  const [r, g, b] = rgb(from);
+  const [nr, ng, nb] = rgb(to);
+  for (let i = 0; i < d.length; i += 4)
+    if (d[i + 3] >= 128 && d[i] === r && d[i + 1] === g && d[i + 2] === b) {
+      d[i] = nr; d[i + 1] = ng; d[i + 2] = nb;
+    }
+  ctx.putImageData(image, 0, 0);
+}
 ```
 
 ```css
@@ -58,4 +71,4 @@ flashHurt([0, 140]);
 @keyframes blink { 50% { opacity: 0; } }
 ```
 
-Tint the body and gun, never the ground shadows. A redraw on tint change must not restart the frame clock: keep tint in a ref and call a stored `redraw()`.
+Tint the body whole. On a held item, tint only the hand: swap that one colour, the way PICO-8 palette swaps work. Never tint the metal or the ground shadows. A redraw on tint change must not restart the frame clock: keep tint in a ref and call a stored `redraw()`.

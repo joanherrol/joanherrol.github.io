@@ -24,7 +24,7 @@ export function SoundToggle() {
     <button
       type="button"
       onClick={() => setSoundEnabled(!on)}
-      data-sound="ui"
+      data-sound="confirm"
       aria-pressed={on}
       aria-label={copy.menu.sound}
       className={`${dropdown.trigger} px-6 text-body`}

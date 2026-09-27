@@ -87,14 +87,14 @@ export function PixelButton({
   children: ReactNode;
   icon?: PixelIconName;
   external?: boolean;
-  download?: boolean;
+  download?: string;
 }>) {
   return (
     <a
       href={href}
       className={buttonClasses}
-      data-sound="ui"
-      download={download || undefined}
+      data-sound="confirm"
+      download={download}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
     >
       {children}

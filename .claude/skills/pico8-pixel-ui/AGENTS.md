@@ -1145,6 +1145,19 @@ const flashHurt = (flashes: number[]) => {
   ]);
 };
 flashHurt([0, 140]);
+
+// Hand only: swap one exact colour.
+function recolour(ctx: CanvasRenderingContext2D, from: string, to: string) {
+  const image = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+  const d = image.data;
+  const [r, g, b] = rgb(from);
+  const [nr, ng, nb] = rgb(to);
+  for (let i = 0; i < d.length; i += 4)
+    if (d[i + 3] >= 128 && d[i] === r && d[i + 1] === g && d[i + 2] === b) {
+      d[i] = nr; d[i + 1] = ng; d[i + 2] = nb;
+    }
+  ctx.putImageData(image, 0, 0);
+}
 ```
 
 ```css
@@ -1164,7 +1177,7 @@ flashHurt([0, 140]);
 @keyframes blink { 50% { opacity: 0; } }
 ```
 
-Tint the body and gun, never the ground shadows. A redraw on tint change must not restart the frame clock: keep tint in a ref and call a stored `redraw()`.
+Tint the body whole. On a held item, tint only the hand: swap that one colour, the way PICO-8 palette swaps work. Never tint the metal or the ground shadows. A redraw on tint change must not restart the frame clock: keep tint in a ref and call a stored `redraw()`.
 
 ### 5.6 Declare Click Sounds With data-sound, One Listener
 
@@ -1182,7 +1195,7 @@ Every pressable plays a sound. Elements declare which one with `data-sound`, and
 **Correct:**
 
 ```tsx
-<a href="/cv.pdf" download data-sound="ui" className={buttonClasses}>CV</a>
+<a href="/cv.pdf" download="Joan_Hervas_CV.pdf" data-sound="confirm" className={buttonClasses}>CV</a>
 <a href="#about" data-sound="start">Press start</a>
 ```
 
@@ -1200,7 +1213,14 @@ export function listenForSoundClicks() {
 }
 ```
 
-Normalise every file to its measured loudness (`gain = 10 ** ((level - LOUDNESS[file]) / 20)`), keep levels subtle (around −40 dB), and jitter the playback rate ±6% so repeated shots don't drone. Pitch enemy shots higher than the player's (rate 1.6 against 0.85).
+UI sounds never vary in pitch: one fixed pitch for opening (menus, toggles) and a higher one for confirming (buttons, links, menu choices), with `jitter: 0`:
+
+```ts
+open: { file: "MenuSelect", level: -38, jitter: 0 },
+confirm: { file: "MenuSelect", level: -38, rate: 1.3, jitter: 0 },
+```
+
+Normalise every file to its measured loudness (`gain = 10 ** ((level - LOUDNESS[file]) / 20)`), keep levels subtle (around −40 dB), and jitter only game sounds' playback rate (±6%) so repeated shots don't drone. Pitch enemy shots higher than the player's (rate 1.6 against 0.85).
 
 ---
 
@@ -1346,7 +1366,7 @@ Export PNGs at 1× art size and let the renderer scale. Ship pixel art as lossle
 
 **Impact: HIGH (correct depth order, facing and hit masks for multi-part characters)**
 
-Stack each part as its own absolutely positioned canvas, bottom to top: gun shadow, body shadow, body, gun. Offsets are in art pixels times `scale`, with separate left and right values per facing. Flip with the canvas transform (`flipX`), not CSS `scaleX(-1)`, so the bitmap and its box stay in step. Mark collidable canvases with `sprite-solid`, and tint only those.
+Stack each part as its own absolutely positioned canvas, bottom to top: gun shadow, body shadow, body, gun. Offsets are in art pixels times `scale`, with separate left and right values per facing. Flip with the canvas transform (`flipX`), not CSS `scaleX(-1)`, so the bitmap and its box stay in step. Only the body is the character: mark it `sprite-solid` (its hitbox) and tint only it. The gun is not hit, and only its hand pixels flash (`tintOnly`); the shadows do neither.
 
 **Correct:**
 
@@ -1368,8 +1388,8 @@ const side = flipX ? "right" : "left";
   <PixelSprite sheet={BODY[animation]} scale={scale} flipX={flipX} tint={tint}
     className="sprite-solid absolute left-0 top-0" />
   {weapon && (
-    <PixelSprite sheet={shooting ? GUN_SHOOT : GUN_IDLE} loop={false} scale={scale} flipX={flipX} tint={tint}
-      className="sprite-solid absolute" style={{ left: GUN[side] * scale, top: GUN.top * scale }} />
+    <PixelSprite sheet={shooting ? GUN_SHOOT : GUN_IDLE} loop={false} scale={scale} flipX={flipX}
+      tint={tint} tintOnly="#ffccaa" className="absolute" style={{ left: GUN[side] * scale, top: GUN.top * scale }} />
   )}
 </div>
 ```
@@ -1619,7 +1639,7 @@ Every copy carries `data-shot={id}` so one write moves them all.
 
 **Impact: HIGH (bullets hit what reads as solid and fly over shadows)**
 
-Bullets stop at cards and buttons, image frames, the text lines of titles (a marked word's accent ring included), and the body and gun sprites of the target character. Shadows, `.drop-copy` text and empty space never stop them. Use plain rectangles: `getBoundingClientRect()` for elements (a tilted frame's rect is close enough), and one `Range.getClientRects()` rect per line of title text. Read covers fresh each frame, only for what is on screen.
+Bullets stop at cards and buttons, image frames, the text lines of titles (a marked word's accent ring included), and the body sprite of the target character (not its gun). Shadows, `.drop-copy` text and empty space never stop them. Use plain rectangles: `getBoundingClientRect()` for elements (a tilted frame's rect is close enough), and one `Range.getClientRects()` rect per line of title text. Read covers fresh each frame, only for what is on screen.
 
 **Incorrect (the whole heading block, including the empty space beside short titles):**
 
@@ -1651,7 +1671,7 @@ export function spriteRects(track: HTMLElement | null): Rect[] {
 }
 ```
 
-Only the body and gun canvases carry `sprite-solid`; shadow canvases never collide.
+Only the body canvas carries `sprite-solid`; the gun and shadow canvases never collide.
 
 ### 8.3 Simple Swept Hitboxes; the Bullet Disappears on the First Hit
 

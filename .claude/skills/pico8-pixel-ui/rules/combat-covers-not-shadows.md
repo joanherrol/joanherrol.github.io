@@ -7,7 +7,7 @@ tags: combat, collision, covers, dom
 
 ## Only Solid Things Stop Bullets, Never Shadows
 
-Bullets stop at cards and buttons, image frames, the text lines of titles (a marked word's accent ring included), and the body and gun sprites of the target character. Shadows, `.drop-copy` text and empty space never stop them. Use plain rectangles: `getBoundingClientRect()` for elements (a tilted frame's rect is close enough), and one `Range.getClientRects()` rect per line of title text. Read covers fresh each frame, only for what is on screen.
+Bullets stop at cards and buttons, image frames, the text lines of titles (a marked word's accent ring included), and the body sprite of the target character (not its gun). Shadows, `.drop-copy` text and empty space never stop them. Use plain rectangles: `getBoundingClientRect()` for elements (a tilted frame's rect is close enough), and one `Range.getClientRects()` rect per line of title text. Read covers fresh each frame, only for what is on screen.
 
 **Incorrect (the whole heading block, including the empty space beside short titles):**
 
@@ -39,4 +39,4 @@ export function spriteRects(track: HTMLElement | null): Rect[] {
 }
 ```
 
-Only the body and gun canvases carry `sprite-solid`; shadow canvases never collide.
+Only the body canvas carries `sprite-solid`; the gun and shadow canvases never collide.

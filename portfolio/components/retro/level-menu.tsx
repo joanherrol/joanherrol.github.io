@@ -48,7 +48,7 @@ export function LevelMenu({ levels }: Readonly<{ levels: Level[] }>) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        data-sound="ui"
+        data-sound="open"
         aria-expanded={open}
         className={`${dropdown.trigger} gap-6 px-6 text-body uppercase tracking-[0.125em]`}
       >

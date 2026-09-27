@@ -9,7 +9,7 @@ import {
   SectionTitle,
 } from "@/components/retro/ui";
 
-const CV_HREF = "/docs/CV_JoanHervas_English.pdf";
+const CV_HREF = "/docs/Joan_Hervas_CV.pdf";
 
 export function About() {
   return (
@@ -28,7 +28,11 @@ export function About() {
           </p>
 
           <div data-reveal className="mt-(--gap-md) flex">
-            <PixelButton href={CV_HREF} download icon="download">
+            <PixelButton
+              href={CV_HREF}
+              download="Joan_Hervas_CV.pdf"
+              icon="download"
+            >
               {copy.about.downloadCV}
             </PixelButton>
           </div>

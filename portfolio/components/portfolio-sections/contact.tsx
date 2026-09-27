@@ -56,7 +56,7 @@ export function Contact() {
             <li key={d.label} className="min-w-0">
               <a
                 href={d.href}
-                data-sound="ui"
+                data-sound="confirm"
                 className={`${CARD} gap-8 px-8 py-6 text-body`}
               >
                 <PixelIcon name={d.icon} />
@@ -84,7 +84,7 @@ export function Contact() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={social.label}
-                data-sound="ui"
+                data-sound="confirm"
                 className={`${CARD} size-[round(up,48px,var(--ipx))] justify-center gap-6 text-body min-[40rem]:w-auto min-[40rem]:px-8`}
               >
                 <PixelIcon name={social.icon} />

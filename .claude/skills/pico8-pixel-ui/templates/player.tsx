@@ -63,6 +63,7 @@ export function preloadPlayerSprites() {
 }
 
 const HURT_TINT = "#ff004d";
+const HAND = "#ffccaa";
 
 const SHOOT_MS = 250;
 export const BULLET_MS = 1000;
@@ -152,7 +153,8 @@ export function Player({
             scale={scale}
             flipX={flipX}
             tint={tint}
-            className="sprite-solid absolute"
+            tintOnly={HAND}
+            className="absolute"
             style={{ left: GUN[side] * scale, top: GUN.top * scale }}
           />
         )}
