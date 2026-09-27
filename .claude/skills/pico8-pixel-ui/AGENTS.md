@@ -10,7 +10,7 @@
 
 ## Abstract
 
-A strict design system for flat pixel-art web UIs that sit alongside PICO-8-style game characters, plus the techniques for animating those characters, their shadows, shots and collisions on a web page. It holds 46 rules across 10 categories, ordered by impact from critical (the pixel grid, colour, shadows and layers) to supporting (performance and tooling). Each rule explains why it matters and shows incorrect and correct code. The reference implementation is a Next.js 16, React 19 and Tailwind CSS v4 portfolio; `templates/` holds its core files.
+A strict design system for flat pixel-art web UIs that sit alongside PICO-8-style game characters, plus the techniques for animating those characters, their shadows, shots and collisions on a web page. It holds 44 rules across 10 categories, ordered by impact from critical (the pixel grid, colour, shadows and layers) to supporting (performance and tooling). Each rule explains why it matters and shows incorrect and correct code. The reference implementation is a Next.js 16, React 19 and Tailwind CSS v4 portfolio; `templates/` holds its core files.
 
 ---
 
@@ -61,13 +61,11 @@ A strict design system for flat pixel-art web UIs that sit alongside PICO-8-styl
 8. [Combat: Bullets, Collisions, Effects](#8-combat-bullets-collisions-effects) — **MEDIUM-HIGH**
    - 8.1 [Bullets Move on CSS in Fixed Screen Layers](#81-bullets-move-on-css-in-fixed-screen-layers)
    - 8.2 [Only Solid Things Stop Bullets, Never Shadows](#82-only-solid-things-stop-bullets-never-shadows)
-   - 8.3 [Sweep Each Bullet's Move Against Where Covers Were](#83-sweep-each-bullets-move-against-where-covers-were)
-   - 8.4 [Hit Characters at Their First Coloured Pixel](#84-hit-characters-at-their-first-coloured-pixel)
-   - 8.5 [Stop Bullets Flush on the Face, Then Spark Perpendicular](#85-stop-bullets-flush-on-the-face-then-spark-perpendicular)
+   - 8.3 [Simple Swept Hitboxes; the Bullet Disappears on the First Hit](#83-simple-swept-hitboxes-the-bullet-disappears-on-the-first-hit)
 9. [Performance](#9-performance) — **MEDIUM**
    - 9.1 [Fixed-Step Sprite Clock That Sleeps Between Frames](#91-fixedstep-sprite-clock-that-sleeps-between-frames)
    - 9.2 [Run Game Loops Only While Something Moves](#92-run-game-loops-only-while-something-moves)
-   - 9.3 [Cache Pixel and Text Measurements](#93-cache-pixel-and-text-measurements)
+   - 9.3 [Decode Sprite Images Once and Preload Them](#93-decode-sprite-images-once-and-preload-them)
    - 9.4 [Drive Scroll-Linked Motion on the Compositor, in Whole-Pixel Steps](#94-drive-scrolllinked-motion-on-the-compositor-in-wholepixel-steps)
 10. [Tooling](#10-tooling) — **LOW-MEDIUM**
    - 10.1 [A Dev-Only Design Sheet With a Live Token Tuner](#101-a-devonly-design-sheet-with-a-live-token-tuner)
@@ -1109,7 +1107,7 @@ figure { animation: bob 2s infinite alternate; filter: drop-shadow(6px 6px 0 bla
 <ConsoleFrame title="P1" tilt={1} delay={1.5}>…</ConsoleFrame>
 ```
 
-Collisions treat a tilted frame as an oriented box read from its computed `rotate` (see `combat-covers-not-shadows`).
+Collisions use the frame's bounding rect, tilt included (see `combat-covers-not-shadows`).
 
 ### 5.5 Reveals, Hurt Flashes and Reduced Motion
 
@@ -1348,7 +1346,7 @@ Export PNGs at 1× art size and let the renderer scale. Ship pixel art as lossle
 
 **Impact: HIGH (correct depth order, facing and hit masks for multi-part characters)**
 
-Stack each part as its own absolutely positioned canvas, bottom to top: gun shadow, body shadow, body, gun. Offsets are in art pixels times `scale`, with separate left and right values per facing. Flip with the canvas transform (`flipX`), not CSS `scaleX(-1)`, so the collision masks know about it. Mark collidable canvases with `sprite-solid`, and tint only those.
+Stack each part as its own absolutely positioned canvas, bottom to top: gun shadow, body shadow, body, gun. Offsets are in art pixels times `scale`, with separate left and right values per facing. Flip with the canvas transform (`flipX`), not CSS `scaleX(-1)`, so the bitmap and its box stay in step. Mark collidable canvases with `sprite-solid`, and tint only those.
 
 **Correct:**
 
@@ -1579,7 +1577,7 @@ Update the state ref synchronously (`enemyRef.current = next`) before `setState`
 
 **Impact: MEDIUM-HIGH**
 
-Bullets move on CSS, collide against solid things only (never shadows), stop flush on the face they reach and spark off it.
+Bullets move on CSS, collide with plain hitboxes of solid things (never shadows) and disappear on the first hit.
 
 ### 8.1 Bullets Move on CSS in Fixed Screen Layers
 
@@ -1612,167 +1610,89 @@ Snap spawn positions with `devicePx()`. Every copy carries `data-shot={id}` so `
 
 ### 8.2 Only Solid Things Stop Bullets, Never Shadows
 
-**Impact: HIGH (bullets hit what the eye reads as solid, and fly over shadows and gaps)**
+**Impact: HIGH (bullets hit what reads as solid and fly over shadows)**
 
-Bullets stop at:
+Bullets stop at cards and buttons, image frames, the text lines of titles, and the body and gun sprites of the target character. Shadows, `.drop-copy` text and empty space never stop them. Use plain rectangles: `getBoundingClientRect()` for elements (a tilted frame's rect is close enough), and one `Range.getClientRects()` rect per line of title text. Read covers fresh each frame, only for what is on screen.
 
-- cards and buttons (their border box);
-- image frames, as oriented boxes using their computed `rotate` and untransformed size;
-- the ink of title words, not the line box or the gaps between words;
-- the coloured pixels of sprites.
-
-Shadows, `.drop-copy` text and empty space never stop them. Read covers fresh each frame, only for elements on screen.
-
-**Incorrect (whole heading boxes and bounding rects of tilted frames):**
+**Incorrect (the whole heading block, including the empty space beside short titles):**
 
 ```ts
-document.querySelectorAll("h2, figure").forEach((el) => covers.push(el.getBoundingClientRect()));
+document.querySelectorAll("h2").forEach((h) => covers.push(h.getBoundingClientRect()));
 ```
 
 **Correct:**
 
 ```ts
-export type Cover = { key: string; cx: number; cy: number; hw: number; hh: number; cos: number; sin: number };
+const COVERS = "main .card-cream, main .card-accent, main .float-body";
 
-// Tilted frame: centre from the rect, half extents from the untransformed box.
-const angle = ((Number.parseFloat(getComputedStyle(el).rotate) || 0) * Math.PI) / 180;
-covers.push({
-  key: `f${i}`, cx: r.left + r.width / 2, cy: r.top + r.height / 2,
-  hw: el.offsetWidth / 2, hh: el.offsetHeight / 2, cos: Math.cos(angle), sin: Math.sin(angle),
-});
-
-// Title words: a Range per word, trimmed to its ink with canvas measureText.
-function ink(font: string, word: string) {
-  const m = ctx.measureText(word); // ctx.font = font
-  return {
-    left: -m.actualBoundingBoxLeft,
-    right: m.actualBoundingBoxRight,
-    top: m.fontBoundingBoxAscent - m.actualBoundingBoxAscent,
-    bottom: m.fontBoundingBoxAscent + m.actualBoundingBoxDescent,
-  };
-}
-// Skip the shadow copy; widen marked words by their ring (fontSize / 8); measure uppercased text if text-transform is uppercase.
-if (parent.closest(".drop-copy, button")) continue;
-```
-
-Cache ink metrics per font and word, but only once `document.fonts.status === "loaded"`. Before then the metrics belong to the fallback font.
-
-### 8.3 Sweep Each Bullet's Move Against Where Covers Were
-
-**Impact: HIGH (no tunnelling through thin covers, and scrolling into a bullet still counts)**
-
-A fast bullet can jump past a thin cover between frames. Treat its move from last frame's box to this frame's box as a segment, and intersect it (slab method) with each cover grown by the bullet's half size, in the cover's local axes. Measure the start point against the cover's previous position, so a page scrolled into a bullet registers. The earliest hit (`t` from 0 to 1) wins, whether it's a cover or a character.
-
-**Incorrect (overlap test at the current frame only):**
-
-```ts
-if (rectsOverlap(bullet.getBoundingClientRect(), cover)) hit();
-```
-
-**Correct:**
-
-```ts
-export function sweep(prev: Box, now: Box, cover: Cover, before: Cover | undefined, dir: number): Hit | null {
-  const r = now.size / 2;
-  const e = (now.size / 2) * (Math.abs(cover.cos) + Math.abs(cover.sin)); // bullet reach on tilted axes
-  const a = toLocal(prev.x + r, prev.y + r, before ?? cover);
-  const b = toLocal(now.x + r, now.y + r, cover);
-  const half = [cover.hw + e, cover.hh + e];
-  let enter = -Infinity, exit = Infinity, axis = -1, side = 0;
-  for (const k of [0, 1]) {
-    const ds = b[k] - a[k];
-    if (Math.abs(ds) < 1e-6) { if (Math.abs(a[k]) >= half[k]) return null; continue; }
-    const t0 = (-half[k] - a[k]) / ds, t1 = (half[k] - a[k]) / ds;
-    if (Math.min(t0, t1) > enter) { enter = Math.min(t0, t1); axis = k; side = ds > 0 ? -1 : 1; }
-    exit = Math.min(exit, Math.max(t0, t1));
-  }
-  if (enter >= exit || enter > 1 || exit <= 0) return null;
-  // …already inside: struck the face it flew at; else normal = local axis rotated to world
-}
-```
-
-```ts
-const tick = () => {
-  const covers = readCovers();
-  for (const shot of live.values()) advance(shot, covers, last, before);
-  before = new Map(covers.map((c) => [c.key, c]));
-  raf = requestAnimationFrame(tick);
-};
-```
-
-Read the bullet's real on-screen box (`getBoundingClientRect` of the CSS-animated element) rather than predicting it. The first frame's `prev` is the spawn point.
-
-### 8.4 Hit Characters at Their First Coloured Pixel
-
-**Impact: MEDIUM-HIGH (bullets pass through gaps between limbs and stop on the visible pixel)**
-
-Keep a registry of what each sprite canvas shows (image, frame, size, flip). For the rows a bullet crosses, find the leftmost and rightmost coloured column of that frame (alpha ≥ 128), converted to screen pixels. Cache the spans per image and frame key.
-
-**Incorrect (bounding box of the canvas):**
-
-```ts
-if (bullet.right >= canvas.getBoundingClientRect().left) hurt();
-```
-
-**Correct:**
-
-```ts
-const shown = new WeakMap<HTMLCanvasElement, { img: HTMLImageElement; frame: number; w: number; h: number; flip: boolean }>();
-// set in draw(): shown.set(canvas, { img, frame, w, h, flip });
-
-export function solidRows(canvas: HTMLCanvasElement) {
-  const s = shown.get(canvas);
-  if (!s) return null;
-  const key = `${s.frame} ${s.w} ${s.h} ${s.flip}`;
-  // cached per image: spans[y] = [firstX, lastX] | null, mirrored when flipped
-}
-
-export function strike(prev: Box, now: Box, dir: number, canvases: Iterable<HTMLCanvasElement>) {
-  const span = solidSpan(canvases, now.y, now.y + now.size); // across body + gun canvases
-  if (!span) return null;
-  const [left, right] = span;
-  const from = Math.min(prev.x, now.x), to = Math.max(prev.x, now.x) + now.size;
-  if (to <= left || from >= right) return null;
-  const x = dir > 0 ? left - now.size : right;
-  const move = now.x - prev.x;
-  return { t: move ? Math.min(1, Math.max(0, (x - prev.x) / move)) : 0, x };
-}
-```
-
-Only canvases marked `.sprite-solid` (body and gun) count; shadow canvases never do. Read the alpha once per image with `getContext("2d", { willReadFrequently: true })`.
-
-### 8.5 Stop Bullets Flush on the Face, Then Spark Perpendicular
-
-**Impact: MEDIUM (impacts look solid instead of overshooting or stopping short)**
-
-On the frame of impact, freeze every copy of the bullet (it may exist in several layers) at the x where it touches the face: stop its CSS animation and set its transform to the resting offset. If it hit a top or bottom face, hide it. Then emit sparks from the face along its normal, with random spread across it.
-
-**Correct:**
-
-```ts
-// Rests every copy of a bullet against what it struck, or hides it.
-function land(id: number, x: number | null) {
-  for (const el of document.querySelectorAll<HTMLElement>(`[data-shot="${id}"]`)) {
-    if (x === null) { el.style.visibility = "hidden"; continue; }
-    el.style.animation = "none";
-    el.style.transform = `translateX(${x - Number.parseFloat(el.style.left)}px)`;
+function titleLines(title: Element, rects: Rect[]) {
+  const range = document.createRange();
+  const walker = document.createTreeWalker(title, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (node.parentElement?.closest(".drop-copy, button")) continue;
+    range.selectNodeContents(node);
+    for (const r of range.getClientRects()) if (onScreen(r)) rects.push(r);
   }
 }
 
+export function spriteRects(track: HTMLElement | null): Rect[] {
+  return [...(track?.querySelectorAll("canvas.sprite-solid") ?? [])].map((c) => c.getBoundingClientRect());
+}
+```
+
+Only the body and gun canvases carry `sprite-solid`; shadow canvases never collide.
+
+### 8.3 Simple Swept Hitboxes; the Bullet Disappears on the First Hit
+
+**Impact: HIGH (reliable, cheap collisions with no bullets passing through or lingering)**
+
+Bullets fly horizontally, so a hit test only needs rectangles. Sweep from last frame's box to this frame's box along x, so a fast bullet can't jump over a thin cover. The nearest box along the flight direction wins, whether it's a cover or the target character. On a hit, hide every copy of the bullet at once, drop it from the live set, and spark at the face. Keep it simple: per-pixel masks, tilted boxes and resting bullets against faces cost more than they add, and they made bullets linger.
+
+**Incorrect (overlap at the current frame only; tunnels through thin covers, and the bullet stays visible):**
+
+```ts
+if (overlaps(bullet.getBoundingClientRect(), cover)) spark();
+```
+
+**Correct:**
+
+```ts
+export function firstHit(prev: Rect, now: Rect, rects: Rect[], dir: number) {
+  const left = Math.min(prev.left, now.left);
+  const right = Math.max(prev.right, now.right);
+  let best: { x: number } | null = null;
+  for (const r of rects) {
+    if (r.right <= left || r.left >= right) continue;
+    if (r.bottom <= now.top || r.top >= now.bottom) continue;
+    const x = dir > 0 ? Math.max(r.left, prev.left) : Math.min(r.right, prev.right);
+    if (!best || (dir > 0 ? x < best.x : x > best.x)) best = { x };
+  }
+  return best;
+}
+
+const struck = firstHit(prev, now, spriteRects(target), dir);
+const cover = firstHit(prev, now, covers, dir);
+if (struck && (!cover || (dir > 0 ? struck.x <= cover.x : struck.x >= cover.x)) && damage(shot.id)) {
+  hide(shot.id); // visibility: hidden on every [data-shot] copy
+  removeShot(shot.id);
+} else if (cover) {
+  hide(shot.id);
+  removeShot(shot.id);
+  addSpark(cover.x + ((-dir - 1) * scale) / 2, now.top + now.height / 2 - scale / 2, sparkPieces(color, [-dir, 0]));
+}
+```
+
+```ts
 function sparkPieces(color: string, [nx, ny]: [number, number]) {
   return Array.from({ length: 6 }, (_, i) => {
     const along = 2 + Math.random() * 4;
     const across = (Math.random() - 0.5) * 8;
-    return {
-      x: 0, y: 0, color: i % 3 ? color : "#fff1e8",
-      dx: Math.round(nx * along - ny * across),
-      dy: Math.round(ny * along + nx * across),
-    };
+    return { x: 0, y: 0, color: i % 3 ? color : "#fff1e8", dx: Math.round(nx * along - ny * across), dy: Math.round(ny * along + nx * across) };
   });
 }
 ```
 
-`restAgainst(box, cover, dir)` solves the bullet's row against the (possibly tilted) cover to get the exact resting left edge. Sparks are the bullet's colour mixed with white, last 250ms, and play a short high-pitched tick.
+A target that can't be hurt right now (dead, respawning, off screen) doesn't stop the bullet. The first frame's `prev` is the spawn point. Scrolling a cover into a fixed bullet counts too, because the current-frame overlap is part of the sweep.
 
 ---
 
@@ -1866,16 +1786,11 @@ function useLatest<T>(value: T) {
 
 Timers and listeners read `useLatest` refs instead of re-subscribing whenever state changes. Remove a shot from `live` the moment it lands, so a second hit on the same frame is ignored.
 
-### 9.3 Cache Pixel and Text Measurements
+### 9.3 Decode Sprite Images Once and Preload Them
 
-**Impact: MEDIUM (avoids getImageData and measureText on every frame)**
+**Impact: MEDIUM (sprites draw on their first frame and never refetch)**
 
-Per-frame collision work must not read pixels or lay out text again.
-
-- Alpha data: once per image, in a `WeakMap<HTMLImageElement, Uint8ClampedArray>`.
-- Row spans: per image and `frame w h flip` key.
-- Word ink: per `font|word`, only after fonts load.
-- Images: decoded once and shared by every sprite that uses them. Preload critical sheets with `preload(src, { as: "image" })` during render, and the rest when idle.
+Decode each sheet once and share it with every sprite that uses it. Preload critical sheets with `preload(src, { as: "image" })` during render, and the rest when idle. Keep a synchronous map of decoded images so a remounted sprite draws on its first frame.
 
 **Correct:**
 
@@ -1900,8 +1815,6 @@ export function preloadSpritesWhenIdle(sheets: SpriteSheet[]) {
   else setTimeout(run, 200);
 }
 ```
-
-Keep a synchronous map of already-decoded images too, so a remounted sprite draws on its first frame instead of waiting a tick.
 
 ### 9.4 Drive Scroll-Linked Motion on the Compositor, in Whole-Pixel Steps
 

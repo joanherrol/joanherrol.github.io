@@ -47,8 +47,8 @@ Section order, prefixes and impact. Rule files are named `<prefix>-<name>.md`.
 ## 8. Combat: Bullets, Collisions, Effects (combat)
 
 **Impact:** MEDIUM-HIGH
-**Description:** Bullets move on CSS, collide against solid things only (never shadows), stop flush on the face they reach and spark off it.
-**Rules:** bullet-layers, covers-not-shadows, swept-collision, pixel-masks, land-flush
+**Description:** Bullets move on CSS, collide with plain hitboxes of solid things (never shadows) and disappear on the first hit.
+**Rules:** bullet-layers, covers-not-shadows, hitboxes
 
 ## 9. Performance (perf)
 

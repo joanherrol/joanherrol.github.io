@@ -7,7 +7,7 @@ tags: sprite, layers, weapon, flip, collision
 
 ## Compose Characters From Layered Sprites
 
-Stack each part as its own absolutely positioned canvas, bottom to top: gun shadow, body shadow, body, gun. Offsets are in art pixels times `scale`, with separate left and right values per facing. Flip with the canvas transform (`flipX`), not CSS `scaleX(-1)`, so the collision masks know about it. Mark collidable canvases with `sprite-solid`, and tint only those.
+Stack each part as its own absolutely positioned canvas, bottom to top: gun shadow, body shadow, body, gun. Offsets are in art pixels times `scale`, with separate left and right values per facing. Flip with the canvas transform (`flipX`), not CSS `scaleX(-1)`, so the bitmap and its box stay in step. Mark collidable canvases with `sprite-solid`, and tint only those.
 
 **Correct:**
 

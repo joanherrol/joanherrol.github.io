@@ -1,51 +1,38 @@
 ---
 title: Only Solid Things Stop Bullets, Never Shadows
 impact: HIGH
-impactDescription: bullets hit what the eye reads as solid, and fly over shadows and gaps
-tags: combat, collision, covers, dom, text-metrics
+impactDescription: bullets hit what reads as solid and fly over shadows
+tags: combat, collision, covers, dom
 ---
 
 ## Only Solid Things Stop Bullets, Never Shadows
 
-Bullets stop at:
+Bullets stop at cards and buttons, image frames, the text lines of titles, and the body and gun sprites of the target character. Shadows, `.drop-copy` text and empty space never stop them. Use plain rectangles: `getBoundingClientRect()` for elements (a tilted frame's rect is close enough), and one `Range.getClientRects()` rect per line of title text. Read covers fresh each frame, only for what is on screen.
 
-- cards and buttons (their border box);
-- image frames, as oriented boxes using their computed `rotate` and untransformed size;
-- the ink of title words, not the line box or the gaps between words;
-- the coloured pixels of sprites.
-
-Shadows, `.drop-copy` text and empty space never stop them. Read covers fresh each frame, only for elements on screen.
-
-**Incorrect (whole heading boxes and bounding rects of tilted frames):**
+**Incorrect (the whole heading block, including the empty space beside short titles):**
 
 ```ts
-document.querySelectorAll("h2, figure").forEach((el) => covers.push(el.getBoundingClientRect()));
+document.querySelectorAll("h2").forEach((h) => covers.push(h.getBoundingClientRect()));
 ```
 
 **Correct:**
 
 ```ts
-export type Cover = { key: string; cx: number; cy: number; hw: number; hh: number; cos: number; sin: number };
+const COVERS = "main .card-cream, main .card-accent, main .float-body";
 
-// Tilted frame: centre from the rect, half extents from the untransformed box.
-const angle = ((Number.parseFloat(getComputedStyle(el).rotate) || 0) * Math.PI) / 180;
-covers.push({
-  key: `f${i}`, cx: r.left + r.width / 2, cy: r.top + r.height / 2,
-  hw: el.offsetWidth / 2, hh: el.offsetHeight / 2, cos: Math.cos(angle), sin: Math.sin(angle),
-});
-
-// Title words: a Range per word, trimmed to its ink with canvas measureText.
-function ink(font: string, word: string) {
-  const m = ctx.measureText(word); // ctx.font = font
-  return {
-    left: -m.actualBoundingBoxLeft,
-    right: m.actualBoundingBoxRight,
-    top: m.fontBoundingBoxAscent - m.actualBoundingBoxAscent,
-    bottom: m.fontBoundingBoxAscent + m.actualBoundingBoxDescent,
-  };
+function titleLines(title: Element, rects: Rect[]) {
+  const range = document.createRange();
+  const walker = document.createTreeWalker(title, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (node.parentElement?.closest(".drop-copy, button")) continue;
+    range.selectNodeContents(node);
+    for (const r of range.getClientRects()) if (onScreen(r)) rects.push(r);
+  }
 }
-// Skip the shadow copy; widen marked words by their ring (fontSize / 8); measure uppercased text if text-transform is uppercase.
-if (parent.closest(".drop-copy, button")) continue;
+
+export function spriteRects(track: HTMLElement | null): Rect[] {
+  return [...(track?.querySelectorAll("canvas.sprite-solid") ?? [])].map((c) => c.getBoundingClientRect());
+}
 ```
 
-Cache ink metrics per font and word, but only once `document.fonts.status === "loaded"`. Before then the metrics belong to the fallback font.
+Only the body and gun canvases carry `sprite-solid`; shadow canvases never collide.

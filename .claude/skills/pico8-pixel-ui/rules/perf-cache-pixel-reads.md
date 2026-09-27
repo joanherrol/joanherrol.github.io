@@ -1,18 +1,13 @@
 ---
-title: Cache Pixel and Text Measurements
+title: Decode Sprite Images Once and Preload Them
 impact: MEDIUM
-impactDescription: avoids getImageData and measureText on every frame
+impactDescription: sprites draw on their first frame and never refetch
 tags: perf, cache, weakmap, canvas, fonts, preload
 ---
 
-## Cache Pixel and Text Measurements
+## Decode Sprite Images Once and Preload Them
 
-Per-frame collision work must not read pixels or lay out text again.
-
-- Alpha data: once per image, in a `WeakMap<HTMLImageElement, Uint8ClampedArray>`.
-- Row spans: per image and `frame w h flip` key.
-- Word ink: per `font|word`, only after fonts load.
-- Images: decoded once and shared by every sprite that uses them. Preload critical sheets with `preload(src, { as: "image" })` during render, and the rest when idle.
+Decode each sheet once and share it with every sprite that uses it. Preload critical sheets with `preload(src, { as: "image" })` during render, and the rest when idle. Keep a synchronous map of decoded images so a remounted sprite draws on its first frame.
 
 **Correct:**
 
@@ -38,4 +33,3 @@ export function preloadSpritesWhenIdle(sheets: SpriteSheet[]) {
 }
 ```
 
-Keep a synchronous map of already-decoded images too, so a remounted sprite draws on its first frame instead of waiting a tick.

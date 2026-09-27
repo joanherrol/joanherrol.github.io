@@ -22,4 +22,4 @@ figure { animation: bob 2s infinite alternate; filter: drop-shadow(6px 6px 0 bla
 <ConsoleFrame title="P1" tilt={1} delay={1.5}>…</ConsoleFrame>
 ```
 
-Collisions treat a tilted frame as an oriented box read from its computed `rotate` (see `combat-covers-not-shadows`).
+Collisions use the frame's bounding rect, tilt included (see `combat-covers-not-shadows`).

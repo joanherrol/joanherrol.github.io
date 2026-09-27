@@ -31,13 +31,10 @@ import {
   type BurstPiece,
 } from "@/components/retro/pixel-burst";
 import {
+  firstHit,
   readCovers,
-  restAgainst,
-  strike,
-  sweep,
-  type Box,
-  type Cover,
-  type Hit,
+  spriteRects,
+  type Rect,
 } from "@/components/retro/collision";
 
 // Character pixels in device pixels on phones, where there are no lanes.
@@ -150,23 +147,11 @@ function burstPieces(
   });
 }
 
-function solids(track: HTMLElement | null) {
-  return (
-    track?.querySelectorAll<HTMLCanvasElement>("canvas.sprite-solid") ?? []
-  );
-}
-
-function land(id: number, x: number | null) {
+function hide(id: number) {
   for (const el of document.querySelectorAll<HTMLElement>(
     `[data-shot="${id}"]`,
-  )) {
-    if (x === null) {
-      el.style.visibility = "hidden";
-      continue;
-    }
-    el.style.animation = "none";
-    el.style.transform = `translateX(${x - Number.parseFloat(el.style.left)}px)`;
-  }
+  ))
+    el.style.visibility = "hidden";
 }
 
 type Phase = "alive" | "bursting" | "gone";
@@ -574,79 +559,56 @@ export function PlayerCompanion() {
     [scale, addShot, addSpark, enemyRef, walkingRef],
   );
 
-  const block = useCallback(
-    (shot: Shot, box: Box, cover: Cover, hit: Hit) => {
-      const dir = shot.from === "enemy" ? -1 : 1;
-      const [nx, ny] = hit.normal;
-      const side = Math.abs(nx) > Math.abs(ny);
-      const x = side ? restAgainst(box, cover, dir) : null;
-      land(shot.id, x);
-      removeShot(shot.id);
-      const face =
-        x === null
-          ? hit.face
-          : { x: dir > 0 ? x + box.size : x, y: box.y + box.size / 2 };
-      playSound("spark");
-      addSpark(
-        face.x + ((nx - 1) * scale) / 2,
-        face.y + ((ny - 1) * scale) / 2,
-        sparkPieces(shot.from === "enemy" ? "#ff004d" : "#fff1e8", hit.normal),
-      );
-    },
-    [removeShot, addSpark, scale],
-  );
-
+  // A bullet disappears on whatever it hits first; cover sparks off it.
   const advance = useCallback(
-    (
-      shot: Shot,
-      covers: Cover[],
-      last: Map<number, Box>,
-      before: Map<string, Cover>,
-    ) => {
-      const rect = document
+    (shot: Shot, covers: Rect[], last: Map<number, Rect>) => {
+      const now = document
         .querySelector(`.shot:not(.shot-shadow)[data-shot="${shot.id}"]`)
         ?.getBoundingClientRect();
-      if (!rect) return;
+      if (!now) return;
       const enemyShot = shot.from === "enemy";
       const dir = enemyShot ? -1 : 1;
-      const now = { x: rect.left, y: rect.top, size: rect.width };
-      const prev = last.get(shot.id) ?? { ...now, x: shot.x };
+      const prev = last.get(shot.id) ?? {
+        ...now.toJSON(),
+        left: shot.x,
+        right: shot.x + now.width,
+      };
       last.set(shot.id, now);
 
-      let best: { cover: Cover; hit: Hit } | undefined;
-      for (const cover of covers) {
-        const hit = sweep(prev, now, cover, before.get(cover.key), dir);
-        if (hit && (!best || hit.t < best.hit.t)) best = { cover, hit };
-      }
-      const target = solids(
-        enemyShot ? trackRef.current : enemyTrackRef.current,
-      );
-      const struck = strike(prev, now, dir, target);
-      if (struck && (!best || struck.t <= best.hit.t)) {
+      const target = enemyShot ? trackRef.current : enemyTrackRef.current;
+      const struck = firstHit(prev, now, spriteRects(target), dir);
+      const cover = firstHit(prev, now, covers, dir);
+      const first = (a: { x: number }, b: { x: number }) =>
+        dir > 0 ? a.x <= b.x : a.x >= b.x;
+      if (struck && (!cover || first(struck, cover))) {
         if ((enemyShot ? playerHit : hit)(shot.id)) {
-          land(shot.id, struck.x);
+          hide(shot.id);
           removeShot(shot.id);
           return;
         }
       }
-      if (best) block(shot, now, best.cover, best.hit);
+      if (!cover) return;
+      hide(shot.id);
+      removeShot(shot.id);
+      playSound("spark");
+      addSpark(
+        cover.x + ((-dir - 1) * scale) / 2,
+        now.top + now.height / 2 - scale / 2,
+        sparkPieces(enemyShot ? "#ff004d" : "#fff1e8", [-dir, 0]),
+      );
     },
-    [block, hit, playerHit, removeShot],
+    [hit, playerHit, removeShot, addSpark, scale],
   );
 
   const flying = shots.length > 0;
   useEffect(() => {
     if (!flying) return;
     let raf = 0;
-    let before = new Map<string, Cover>();
-    const last = new Map<number, Box>();
+    const last = new Map<number, Rect>();
     const tick = () => {
       const covers = readCovers();
-      for (const shot of live.current.values()) {
-        advance(shot, covers, last, before);
-      }
+      for (const shot of live.current.values()) advance(shot, covers, last);
       for (const id of last.keys()) if (!live.current.has(id)) last.delete(id);
-      before = new Map(covers.map((c) => [c.key, c]));
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);

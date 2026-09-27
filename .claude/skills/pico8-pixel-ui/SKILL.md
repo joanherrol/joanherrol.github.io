@@ -9,7 +9,7 @@ metadata:
 
 # PICO-8 Pixel UI
 
-A strict design system for flat pixel-art UIs that match PICO-8-style game characters, plus the techniques for animating those characters, their shadows, shots and collisions on a web page. It holds 46 rules across 10 categories, ordered by impact. The rules are strict: if something can't be built within them, change the design, not the rule.
+A strict design system for flat pixel-art UIs that match PICO-8-style game characters, plus the techniques for animating those characters, their shadows, shots and collisions on a web page. It holds 44 rules across 10 categories, ordered by impact. The rules are strict: if something can't be built within them, change the design, not the rule.
 
 ## When to Apply
 
@@ -104,16 +104,14 @@ A strict design system for flat pixel-art UIs that match PICO-8-style game chara
 ### 8. Combat: Bullets, Collisions, Effects (MEDIUM-HIGH)
 
 - `combat-bullet-layers` - CSS-animated fixed bullets; shadow, bullet and lane-clipped layers
-- `combat-covers-not-shadows` - Cards, tilted frames and title-word ink stop bullets; shadows never do
-- `combat-swept-collision` - Sweep each move against where covers were; the earliest hit wins
-- `combat-pixel-masks` - Hit characters at their first coloured pixel via cached row spans
-- `combat-land-flush` - Freeze every bullet copy on the face and spark along its normal
+- `combat-covers-not-shadows` - Cards, frames, title lines and character sprites stop bullets; shadows never do
+- `combat-hitboxes` - Swept rectangles along x; the nearest hit wins and the bullet disappears at once
 
 ### 9. Performance (MEDIUM)
 
 - `perf-fixed-step-clock` - Sprites advance on fixed steps, sleep between frames and stop off screen
 - `perf-loops-only-while-needed` - The collision loop runs only while bullets fly; state lives in refs
-- `perf-cache-pixel-reads` - Cache alpha, spans, ink metrics and decoded images
+- `perf-cache-pixel-reads` - Decode sprite images once and preload them
 - `perf-compositor-scroll` - Scroll-driven CSS in whole-art-pixel `steps()`; svh and lvh probes
 
 ### 10. Tooling (LOW-MEDIUM)
@@ -142,10 +140,10 @@ Each rule file has a short explanation of why it matters, an incorrect example w
 | `pixel.ts`                               | `pixelBootScript`, `artPx`, `devicePx`, `basePx`                               |
 | `palette.ts`                             | Token-referencing palettes, `applyPalette`, `paletteBootScript`                |
 | `ui.tsx`                                 | Section, DropText, Mark, PixelButton, dropdown, TitleBar, WindowFrame, ConsoleFrame, PixelArt |
-| `pixel-sprite.tsx`                       | Canvas sprite renderer with a fixed-step clock, tint, preload and `solidRows` masks |
+| `pixel-sprite.tsx`                       | Canvas sprite renderer with a fixed-step clock, tint and preload               |
 | `player.tsx`, `enemy.tsx`                | Layered player with gun and bullets, `useShoot`; enemy data and attack timing  |
 | `player-companion.tsx`                   | The game loop: tracks, attacks, shots, collisions, hurt, bursts, respawns      |
-| `collision.ts`, `pixel-burst.tsx`        | Covers, swept hits, sprite strikes; flash and spark particles                  |
+| `collision.ts`, `pixel-burst.tsx`        | Covers and swept hitboxes; flash and spark particles                           |
 | `sound.ts`                               | Opt-in Web Audio with loudness normalisation and `data-sound` delegation       |
 | `design-page.dev.tsx`, `design-tuner.tsx`| The dev-only design sheet and token tuner                                      |
 
