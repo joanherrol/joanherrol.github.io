@@ -224,6 +224,7 @@ export function PlayerCompanion() {
   const [scale, setScale] = useState(0);
   const [atBottomOnly, setAtBottomOnly] = useState(false);
   const [edge, setEdge] = useState(0);
+  const [safe, setSafe] = useState({ t: 0, r: 0, b: 0, l: 0 });
   const [visible, setVisible] = useState(false);
   const visibleRef = useLatest(visible);
   const { shooting, shoot } = useShoot();
@@ -310,9 +311,22 @@ export function PlayerCompanion() {
       setScale((laneScale || PHONE_SCALE) * artPx());
       // Same inset as the corner menus.
       const probe = document.createElement("div");
-      probe.style.cssText = "position:fixed;width:var(--edge)";
+      probe.style.cssText =
+        "position:fixed;width:var(--edge);padding:var(--safe-t) var(--safe-r) var(--safe-b) var(--safe-l);box-sizing:content-box";
       document.body.append(probe);
-      setEdge(probe.getBoundingClientRect().width);
+      const cs = getComputedStyle(probe);
+      setEdge(Number.parseFloat(cs.width));
+      setSafe((s) => {
+        const next = {
+          t: Number.parseFloat(cs.paddingTop) || 0,
+          r: Number.parseFloat(cs.paddingRight) || 0,
+          b: Number.parseFloat(cs.paddingBottom) || 0,
+          l: Number.parseFloat(cs.paddingLeft) || 0,
+        };
+        return Object.values(next).join() === Object.values(s).join()
+          ? s
+          : next;
+      });
       probe.remove();
     };
     read();
@@ -342,8 +356,8 @@ export function PlayerCompanion() {
       m = {
         start,
         max,
-        top: snap(atBottomOnly ? small / 2 : TOP),
-        bottom: snap(small - BOTTOM - BOX_HEIGHT * scale),
+        top: snap(atBottomOnly ? small / 2 : TOP + safe.t),
+        bottom: snap(small - BOTTOM - safe.b - BOX_HEIGHT * scale),
         showAt: atBottomOnly ? start : small * 0.6,
       };
       if (!scrollDriven) return;
@@ -415,7 +429,7 @@ export function PlayerCompanion() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
     };
-  }, [scale, atBottomOnly]);
+  }, [scale, atBottomOnly, safe]);
 
   const damageEnemy = useCallback(
     (amount: number) => {
@@ -528,8 +542,8 @@ export function PlayerCompanion() {
   );
 
   const trackY = () => trackRef.current?.getBoundingClientRect().top ?? 0;
-  const playerLeft = edge;
-  const enemyRight = edge;
+  const playerLeft = edge + safe.l;
+  const enemyRight = edge + safe.r;
 
   const shootBack = useCallback(
     (kind: EnemyState["kind"]) => {

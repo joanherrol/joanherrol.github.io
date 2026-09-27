@@ -36,7 +36,7 @@ export function Hero() {
   return (
     <section
       id="home"
-      className="tone-dark section-paper relative flex min-h-screen-band flex-col overflow-hidden px-8 pb-(--band) pt-28 sm:px-14 lg:px-24"
+      className="tone-dark section-paper relative flex min-h-screen-band flex-col overflow-hidden px-8 pb-(--band) pt-[calc(var(--p)*28+var(--safe-t))] sm:px-14 lg:px-24"
     >
       {/* Puts the name at 52% of the screen. */}
       <div className="flex-[1.07_1_0%]" />

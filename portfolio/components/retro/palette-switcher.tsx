@@ -67,7 +67,7 @@ export function PaletteSwitcher() {
   return (
     <div
       ref={rootRef}
-      className="tone-light pointer-events-none fixed left-(--edge) top-(--edge) z-50 flex items-start gap-6 bg-transparent!"
+      className="tone-light pointer-events-none fixed left-[calc(var(--edge)+var(--safe-l))] top-[calc(var(--edge)+var(--safe-t))] z-50 flex items-start gap-6 bg-transparent!"
     >
       <div className="relative">
         <button

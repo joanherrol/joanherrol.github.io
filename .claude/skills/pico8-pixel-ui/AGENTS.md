@@ -263,6 +263,24 @@ export function FitNotes() {
 // <p className="type-body-sm text-dark-grey in-data-crowded:hidden">…</p>
 ```
 
+**Installed web apps:** a site saved to the iOS home screen draws under the status bar and home indicator. Set `viewportFit: "cover"` (Next.js `export const viewport`) and add `env(safe-area-inset-*)` to everything placed against a screen edge: fixed menus, section padding, the character tracks, and the footer's bottom padding. In a normal browser the insets are 0, so nothing else changes.
+
+```css
+:root {
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --section-pt: calc(var(--section-py) + var(--safe-t));
+}
+```
+
+```tsx
+<div className="fixed left-[calc(var(--edge)+var(--safe-l))] top-[calc(var(--edge)+var(--safe-t))]">…</div>
+```
+
+For JS-positioned sprites, read the insets from a probe's computed padding (`padding: var(--safe-t) var(--safe-r) var(--safe-b) var(--safe-l)`). Test by overriding the `--safe-*` variables, because desktop browsers can't emulate them.
+
 `@media not (a) and (b)` is invalid CSS, so avoid `not-sm:` once `sm` has two conditions; write the media query explicitly. Check 390×844, 844×390, 667×375, 820×1180, 1180×820, 768×1024 and 1440×900. A browser `deviceScaleFactor` below 1 changes `--ipx` and doubles every size, so test at 1 or 2.
 
 ### 1.5 Size Text-Bound Details in Glyph Pixels (0.125em)

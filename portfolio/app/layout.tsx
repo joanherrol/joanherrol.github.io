@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Press_Start_2P, Tiny5 } from "next/font/google";
 import "./globals.css";
 import { paletteBootScript } from "@/lib/palette";
@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   title: "Joan Hervás · Frontend developer",
   description: "Portfolio of Joan Hervás, frontend developer.",
 };
+
+export const viewport: Viewport = { viewportFit: "cover" };
 
 export default function RootLayout({
   children,

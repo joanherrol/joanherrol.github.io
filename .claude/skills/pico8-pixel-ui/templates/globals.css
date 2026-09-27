@@ -80,11 +80,16 @@
   /* The shadow pixel: one title pixel everywhere, whatever the element. */
   --s: var(--fp-headline-md);
   --edge: calc(var(--p) * 6);
+  /* Notch and home indicator, when installed to the home screen. */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
   /* Height of the pixel teeth above each section. */
   --band: calc(var(--p) * 4);
 
   --section-py: round(clamp(2.5rem, 8.5svh, 8rem), var(--ipx));
-  --section-pt: var(--section-py);
+  --section-pt: calc(var(--section-py) + var(--safe-t));
   --gap-sm: round(clamp(0.5rem, 2svh, 1.25rem), var(--ipx));
   --gap-md: round(clamp(1rem, 3svh, 2rem), var(--ipx));
   --gap-lg: round(clamp(1rem, 4svh, 3.5rem), var(--ipx));
@@ -127,7 +132,7 @@
 @media (width >= 40rem) and (height < 30rem) {
   :root {
     --section-pt: calc(
-      var(--edge) + round(up, 44px, var(--ipx)) + var(--p) * 4
+      var(--edge) + round(up, 44px, var(--ipx)) + var(--p) * 4 + var(--safe-t)
     );
   }
 }

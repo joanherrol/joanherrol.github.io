@@ -22,7 +22,7 @@ export function Section({
   return (
     <section
       id={id}
-      className={`tone-${tone} section-paper relative flex min-h-screen-band flex-col justify-center pt-(--section-pt) pb-(--section-py) px-(--lane) ${edge ? "pixel-edge" : ""} ${className}`}
+      className={`tone-${tone} section-paper relative flex min-h-screen-band flex-col justify-center pt-(--section-pt) pb-(--section-py) pr-[calc(var(--lane)+var(--safe-r))] pl-[calc(var(--lane)+var(--safe-l))] ${edge ? "pixel-edge" : ""} ${className}`}
     >
       <div
         className={`relative mx-auto w-full max-w-384 ${fill ? "flex flex-1 flex-col" : ""}`}

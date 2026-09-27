@@ -43,7 +43,7 @@ export function LevelMenu({ levels }: Readonly<{ levels: Level[] }>) {
   return (
     <div
       ref={rootRef}
-      className="tone-light pointer-events-none fixed right-(--edge) top-(--edge) z-50 flex flex-col items-end bg-transparent!"
+      className="tone-light pointer-events-none fixed right-[calc(var(--edge)+var(--safe-r))] top-[calc(var(--edge)+var(--safe-t))] z-50 flex flex-col items-end bg-transparent!"
     >
       <button
         type="button"

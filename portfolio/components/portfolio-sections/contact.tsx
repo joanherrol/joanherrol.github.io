@@ -102,7 +102,7 @@ export function Contact() {
       </div>
 
       {/* Centred above the characters, which stand at the bottom. */}
-      <footer className="flex flex-1 items-center justify-center pt-(--gap-md) pb-[calc(max(var(--companion-scale),4)*var(--ipx)*11+12px)] uppercase">
+      <footer className="flex flex-1 items-center justify-center pt-(--gap-md) pb-[calc(max(var(--companion-scale),4)*var(--ipx)*11+12px+var(--safe-b))] uppercase">
         <a
           href="#home"
           data-sound="coin"
