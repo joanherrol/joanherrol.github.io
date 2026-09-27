@@ -52,19 +52,29 @@ export function spriteRects(track: HTMLElement | null): Rect[] {
 }
 
 /**
- * The first box a bullet reached this frame, sweeping from its last position
- * so it never skips through, and the x of the face it touched.
+ * Where a bullet moving from `from` to `to` (its left edge) first touches a
+ * box, counting boxes that scrolled `dy` onto it this frame. Returns the left
+ * edge it stops at, and whether it was struck from above or below.
  */
-export function firstHit(prev: Rect, now: Rect, rects: Rect[], dir: number) {
-  const left = Math.min(prev.left, now.left);
-  const right = Math.max(prev.right, now.right);
-  let best: { x: number } | null = null;
+export function firstHit(
+  from: number,
+  to: number,
+  size: number,
+  top: number,
+  rects: Rect[],
+  dy: number,
+) {
+  const dir = Math.sign(to - from) || 1;
+  const left = Math.min(from, to);
+  const right = Math.max(from, to) + size;
+  let best: { x: number; vertical: boolean } | null = null;
   for (const r of rects) {
     if (r.right <= left || r.left >= right) continue;
-    if (r.bottom <= now.top || r.top >= now.bottom) continue;
-    const x =
-      dir > 0 ? Math.max(r.left, prev.left) : Math.min(r.right, prev.right);
-    if (!best || (dir > 0 ? x < best.x : x > best.x)) best = { x };
+    if (Math.max(r.bottom, r.bottom + dy) <= top) continue;
+    if (Math.min(r.top, r.top + dy) >= top + size) continue;
+    const inside = r.left < from + size && r.right > from;
+    const x = inside ? from : dir > 0 ? r.left - size : r.right;
+    if (!best || (x - best.x) * dir < 0) best = { x, vertical: inside };
   }
   return best;
 }

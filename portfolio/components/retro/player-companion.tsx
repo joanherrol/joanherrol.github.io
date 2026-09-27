@@ -22,6 +22,7 @@ import {
   type EnemyKind,
   type EnemyAnimation,
 } from "@/components/retro/enemy";
+import { prefersReducedMotion } from "@/lib/motion";
 import { artPx, devicePx } from "@/lib/pixel";
 import { playSound } from "@/lib/sound";
 import {
@@ -34,7 +35,6 @@ import {
   firstHit,
   readCovers,
   spriteRects,
-  type Rect,
 } from "@/components/retro/collision";
 
 // Character pixels in device pixels on phones, where there are no lanes.
@@ -78,6 +78,7 @@ type Shot = {
   x: number;
   y: number;
   floor: number;
+  born: number;
 };
 
 const SPARK_MS = 250;
@@ -147,11 +148,11 @@ function burstPieces(
   });
 }
 
-function hide(id: number) {
+function place(shot: Shot, x: number) {
   for (const el of document.querySelectorAll<HTMLElement>(
-    `[data-shot="${id}"]`,
+    `[data-shot="${shot.id}"]`,
   ))
-    el.style.visibility = "hidden";
+    el.style.transform = `translateX(${x - shot.x}px)`;
 }
 
 type Phase = "alive" | "bursting" | "gone";
@@ -237,13 +238,17 @@ export function PlayerCompanion() {
     [],
   );
   const addShot = useCallback(
-    (shot: Omit<Shot, "id">) => {
+    (shot: Omit<Shot, "id" | "born">) => {
       const id = nextShot.current++;
-      live.current.set(id, { ...shot, id });
-      setShots((all) => [
-        ...all,
-        { ...shot, id, x: devicePx(shot.x), y: devicePx(shot.y) },
-      ]);
+      const next = {
+        ...shot,
+        id,
+        x: devicePx(shot.x),
+        y: devicePx(shot.y),
+        born: performance.now(),
+      };
+      live.current.set(id, next);
+      setShots((all) => [...all, next]);
       setTimeout(() => removeShot(id), BULLET_MS);
       return id;
     },
@@ -559,61 +564,70 @@ export function PlayerCompanion() {
     [scale, addShot, addSpark, enemyRef, walkingRef],
   );
 
-  // A bullet disappears on whatever it hits first; cover sparks off it.
-  const advance = useCallback(
-    (shot: Shot, covers: Rect[], last: Map<number, Rect>) => {
-      const now = document
-        .querySelector(`.shot:not(.shot-shadow)[data-shot="${shot.id}"]`)
-        ?.getBoundingClientRect();
-      if (!now) return;
-      const enemyShot = shot.from === "enemy";
-      const dir = enemyShot ? -1 : 1;
-      const prev = last.get(shot.id) ?? {
-        ...now.toJSON(),
-        left: shot.x,
-        right: shot.x + now.width,
-      };
-      last.set(shot.id, now);
-
-      const target = enemyShot ? trackRef.current : enemyTrackRef.current;
-      const struck = firstHit(prev, now, spriteRects(target), dir);
-      const cover = firstHit(prev, now, covers, dir);
-      const first = (a: { x: number }, b: { x: number }) =>
-        dir > 0 ? a.x <= b.x : a.x >= b.x;
-      if (struck && (!cover || first(struck, cover))) {
-        if ((enemyShot ? playerHit : hit)(shot.id)) {
-          hide(shot.id);
-          removeShot(shot.id);
-          return;
-        }
-      }
-      if (!cover) return;
-      hide(shot.id);
-      removeShot(shot.id);
-      playSound("spark");
-      addSpark(
-        cover.x + ((-dir - 1) * scale) / 2,
-        now.top + now.height / 2 - scale / 2,
-        sparkPieces(enemyShot ? "#ff004d" : "#fff1e8", [-dir, 0]),
-      );
+  // Bullets move here, not in CSS, so none is drawn past what it hit.
+  // Shown flush against what it hit for one frame, then removed.
+  const land = useCallback(
+    (id: number) => {
+      live.current.delete(id);
+      requestAnimationFrame(() => removeShot(id));
     },
-    [hit, playerHit, removeShot, addSpark, scale],
+    [removeShot],
   );
 
   const flying = shots.length > 0;
   useEffect(() => {
     if (!flying) return;
     let raf = 0;
-    const last = new Map<number, Rect>();
-    const tick = () => {
+    let scrollY = window.scrollY;
+    const last = new Map<number, number>();
+    const tick = (now: number) => {
       const covers = readCovers();
-      for (const shot of live.current.values()) advance(shot, covers, last);
+      const dy = window.scrollY - scrollY;
+      scrollY = window.scrollY;
+      const speed = prefersReducedMotion() ? 0 : window.innerWidth / BULLET_MS;
+      for (const shot of live.current.values()) {
+        const enemyShot = shot.from === "enemy";
+        const dir = enemyShot ? -1 : 1;
+        const size = (enemyShot ? 2 : 1) * scale;
+        const from = last.get(shot.id) ?? shot.x;
+        const to = devicePx(shot.x + dir * speed * (now - shot.born));
+        const target = spriteRects(
+          enemyShot ? trackRef.current : enemyTrackRef.current,
+        );
+        const struck = firstHit(from, to, size, shot.y, target, 0);
+        const cover = firstHit(from, to, size, shot.y, covers, dy);
+        if (
+          struck &&
+          (!cover || (struck.x - cover.x) * dir <= 0) &&
+          (enemyShot ? playerHit : hit)(shot.id)
+        ) {
+          place(shot, struck.x);
+          land(shot.id);
+          continue;
+        }
+        if (cover) {
+          place(shot, cover.x);
+          land(shot.id);
+          playSound("spark");
+          const normal: [number, number] = cover.vertical
+            ? [0, dy > 0 ? -1 : 1]
+            : [-dir, 0];
+          addSpark(
+            cover.x + (dir > 0 && !cover.vertical ? size : 0) - scale / 2,
+            shot.y + size / 2 - scale / 2,
+            sparkPieces(enemyShot ? "#ff004d" : "#fff1e8", normal),
+          );
+          continue;
+        }
+        last.set(shot.id, to);
+        place(shot, to);
+      }
       for (const id of last.keys()) if (!live.current.has(id)) last.delete(id);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [flying, advance]);
+  }, [flying, scale, hit, playerHit, land, addSpark]);
 
   const attackReady =
     visible &&
@@ -685,7 +699,7 @@ export function PlayerCompanion() {
       <span
         key={shot.id}
         data-shot={shot.id}
-        className={`shot absolute ${look} ${shot.from === "enemy" ? "is-left" : ""}`}
+        className={`absolute ${look}`}
         style={{
           left: shot.x,
           top: shot.y + (part === "shadow" ? shot.floor * scale : 0),

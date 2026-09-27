@@ -560,12 +560,6 @@
 .pixel-bullet.is-left {
   --dir: -1;
 }
-.shot {
-  animation: pixel-bullet 1000ms linear both;
-}
-.shot.is-left {
-  --dir: -1;
-}
 .player-bullet {
   background: var(--color-white);
 }
@@ -663,8 +657,7 @@
     scroll-behavior: auto !important;
   }
   .blink,
-  .pixel-bullet,
-  .shot {
+  .pixel-bullet {
     animation: none;
   }
   .companion-drop,

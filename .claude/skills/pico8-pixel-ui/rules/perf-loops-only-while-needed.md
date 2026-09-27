@@ -7,7 +7,7 @@ tags: perf, raf, react, effects, refs
 
 ## Run Game Loops Only While Something Moves
 
-The collision loop only reads positions; CSS does the moving. Start it when the first bullet exists and stop it when the last one is gone, by deriving a boolean from state and using it as the effect's dependency. Keep live game data in refs (a `Map` of live shots), so the loop never needs React state.
+One loop moves bullets and checks their hits. Start it when the first bullet exists and stop it when the last one is gone, by deriving a boolean from state and using it as the effect's dependency. Keep live game data in refs (a `Map` of live shots), so the loop never needs React state.
 
 **Incorrect:**
 

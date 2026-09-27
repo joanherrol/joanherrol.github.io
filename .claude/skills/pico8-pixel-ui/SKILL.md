@@ -103,14 +103,14 @@ A strict design system for flat pixel-art UIs that match PICO-8-style game chara
 
 ### 8. Combat: Bullets, Collisions, Effects (MEDIUM-HIGH)
 
-- `combat-bullet-layers` - CSS-animated fixed bullets; shadow, bullet and lane-clipped layers
+- `combat-bullet-layers` - Bullets move in the game loop, never past a hit; shadow, bullet and lane-clipped layers
 - `combat-covers-not-shadows` - Cards, frames, title lines and character sprites stop bullets; shadows never do
-- `combat-hitboxes` - Swept rectangles along x; the nearest hit wins and the bullet disappears at once
+- `combat-hitboxes` - Rectangles swept over the shot and the scroll; the nearest hit wins, flush for one frame, then gone
 
 ### 9. Performance (MEDIUM)
 
 - `perf-fixed-step-clock` - Sprites advance on fixed steps, sleep between frames and stop off screen
-- `perf-loops-only-while-needed` - The collision loop runs only while bullets fly; state lives in refs
+- `perf-loops-only-while-needed` - The bullet loop runs only while bullets fly; state lives in refs
 - `perf-cache-pixel-reads` - Decode sprite images once and preload them
 - `perf-compositor-scroll` - Scroll-driven CSS in whole-art-pixel `steps()`; svh and lvh probes
 

@@ -7,9 +7,9 @@ tags: combat, collision, hitbox, aabb, sparks
 
 ## Simple Swept Hitboxes; the Bullet Disappears on the First Hit
 
-Bullets fly horizontally, so a hit test only needs rectangles. Sweep from last frame's box to this frame's box along x, so a fast bullet can't jump over a thin cover. The nearest box along the flight direction wins, whether it's a cover or the target character. On a hit, hide every copy of the bullet at once, drop it from the live set, and spark at the face. Keep it simple: per-pixel masks, tilted boxes and resting bullets against faces cost more than they add, and they made bullets linger.
+Bullets move horizontally and covers move vertically as the page scrolls, so rectangles are enough. Each frame, sweep the bullet from its last x to its new x, and sweep each cover over the scroll distance `dy` since the last frame. Nothing then tunnels, whether it flew or scrolled past. The nearest box along the flight direction wins, cover or character. On a hit, draw the bullet flush at the contact point for that one frame, stop checking it, remove it on the next frame, and spark off cover.
 
-**Incorrect (overlap at the current frame only; tunnels through thin covers, and the bullet stays visible):**
+**Incorrect (overlap at the current frame only; tunnels on fast shots or fast scrolls, and draws the bullet past the face):**
 
 ```ts
 if (overlaps(bullet.getBoundingClientRect(), cover)) spark();
@@ -18,28 +18,36 @@ if (overlaps(bullet.getBoundingClientRect(), cover)) spark();
 **Correct:**
 
 ```ts
-export function firstHit(prev: Rect, now: Rect, rects: Rect[], dir: number) {
-  const left = Math.min(prev.left, now.left);
-  const right = Math.max(prev.right, now.right);
-  let best: { x: number } | null = null;
+export function firstHit(from: number, to: number, size: number, top: number, rects: Rect[], dy: number) {
+  const dir = Math.sign(to - from) || 1;
+  const left = Math.min(from, to);
+  const right = Math.max(from, to) + size;
+  let best: { x: number; vertical: boolean } | null = null;
   for (const r of rects) {
     if (r.right <= left || r.left >= right) continue;
-    if (r.bottom <= now.top || r.top >= now.bottom) continue;
-    const x = dir > 0 ? Math.max(r.left, prev.left) : Math.min(r.right, prev.right);
-    if (!best || (dir > 0 ? x < best.x : x > best.x)) best = { x };
+    if (Math.max(r.bottom, r.bottom + dy) <= top) continue;
+    if (Math.min(r.top, r.top + dy) >= top + size) continue;
+    const inside = r.left < from + size && r.right > from;
+    const x = inside ? from : dir > 0 ? r.left - size : r.right;
+    if (!best || (x - best.x) * dir < 0) best = { x, vertical: inside };
   }
   return best;
 }
+```
 
-const struck = firstHit(prev, now, spriteRects(target), dir);
-const cover = firstHit(prev, now, covers, dir);
-if (struck && (!cover || (dir > 0 ? struck.x <= cover.x : struck.x >= cover.x)) && damage(shot.id)) {
-  hide(shot.id); // visibility: hidden on every [data-shot] copy
-  removeShot(shot.id);
+```ts
+const dy = window.scrollY - lastScrollY;
+const struck = firstHit(from, to, size, shot.y, spriteRects(target), 0);
+const cover = firstHit(from, to, size, shot.y, covers, dy);
+if (struck && (!cover || (struck.x - cover.x) * dir <= 0) && damage(shot.id)) {
+  place(shot, struck.x);
+  land(shot.id); // live.delete(id); requestAnimationFrame(() => removeShot(id))
 } else if (cover) {
-  hide(shot.id);
-  removeShot(shot.id);
-  addSpark(cover.x + ((-dir - 1) * scale) / 2, now.top + now.height / 2 - scale / 2, sparkPieces(color, [-dir, 0]));
+  place(shot, cover.x);
+  land(shot.id);
+  addSpark(/* at the face */, sparkPieces(color, cover.vertical ? [0, dy > 0 ? -1 : 1] : [-dir, 0]));
+} else {
+  place(shot, to);
 }
 ```
 
@@ -53,4 +61,4 @@ function sparkPieces(color: string, [nx, ny]: [number, number]) {
 }
 ```
 
-A target that can't be hurt right now (dead, respawning, off screen) doesn't stop the bullet. The first frame's `prev` is the spawn point. Scrolling a cover into a fixed bullet counts too, because the current-frame overlap is part of the sweep.
+A target that can't be hurt right now (dead, respawning, off screen) doesn't stop the bullet. Removing the element in the same frame as the hit would make React drop it before the flush frame paints, which is why removal waits one frame.

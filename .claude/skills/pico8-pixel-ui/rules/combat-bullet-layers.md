@@ -1,23 +1,30 @@
 ---
-title: Bullets Move on CSS in Fixed Screen Layers
+title: Bullets Move in the Game Loop, in Fixed Screen Layers
 impact: MEDIUM
-impactDescription: smooth bullets with correct depth under content and over characters
-tags: combat, bullets, layers, css-animation, clip-path
+impactDescription: bullets never drawn past a hit, with correct depth under content and over characters
+tags: combat, bullets, layers, raf, clip-path
 ---
 
-## Bullets Move on CSS in Fixed Screen Layers
+## Bullets Move in the Game Loop, in Fixed Screen Layers
 
-Bullets fly across the viewport on a CSS keyframe (`translateX(100vw * dir)` over 1000ms, linear), not a JS position loop. They are `position: fixed` at the screen height they were fired from, so scrolling dodges them. Render the shadow copies in a `z-index: -1` layer, and the bullets in a `-1` layer after it (over characters, under content). On desktop, add a second bullet copy at z 40 clipped to the side lane, so bullets over the lane show above the lane character.
+Move bullets from the same `requestAnimationFrame` loop that checks collisions: `x = spawnX + dir * speed * (now - born)`, snapped with `devicePx()` and written as a `translateX` on every copy. Don't use a CSS keyframe: it runs on the compositor thread and keeps moving bullets past covers whenever the main thread is late. Bullets are `position: fixed` at the screen height they were fired from, so scrolling dodges them. Render shadow copies in a `z-index: -1` layer and bullets in a `-1` layer after it (over characters, under content). On desktop, add a second bullet copy at z 40 clipped to the side lane, so bullets over the lane show above the lane character.
+
+**Incorrect (compositor-driven; the collision loop can only chase it):**
+
+```css
+.shot { animation: pixel-bullet 1000ms linear both; }
+```
 
 **Correct:**
 
-```css
-@keyframes pixel-bullet { to { transform: translateX(calc(100vw * var(--dir, 1))); } }
-.shot { animation: pixel-bullet 1000ms linear both; }
-.shot.is-left { --dir: -1; }
-.player-bullet { background: var(--color-white); }
-.enemy-bullet  { background: var(--color-red); }
-.shot-shadow   { background: var(--color-black); }
+```ts
+const speed = prefersReducedMotion() ? 0 : window.innerWidth / BULLET_MS;
+const to = devicePx(shot.x + dir * speed * (now - shot.born));
+// …hit test from last position to `to`, then:
+function place(shot: Shot, x: number) {
+  for (const el of document.querySelectorAll<HTMLElement>(`[data-shot="${shot.id}"]`))
+    el.style.transform = `translateX(${x - shot.x}px)`;
+}
 ```
 
 ```tsx
@@ -30,4 +37,4 @@ Bullets fly across the viewport on a CSS keyframe (`translateX(100vw * dir)` ove
 </div>
 ```
 
-Snap spawn positions with `devicePx()`. Every copy carries `data-shot={id}` so `land()` can freeze them all together.
+Every copy carries `data-shot={id}` so one write moves them all.

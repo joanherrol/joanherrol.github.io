@@ -59,7 +59,7 @@ A strict design system for flat pixel-art web UIs that sit alongside PICO-8-styl
    - 7.5 [Spawn Shots Flush With the Muzzle on the Recoil Frame](#75-spawn-shots-flush-with-the-muzzle-on-the-recoil-frame)
    - 7.6 [Burst From the Frame on Screen, Then Slide Back In](#76-burst-from-the-frame-on-screen-then-slide-back-in)
 8. [Combat: Bullets, Collisions, Effects](#8-combat-bullets-collisions-effects) — **MEDIUM-HIGH**
-   - 8.1 [Bullets Move on CSS in Fixed Screen Layers](#81-bullets-move-on-css-in-fixed-screen-layers)
+   - 8.1 [Bullets Move in the Game Loop, in Fixed Screen Layers](#81-bullets-move-in-the-game-loop-in-fixed-screen-layers)
    - 8.2 [Only Solid Things Stop Bullets, Never Shadows](#82-only-solid-things-stop-bullets-never-shadows)
    - 8.3 [Simple Swept Hitboxes; the Bullet Disappears on the First Hit](#83-simple-swept-hitboxes-the-bullet-disappears-on-the-first-hit)
 9. [Performance](#9-performance) — **MEDIUM**
@@ -1579,21 +1579,28 @@ Update the state ref synchronously (`enemyRef.current = next`) before `setState`
 
 Bullets move on CSS, collide with plain hitboxes of solid things (never shadows) and disappear on the first hit.
 
-### 8.1 Bullets Move on CSS in Fixed Screen Layers
+### 8.1 Bullets Move in the Game Loop, in Fixed Screen Layers
 
-**Impact: MEDIUM (smooth bullets with correct depth under content and over characters)**
+**Impact: MEDIUM (bullets never drawn past a hit, with correct depth under content and over characters)**
 
-Bullets fly across the viewport on a CSS keyframe (`translateX(100vw * dir)` over 1000ms, linear), not a JS position loop. They are `position: fixed` at the screen height they were fired from, so scrolling dodges them. Render the shadow copies in a `z-index: -1` layer, and the bullets in a `-1` layer after it (over characters, under content). On desktop, add a second bullet copy at z 40 clipped to the side lane, so bullets over the lane show above the lane character.
+Move bullets from the same `requestAnimationFrame` loop that checks collisions: `x = spawnX + dir * speed * (now - born)`, snapped with `devicePx()` and written as a `translateX` on every copy. Don't use a CSS keyframe: it runs on the compositor thread and keeps moving bullets past covers whenever the main thread is late. Bullets are `position: fixed` at the screen height they were fired from, so scrolling dodges them. Render shadow copies in a `z-index: -1` layer and bullets in a `-1` layer after it (over characters, under content). On desktop, add a second bullet copy at z 40 clipped to the side lane, so bullets over the lane show above the lane character.
+
+**Incorrect (compositor-driven; the collision loop can only chase it):**
+
+```css
+.shot { animation: pixel-bullet 1000ms linear both; }
+```
 
 **Correct:**
 
-```css
-@keyframes pixel-bullet { to { transform: translateX(calc(100vw * var(--dir, 1))); } }
-.shot { animation: pixel-bullet 1000ms linear both; }
-.shot.is-left { --dir: -1; }
-.player-bullet { background: var(--color-white); }
-.enemy-bullet  { background: var(--color-red); }
-.shot-shadow   { background: var(--color-black); }
+```ts
+const speed = prefersReducedMotion() ? 0 : window.innerWidth / BULLET_MS;
+const to = devicePx(shot.x + dir * speed * (now - shot.born));
+// …hit test from last position to `to`, then:
+function place(shot: Shot, x: number) {
+  for (const el of document.querySelectorAll<HTMLElement>(`[data-shot="${shot.id}"]`))
+    el.style.transform = `translateX(${x - shot.x}px)`;
+}
 ```
 
 ```tsx
@@ -1606,7 +1613,7 @@ Bullets fly across the viewport on a CSS keyframe (`translateX(100vw * dir)` ove
 </div>
 ```
 
-Snap spawn positions with `devicePx()`. Every copy carries `data-shot={id}` so `land()` can freeze them all together.
+Every copy carries `data-shot={id}` so one write moves them all.
 
 ### 8.2 Only Solid Things Stop Bullets, Never Shadows
 
@@ -1650,9 +1657,9 @@ Only the body and gun canvases carry `sprite-solid`; shadow canvases never colli
 
 **Impact: HIGH (reliable, cheap collisions with no bullets passing through or lingering)**
 
-Bullets fly horizontally, so a hit test only needs rectangles. Sweep from last frame's box to this frame's box along x, so a fast bullet can't jump over a thin cover. The nearest box along the flight direction wins, whether it's a cover or the target character. On a hit, hide every copy of the bullet at once, drop it from the live set, and spark at the face. Keep it simple: per-pixel masks, tilted boxes and resting bullets against faces cost more than they add, and they made bullets linger.
+Bullets move horizontally and covers move vertically as the page scrolls, so rectangles are enough. Each frame, sweep the bullet from its last x to its new x, and sweep each cover over the scroll distance `dy` since the last frame. Nothing then tunnels, whether it flew or scrolled past. The nearest box along the flight direction wins, cover or character. On a hit, draw the bullet flush at the contact point for that one frame, stop checking it, remove it on the next frame, and spark off cover.
 
-**Incorrect (overlap at the current frame only; tunnels through thin covers, and the bullet stays visible):**
+**Incorrect (overlap at the current frame only; tunnels on fast shots or fast scrolls, and draws the bullet past the face):**
 
 ```ts
 if (overlaps(bullet.getBoundingClientRect(), cover)) spark();
@@ -1661,28 +1668,36 @@ if (overlaps(bullet.getBoundingClientRect(), cover)) spark();
 **Correct:**
 
 ```ts
-export function firstHit(prev: Rect, now: Rect, rects: Rect[], dir: number) {
-  const left = Math.min(prev.left, now.left);
-  const right = Math.max(prev.right, now.right);
-  let best: { x: number } | null = null;
+export function firstHit(from: number, to: number, size: number, top: number, rects: Rect[], dy: number) {
+  const dir = Math.sign(to - from) || 1;
+  const left = Math.min(from, to);
+  const right = Math.max(from, to) + size;
+  let best: { x: number; vertical: boolean } | null = null;
   for (const r of rects) {
     if (r.right <= left || r.left >= right) continue;
-    if (r.bottom <= now.top || r.top >= now.bottom) continue;
-    const x = dir > 0 ? Math.max(r.left, prev.left) : Math.min(r.right, prev.right);
-    if (!best || (dir > 0 ? x < best.x : x > best.x)) best = { x };
+    if (Math.max(r.bottom, r.bottom + dy) <= top) continue;
+    if (Math.min(r.top, r.top + dy) >= top + size) continue;
+    const inside = r.left < from + size && r.right > from;
+    const x = inside ? from : dir > 0 ? r.left - size : r.right;
+    if (!best || (x - best.x) * dir < 0) best = { x, vertical: inside };
   }
   return best;
 }
+```
 
-const struck = firstHit(prev, now, spriteRects(target), dir);
-const cover = firstHit(prev, now, covers, dir);
-if (struck && (!cover || (dir > 0 ? struck.x <= cover.x : struck.x >= cover.x)) && damage(shot.id)) {
-  hide(shot.id); // visibility: hidden on every [data-shot] copy
-  removeShot(shot.id);
+```ts
+const dy = window.scrollY - lastScrollY;
+const struck = firstHit(from, to, size, shot.y, spriteRects(target), 0);
+const cover = firstHit(from, to, size, shot.y, covers, dy);
+if (struck && (!cover || (struck.x - cover.x) * dir <= 0) && damage(shot.id)) {
+  place(shot, struck.x);
+  land(shot.id); // live.delete(id); requestAnimationFrame(() => removeShot(id))
 } else if (cover) {
-  hide(shot.id);
-  removeShot(shot.id);
-  addSpark(cover.x + ((-dir - 1) * scale) / 2, now.top + now.height / 2 - scale / 2, sparkPieces(color, [-dir, 0]));
+  place(shot, cover.x);
+  land(shot.id);
+  addSpark(/* at the face */, sparkPieces(color, cover.vertical ? [0, dy > 0 ? -1 : 1] : [-dir, 0]));
+} else {
+  place(shot, to);
 }
 ```
 
@@ -1696,7 +1711,7 @@ function sparkPieces(color: string, [nx, ny]: [number, number]) {
 }
 ```
 
-A target that can't be hurt right now (dead, respawning, off screen) doesn't stop the bullet. The first frame's `prev` is the spawn point. Scrolling a cover into a fixed bullet counts too, because the current-frame overlap is part of the sweep.
+A target that can't be hurt right now (dead, respawning, off screen) doesn't stop the bullet. Removing the element in the same frame as the hit would make React drop it before the flush frame paints, which is why removal waits one frame.
 
 ---
 
@@ -1754,7 +1769,7 @@ Keep `flipX` and `tint` in refs and redraw on change, so they never restart the 
 
 **Impact: MEDIUM (zero per-frame work while no bullet is flying)**
 
-The collision loop only reads positions; CSS does the moving. Start it when the first bullet exists and stop it when the last one is gone, by deriving a boolean from state and using it as the effect's dependency. Keep live game data in refs (a `Map` of live shots), so the loop never needs React state.
+One loop moves bullets and checks their hits. Start it when the first bullet exists and stop it when the last one is gone, by deriving a boolean from state and using it as the effect's dependency. Keep live game data in refs (a `Map` of live shots), so the loop never needs React state.
 
 **Incorrect:**
 
