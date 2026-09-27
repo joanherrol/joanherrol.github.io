@@ -13,9 +13,22 @@ function titleLines(title: Element, rects: Rect[]) {
   const range = document.createRange();
   const walker = document.createTreeWalker(title, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-    if (node.parentElement?.closest(".drop-copy, button")) continue;
+    const parent = node.parentElement;
+    if (!parent || parent.closest(".drop-copy, button")) continue;
+    // A marked word's accent ring is part of it; its shadow is not.
+    const ring = parent.closest(".text-mark")
+      ? Number.parseFloat(getComputedStyle(parent).fontSize) / 8
+      : 0;
     range.selectNodeContents(node);
-    for (const r of range.getClientRects()) if (onScreen(r)) rects.push(r);
+    for (const r of range.getClientRects()) {
+      if (!onScreen(r)) continue;
+      rects.push({
+        left: r.left - ring,
+        top: r.top - ring,
+        right: r.right + ring,
+        bottom: r.bottom + ring,
+      });
+    }
   }
 }
 

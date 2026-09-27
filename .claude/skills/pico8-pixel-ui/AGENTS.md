@@ -1612,7 +1612,7 @@ Snap spawn positions with `devicePx()`. Every copy carries `data-shot={id}` so `
 
 **Impact: HIGH (bullets hit what reads as solid and fly over shadows)**
 
-Bullets stop at cards and buttons, image frames, the text lines of titles, and the body and gun sprites of the target character. Shadows, `.drop-copy` text and empty space never stop them. Use plain rectangles: `getBoundingClientRect()` for elements (a tilted frame's rect is close enough), and one `Range.getClientRects()` rect per line of title text. Read covers fresh each frame, only for what is on screen.
+Bullets stop at cards and buttons, image frames, the text lines of titles (a marked word's accent ring included), and the body and gun sprites of the target character. Shadows, `.drop-copy` text and empty space never stop them. Use plain rectangles: `getBoundingClientRect()` for elements (a tilted frame's rect is close enough), and one `Range.getClientRects()` rect per line of title text. Read covers fresh each frame, only for what is on screen.
 
 **Incorrect (the whole heading block, including the empty space beside short titles):**
 
@@ -1629,9 +1629,13 @@ function titleLines(title: Element, rects: Rect[]) {
   const range = document.createRange();
   const walker = document.createTreeWalker(title, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-    if (node.parentElement?.closest(".drop-copy, button")) continue;
+    const parent = node.parentElement;
+    if (!parent || parent.closest(".drop-copy, button")) continue;
+    // A marked word's accent ring is part of it; its shadow is not.
+    const ring = parent.closest(".text-mark") ? Number.parseFloat(getComputedStyle(parent).fontSize) / 8 : 0;
     range.selectNodeContents(node);
-    for (const r of range.getClientRects()) if (onScreen(r)) rects.push(r);
+    for (const r of range.getClientRects())
+      if (onScreen(r)) rects.push({ left: r.left - ring, top: r.top - ring, right: r.right + ring, bottom: r.bottom + ring });
   }
 }
 
