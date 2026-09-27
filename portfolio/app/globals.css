@@ -133,12 +133,12 @@
 /* Installed web apps: clear the status bar blur and the home indicator. */
 @media (display-mode: standalone) {
   :root {
-    --app-t: 16px;
+    --app-t: 24px;
     --app-b: 24px;
   }
 }
 :root.standalone {
-  --app-t: 16px;
+  --app-t: 24px;
   --app-b: 24px;
 }
 /* Clear the corner menus. */

@@ -279,7 +279,7 @@ export function FitNotes() {
 <div className="fixed left-[calc(var(--edge)+var(--safe-l))] top-[calc(var(--edge)+var(--safe-t))]">…</div>
 ```
 
-iOS 26 and later also blur a band below the status bar that is taller than the reported inset, and may report no bottom inset. So add fixed extra space in the installed app only, with `@media (display-mode: standalone)` plus a `.standalone` class set from `navigator.standalone` in the boot script: `--safe-t: calc(env(safe-area-inset-top, 0px) + var(--app-t))`, with `--app-t: 16px` and `--app-b: 24px` there.
+iOS 26 and later also blur a band below the status bar that is taller than the reported inset, and may report no bottom inset. So add fixed extra space in the installed app only, with `@media (display-mode: standalone)` plus a `.standalone` class set from `navigator.standalone` in the boot script: `--safe-t: calc(env(safe-area-inset-top, 0px) + var(--app-t))`, with `--app-t: 24px` and `--app-b: 24px` there.
 
 For JS-positioned sprites, read the insets from a probe's computed padding (`padding: var(--safe-t) var(--safe-r) var(--safe-b) var(--safe-l)`). Keep that probe on the page and re-read it from a `ResizeObserver` (`box: "border-box"`), because iOS can resolve the insets after load without firing a resize. Test by overriding the `--safe-*` variables, because desktop browsers can't emulate them.
 
