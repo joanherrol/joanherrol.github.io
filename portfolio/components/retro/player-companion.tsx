@@ -300,6 +300,11 @@ export function PlayerCompanion() {
   const enemyRef = useLatest(enemy);
 
   useEffect(() => {
+    // iOS can resolve safe areas late, without a resize.
+    const probe = document.createElement("div");
+    probe.style.cssText =
+      "position:fixed;visibility:hidden;pointer-events:none;width:var(--edge);padding:var(--safe-t) var(--safe-r) var(--safe-b) var(--safe-l)";
+    document.body.append(probe);
     const read = () => {
       const laneScale =
         Number(
@@ -309,11 +314,6 @@ export function PlayerCompanion() {
         ) || 0;
       setAtBottomOnly(laneScale === 0);
       setScale((laneScale || PHONE_SCALE) * artPx());
-      // Same inset as the corner menus.
-      const probe = document.createElement("div");
-      probe.style.cssText =
-        "position:fixed;width:var(--edge);padding:var(--safe-t) var(--safe-r) var(--safe-b) var(--safe-l);box-sizing:content-box";
-      document.body.append(probe);
       const cs = getComputedStyle(probe);
       setEdge(Number.parseFloat(cs.width));
       setSafe((s) => {
@@ -327,11 +327,16 @@ export function PlayerCompanion() {
           ? s
           : next;
       });
-      probe.remove();
     };
     read();
+    const observer = new ResizeObserver(read);
+    observer.observe(probe, { box: "border-box" });
     window.addEventListener("resize", read);
-    return () => window.removeEventListener("resize", read);
+    return () => {
+      observer.disconnect();
+      probe.remove();
+      window.removeEventListener("resize", read);
+    };
   }, []);
 
   useEffect(() => {

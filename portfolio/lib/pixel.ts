@@ -15,7 +15,7 @@ export function artPx() {
 }
 
 // Sets --ipx before paint and again on zoom, which fires resize.
-export const pixelBootScript = `(function(){var r=document.documentElement;function s(){var d=window.devicePixelRatio||1;r.style.setProperty("--ipx",Math.max(1,Math.round(d))/d+"px")}s();addEventListener("resize",s)})()`;
+export const pixelBootScript = `(function(){var r=document.documentElement;if(navigator.standalone)r.classList.add("standalone");function s(){var d=window.devicePixelRatio||1;r.style.setProperty("--ipx",Math.max(1,Math.round(d))/d+"px")}s();addEventListener("resize",s)})()`;
 
 /** The base pixel P in CSS px, from the registered --p. */
 export function basePx() {

@@ -81,9 +81,11 @@
   --s: var(--fp-headline-md);
   --edge: calc(var(--p) * 6);
   /* Notch and home indicator, when installed to the home screen. */
-  --safe-t: env(safe-area-inset-top, 0px);
+  --app-t: 0px;
+  --app-b: 0px;
+  --safe-t: calc(env(safe-area-inset-top, 0px) + var(--app-t));
   --safe-r: env(safe-area-inset-right, 0px);
-  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-b: calc(env(safe-area-inset-bottom, 0px) + var(--app-b));
   --safe-l: env(safe-area-inset-left, 0px);
   /* Height of the pixel teeth above each section. */
   --band: calc(var(--p) * 4);
@@ -127,6 +129,17 @@
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* Installed web apps: clear the status bar blur and the home indicator. */
+@media (display-mode: standalone) {
+  :root {
+    --app-t: 16px;
+    --app-b: 24px;
+  }
+}
+:root.standalone {
+  --app-t: 16px;
+  --app-b: 24px;
 }
 /* Clear the corner menus. */
 @media (width >= 40rem) and (height < 30rem) {
