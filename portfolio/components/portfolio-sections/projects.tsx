@@ -43,7 +43,7 @@ export function Projects() {
         const tone: Tone = i % 2 === 0 ? "dark" : "alt";
         return (
           <Section key={p.id} id={p.id} tone={tone} className="overflow-x-clip">
-            <div className="grid items-center gap-(--gap-lg) md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-20">
+            <div className="grid items-center gap-(--gap-lg) short:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:landscape:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-20">
               <div>
                 <SectionLabel>2-{i + 1}</SectionLabel>
                 <SectionTitle>
@@ -66,7 +66,7 @@ export function Projects() {
                 title={p.image.split("/").pop()?.toLowerCase() ?? ""}
                 tilt={i % 2 === 0 ? -1 : 1}
                 delay={1.3 + i * 1.6}
-                className="mx-auto mt-8 w-full max-w-[min(100%,50svh)] md:mt-0 md:max-w-none"
+                className="mx-auto mt-8 w-full max-w-[min(100%,50svh)] md:landscape:mt-0 md:landscape:max-w-none lg:mt-0 lg:max-w-none short:mt-0 short:max-w-[80svh]!"
               >
                 <Image
                   src={p.image}

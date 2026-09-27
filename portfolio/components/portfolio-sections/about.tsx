@@ -14,7 +14,7 @@ const CV_HREF = "/docs/CV_JoanHervas_English.pdf";
 export function About() {
   return (
     <Section id="about" tone="alt">
-      <div className="grid items-center gap-(--gap-lg) lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      <div className="grid items-center gap-(--gap-lg) short:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div>
           <SectionLabel>{copy.about.label}</SectionLabel>
           <SectionTitle>
@@ -36,8 +36,8 @@ export function About() {
 
         <ConsoleFrame
           title="P1"
-          tilt={2}
-          className="mx-auto mt-8 w-full max-w-[min(92%,56svh)] lg:mt-0 sm:max-w-[min(32rem,80svh)]"
+          tilt={1}
+          className="mx-auto mt-8 w-full max-w-[min(92%,56svh)] short:mt-0 lg:mt-0 sm:max-w-[min(32rem,80svh)]"
         >
           <div className="relative aspect-square">
             <Image

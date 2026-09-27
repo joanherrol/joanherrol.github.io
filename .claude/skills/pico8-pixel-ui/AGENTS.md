@@ -10,7 +10,7 @@
 
 ## Abstract
 
-A strict design system for flat pixel-art web UIs that sit alongside PICO-8-style game characters, plus the techniques for animating those characters, their shadows, shots and collisions on a web page. It holds 45 rules across 10 categories, ordered by impact from critical (the pixel grid, colour, shadows and layers) to supporting (performance and tooling). Each rule explains why it matters and shows incorrect and correct code. The reference implementation is a Next.js 16, React 19 and Tailwind CSS v4 portfolio; `templates/` holds its core files.
+A strict design system for flat pixel-art web UIs that sit alongside PICO-8-style game characters, plus the techniques for animating those characters, their shadows, shots and collisions on a web page. It holds 46 rules across 10 categories, ordered by impact from critical (the pixel grid, colour, shadows and layers) to supporting (performance and tooling). Each rule explains why it matters and shows incorrect and correct code. The reference implementation is a Next.js 16, React 19 and Tailwind CSS v4 portfolio; `templates/` holds its core files.
 
 ---
 
@@ -20,9 +20,10 @@ A strict design system for flat pixel-art web UIs that sit alongside PICO-8-styl
    - 1.1 [Define One Device-Aligned Pixel (--ipx)](#11-define-one-devicealigned-pixel-ipx)
    - 1.2 [Build Every Length From Whole Device Pixels](#12-build-every-length-from-whole-device-pixels)
    - 1.3 [Count Spacing in Base Pixels (P)](#13-count-spacing-in-base-pixels-p)
-   - 1.4 [Size Text-Bound Details in Glyph Pixels (0.125em)](#14-size-textbound-details-in-glyph-pixels-0125em)
-   - 1.5 [Draw Sprites as Whole Device-Pixel Blocks](#15-draw-sprites-as-whole-devicepixel-blocks)
-   - 1.6 [Hand-Draw UI Art as String Rows Rendered to SVG](#16-handdraw-ui-art-as-string-rows-rendered-to-svg)
+   - 1.4 [Size by Width and Height; Lay Out by Width and Orientation](#14-size-by-width-and-height-lay-out-by-width-and-orientation)
+   - 1.5 [Size Text-Bound Details in Glyph Pixels (0.125em)](#15-size-textbound-details-in-glyph-pixels-0125em)
+   - 1.6 [Draw Sprites as Whole Device-Pixel Blocks](#16-draw-sprites-as-whole-devicepixel-blocks)
+   - 1.7 [Hand-Draw UI Art as String Rows Rendered to SVG](#17-handdraw-ui-art-as-string-rows-rendered-to-svg)
 2. [Colour](#2-colour) — **CRITICAL**
    - 2.1 [Use Only the 32 PICO-8 Colours](#21-use-only-the-32-pico8-colours)
    - 2.2 [No Opacity, Alpha or Gradients at Rest](#22-no-opacity-alpha-or-gradients-at-rest)
@@ -44,7 +45,7 @@ A strict design system for flat pixel-art web UIs that sit alongside PICO-8-styl
    - 5.1 [Pressables Float, Lift One Own Pixel, Press Flush](#51-pressables-float-lift-one-own-pixel-press-flush)
    - 5.2 [The Hit Zone Never Moves](#52-the-hit-zone-never-moves)
    - 5.3 [Menu Rows Highlight in Accent; Selected Looks Like Hovered](#53-menu-rows-highlight-in-accent-selected-looks-like-hovered)
-   - 5.4 [Image Frames Bob and Tilt; Their Shadow Only Tilts](#54-image-frames-bob-and-tilt-their-shadow-only-tilts)
+   - 5.4 [Image Frames Start Upright, Then Bob and Sway; Their Shadow Only Sways](#54-image-frames-start-upright-then-bob-and-sway-their-shadow-only-sways)
    - 5.5 [Reveals, Hurt Flashes and Reduced Motion](#55-reveals-hurt-flashes-and-reduced-motion)
    - 5.6 [Declare Click Sounds With data-sound, One Listener](#56-declare-click-sounds-with-datasound-one-listener)
 6. [Outlines and Surfaces](#6-outlines-and-surfaces) — **MEDIUM-HIGH**
@@ -191,7 +192,80 @@ export function basePx() {
 
 Arbitrary spacing is `calc(var(--p) * n)`. Hand-drawn UI art (a D-pad, console buttons) is drawn one art pixel per P, so `w-19` is exactly 19 art pixels. For a React value that follows resize, wrap `basePx` in `useSyncExternalStore` with a server snapshot of `0`, in its own client module.
 
-### 1.4 Size Text-Bound Details in Glyph Pixels (0.125em)
+### 1.4 Size by Width and Height; Lay Out by Width and Orientation
+
+**Impact: HIGH (landscape phones and portrait tablets stay balanced instead of inheriting the wrong sizes)**
+
+A landscape phone is wider than 40rem but only about 400px tall. If sizes follow width alone, it gets desktop type and spacing and every section overflows. A portrait tablet is the opposite case: width-driven headlines come out small on a tall screen.
+
+- **Sizes** (P, glyph tokens, and `sm:` paddings and text) need both width ≥ 40rem and height ≥ 30rem. Short screens keep phone sizes.
+- **Layout** (column counts, spans, flex direction) follows width only, with `min-[40rem]:` or `md:`, and orientation where it matters.
+- **Short screens** (`short:` = width ≥ 40rem and height < 30rem): use two columns for text and image, cap images by `svh`, and add top padding that clears the fixed corner menus.
+- **Portrait tablets:** headline and display medium scale more with width, and text-plus-image sections stack.
+- **Optional copy** that would push a section past one screen is hidden by measuring, not by guessing breakpoints.
+
+**Incorrect:**
+
+```css
+@media (width >= 40rem) { :root { --p: calc(var(--ipx) * 3); --fp-body-md: calc(var(--ipx) * 3); } }
+```
+
+```tsx
+<div className="grid md:grid-cols-2">…</div> {/* narrow columns on portrait tablets */}
+```
+
+**Correct:**
+
+```css
+@custom-variant sm (@media (width >= 40rem) and (height >= 30rem));
+@custom-variant short (@media (width >= 40rem) and (height < 30rem));
+
+@media (width >= 40rem) and (height >= 30rem) {
+  :root { --p: calc(var(--ipx) * 3); /* …desktop glyph tokens */ }
+}
+@media (width >= 40rem) and (height >= 30rem) and (orientation: portrait) {
+  :root {
+    --fp-display-md: round(clamp(4.5px, 1.4vw, 11px), var(--ipx));
+    --fp-headline-md: round(clamp(calc(var(--ipx) * 3), min(0.7vw, 0.75svh), calc(var(--ipx) * 7)), var(--ipx));
+  }
+}
+@media (width >= 40rem) and (height < 30rem) {
+  :root { --section-pt: calc(var(--edge) + round(up, 44px, var(--ipx)) + var(--p) * 4); }
+}
+```
+
+```tsx
+<div className="grid short:grid-cols-[1fr_1.1fr] md:landscape:grid-cols-[1fr_1.1fr] lg:grid-cols-[1fr_1.1fr]">
+  <Text />
+  <WindowFrame className="max-w-[min(100%,50svh)] short:max-w-[80svh]! md:landscape:max-w-none lg:max-w-none" />
+</div>
+```
+
+```tsx
+// Marks the section data-crowded when optional notes would push it past one screen.
+export function FitNotes() {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const section = ref.current?.closest("section");
+    if (!section) return;
+    const fit = () => {
+      delete section.dataset.crowded;
+      const limit = Number.parseFloat(getComputedStyle(section).minHeight);
+      if (section.getBoundingClientRect().height > limit + 0.5) section.dataset.crowded = "";
+    };
+    fit();
+    document.fonts.ready.then(fit);
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, []);
+  return <span ref={ref} hidden />;
+}
+// <p className="type-body-sm text-dark-grey in-data-crowded:hidden">…</p>
+```
+
+`@media not (a) and (b)` is invalid CSS, so avoid `not-sm:` once `sm` has two conditions; write the media query explicitly. Check 390×844, 844×390, 667×375, 820×1180, 1180×820, 768×1024 and 1440×900. A browser `deviceScaleFactor` below 1 changes `--ipx` and doubles every size, so test at 1 or 2.
+
+### 1.5 Size Text-Bound Details in Glyph Pixels (0.125em)
 
 **Impact: HIGH (borders, gaps and icons inside text match the text's own pixel)**
 
@@ -214,7 +288,7 @@ Both fonts draw 8 glyph pixels per em, so `0.125em` is one glyph pixel of the su
 
 Pixel icons are drawn as string rows and rendered at `1em = 8` glyph pixels, so a 7×7 icon is 7 glyph pixels square. Line heights are eighths too: 1, 1.125, 1.25, 1.375, 1.625.
 
-### 1.5 Draw Sprites as Whole Device-Pixel Blocks
+### 1.6 Draw Sprites as Whole Device-Pixel Blocks
 
 **Impact: CRITICAL (prevents uneven art pixels (some 2px, some 3px) and smoothing blur)**
 
@@ -248,7 +322,7 @@ const draw = () => {
 
 Pick `scale` from `artPx()` times a whole number (lane scale 4/5/6 on desktop, 4 on phones), or from a text's glyph pixel when a character stands on lettering (`fontSize / 8`). Snap anything you position from JS with `devicePx()`.
 
-### 1.6 Hand-Draw UI Art as String Rows Rendered to SVG
+### 1.7 Hand-Draw UI Art as String Rows Rendered to SVG
 
 **Impact: MEDIUM (crisp, recolourable, token-driven art without image files)**
 
@@ -611,26 +685,28 @@ A shadowed element must never transform or animate itself. Put the reveal, bob o
 A floating frame uses two siblings instead of a pseudo: the shadow tilts along with the body but never bobs, so it reads as the ground.
 
 ```tsx
-<figure data-reveal className="relative" style={{ "--tilt": `${tilt}deg`, "--float-delay": `${-delay}s` }}>
+<figure data-reveal className="relative" style={{ "--tilt": `${tilt}deg`, "--float-delay": `${delay}s` }}>
   <div aria-hidden="true" className="float-shadow" />
   <div className="float-body bg-cream">{children}</div>
 </figure>
 ```
 
 ```css
-.float-body, .float-shadow { rotate: var(--tilt, 0deg); }
 .float-shadow { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
 .float-shadow::before { /* same grown black copy as .pixel-float::before */ }
+/* Starts upright, leans to --tilt, back through upright to -tilt: a sine-like sway. */
 @keyframes float-tilt {
-  from { rotate: calc(var(--tilt, 0deg) - 1deg); }
-  to   { rotate: calc(var(--tilt, 0deg) + 1deg); }
+  0%, 50% { rotate: 0deg; animation-timing-function: ease-out; }
+  25% { rotate: var(--tilt, 1deg); animation-timing-function: ease-in; }
+  75% { rotate: calc(var(--tilt, 1deg) * -1); animation-timing-function: ease-in; }
+  100% { rotate: 0deg; }
 }
 @keyframes float-bob { to { translate: 0 calc(var(--px) * -2); } }
 @media (prefers-reduced-motion: no-preference) {
-  .float-shadow { animation: float-tilt 5s ease-in-out var(--float-delay, 0s) infinite alternate; }
+  .float-shadow { animation: float-tilt 10s var(--float-delay, 0s) infinite; }
   .float-body {
     animation:
-      float-tilt 5s ease-in-out var(--float-delay, 0s) infinite alternate,
+      float-tilt 10s var(--float-delay, 0s) infinite,
       float-bob 2s ease-in-out var(--float-delay, 0s) infinite alternate;
   }
 }
@@ -994,11 +1070,11 @@ export const dropdown = {
 
 When the menu opens, set the selection to the section crossing the middle of the viewport. Draw the marker sprite at `scale = P` so it matches the menu's spacing grid.
 
-### 5.4 Image Frames Bob and Tilt; Their Shadow Only Tilts
+### 5.4 Image Frames Start Upright, Then Bob and Sway; Their Shadow Only Sways
 
 **Impact: MEDIUM (lively frames whose shadow reads as the ground)**
 
-Image frames float. They bob up to 2 of their pixels and tilt ±1° around a resting tilt. Give each frame a negative animation delay so neighbours drift out of phase. The shadow shares the tilt keyframes but not the bob. With reduced motion on, frames sit still at their resting tilt. The implementation is in `shadow-wrap-to-animate`.
+Image frames and their pictures float. Every frame starts upright, with no rotation at all, then bobs up to 2 of its pixels and sways ±1°. The sign of `tilt` picks which way it leans first. Give neighbours different positive delays so they drift out of phase; a positive delay keeps each frame upright until it starts, which a negative delay wouldn't. The shadow shares the tilt keyframes but not the bob. With reduced motion on, frames sit still and upright. The implementation is in `shadow-wrap-to-animate`.
 
 **Incorrect (the whole figure bobs, shadow included, so it floats with no ground):**
 
@@ -1010,7 +1086,7 @@ figure { animation: bob 2s infinite alternate; filter: drop-shadow(6px 6px 0 bla
 
 ```tsx
 <WindowFrame title="Game" tilt={-1}>…</WindowFrame>
-<ConsoleFrame title="P1" tilt={2} delay={1.5}>…</ConsoleFrame>
+<ConsoleFrame title="P1" tilt={1} delay={1.5}>…</ConsoleFrame>
 ```
 
 Collisions treat a tilted frame as an oriented box read from its computed `rotate` (see `combat-covers-not-shadows`).
@@ -1178,7 +1254,7 @@ const LIGHTS = ["bg-red border-dark-red", "bg-yellow border-orange", "bg-green b
   <Image … />
 </FloatFrame>
 
-<FloatFrame tilt={2} bodyClassName="flex items-center justify-between gap-6 bg-cream px-6 py-8">
+<FloatFrame tilt={1} bodyClassName="flex items-center justify-between gap-6 bg-cream px-6 py-8">
   <PixelArt rows={DPAD} colors={DPAD_COLORS} className="w-19 shrink-0" />
   <div className="min-w-0 flex-1 bg-dark-grey px-3 pb-3">
     <div className="flex items-center gap-[0.5em] py-[0.375em] text-body uppercase leading-none tracking-[0.125em] text-cream">

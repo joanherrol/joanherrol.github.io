@@ -6,7 +6,7 @@ Section order, prefixes and impact. Rule files are named `<prefix>-<name>.md`.
 
 **Impact:** CRITICAL
 **Description:** The one rule everything else serves: nothing ever renders a half pixel. Every length is a whole number of device pixels, scaled by whole steps.
-**Rules:** device-unit, integer-lengths, base-spacing, em-glyph-units, canvas-blocks, art-svg
+**Rules:** device-unit, integer-lengths, base-spacing, orientation, em-glyph-units, canvas-blocks, art-svg
 
 ## 2. Colour (color)
 

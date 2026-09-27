@@ -22,7 +22,7 @@ export function Section({
   return (
     <section
       id={id}
-      className={`tone-${tone} section-paper relative flex min-h-screen-band flex-col justify-center py-(--section-py) px-(--lane) ${edge ? "pixel-edge" : ""} ${className}`}
+      className={`tone-${tone} section-paper relative flex min-h-screen-band flex-col justify-center pt-(--section-pt) pb-(--section-py) px-(--lane) ${edge ? "pixel-edge" : ""} ${className}`}
     >
       <div
         className={`relative mx-auto w-full max-w-384 ${fill ? "flex flex-1 flex-col" : ""}`}
@@ -140,7 +140,7 @@ export function TitleBar({
 
 type FloatProps = Readonly<{
   title: string;
-  /** Resting tilt in degrees. */
+  /** Sway in degrees; the sign picks which way it leans first. */
   tilt?: number;
   /** Seconds into the float cycle, so neighbours drift apart. */
   delay?: number;
@@ -149,7 +149,7 @@ type FloatProps = Readonly<{
 }>;
 
 function FloatFrame({
-  tilt = 0,
+  tilt = 1,
   delay = 0,
   className,
   bodyClassName,
@@ -162,7 +162,7 @@ function FloatFrame({
       style={
         {
           "--tilt": `${tilt}deg`,
-          "--float-delay": `${-delay}s`,
+          "--float-delay": `${delay}s`,
         } as React.CSSProperties
       }
     >

@@ -318,7 +318,7 @@ export default function DesignSheet() {
               <WindowFrame title="Window" tilt={-1}>
                 <Placeholder />
               </WindowFrame>
-              <ConsoleFrame title="P1" tilt={2} delay={1.5}>
+              <ConsoleFrame title="P1" tilt={1} delay={1.5}>
                 <Placeholder />
               </ConsoleFrame>
             </div>

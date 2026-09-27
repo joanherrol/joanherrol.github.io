@@ -24,7 +24,7 @@ tags: surface, frames, window, console, images
   <Image … />
 </FloatFrame>
 
-<FloatFrame tilt={2} bodyClassName="flex items-center justify-between gap-6 bg-cream px-6 py-8">
+<FloatFrame tilt={1} bodyClassName="flex items-center justify-between gap-6 bg-cream px-6 py-8">
   <PixelArt rows={DPAD} colors={DPAD_COLORS} className="w-19 shrink-0" />
   <div className="min-w-0 flex-1 bg-dark-grey px-3 pb-3">
     <div className="flex items-center gap-[0.5em] py-[0.375em] text-body uppercase leading-none tracking-[0.125em] text-cream">

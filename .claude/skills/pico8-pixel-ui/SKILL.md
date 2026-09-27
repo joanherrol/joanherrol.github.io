@@ -9,7 +9,7 @@ metadata:
 
 # PICO-8 Pixel UI
 
-A strict design system for flat pixel-art UIs that match PICO-8-style game characters, plus the techniques for animating those characters, their shadows, shots and collisions on a web page. It holds 45 rules across 10 categories, ordered by impact. The rules are strict: if something can't be built within them, change the design, not the rule.
+A strict design system for flat pixel-art UIs that match PICO-8-style game characters, plus the techniques for animating those characters, their shadows, shots and collisions on a web page. It holds 46 rules across 10 categories, ordered by impact. The rules are strict: if something can't be built within them, change the design, not the rule.
 
 ## When to Apply
 
@@ -50,6 +50,7 @@ A strict design system for flat pixel-art UIs that match PICO-8-style game chara
 - `pixel-device-unit` - Set `--ipx` to one device pixel before paint with a boot script
 - `pixel-integer-lengths` - Fixed lengths are `calc(var(--ipx) * n)`; fluid ones use `round(…, var(--ipx))`
 - `pixel-base-spacing` - Spacing counts base pixels P (2 device px on phones, 3 from 40rem)
+- `pixel-orientation` - Sizes need width and height; layouts follow width and orientation; short screens keep phone sizes
 - `pixel-em-glyph-units` - Inside text, 0.125em is one glyph pixel for borders, gaps and icons
 - `pixel-canvas-blocks` - Draw sprites as `round(scale × dpr)` device-pixel blocks with no smoothing
 - `pixel-art-svg` - Hand-draw UI art as string rows rendered to crisp SVG in token colours
@@ -82,7 +83,7 @@ A strict design system for flat pixel-art UIs that match PICO-8-style game chara
 - `press-float-raise` - Float 1 `--s`, lift 1 own pixel on hover, sit flush when pressed, all with a registered `--raise`
 - `press-fixed-hit-zone` - The element ignores the pointer; an `::after` fixed at rest takes it
 - `press-menu-rows` - Hovered and selected menu rows share the accent fill
-- `press-float-frames` - Frames bob 2 px and tilt ±1°; the shadow only tilts
+- `press-float-frames` - Frames start upright, then bob 2 px and sway ±1°; the shadow only sways
 - `press-feedback-motion` - Scroll-timeline reveals, solid red hurt flashes, `steps(1)` blinks, reduced motion
 - `press-sound-delegation` - `data-sound` plus one listener; loudness-normalised, pitch-jittered
 

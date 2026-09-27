@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Short landscape phones keep phone sizes. */
+@custom-variant sm (@media (width >= 40rem) and (height >= 30rem));
+@custom-variant short (@media (width >= 40rem) and (height < 30rem));
+
 @property --p {
   syntax: "<length>";
   inherits: true;
@@ -80,6 +84,7 @@
   --band: calc(var(--p) * 4);
 
   --section-py: round(clamp(2.5rem, 8.5svh, 8rem), var(--ipx));
+  --section-pt: var(--section-py);
   --gap-sm: round(clamp(0.5rem, 2svh, 1.25rem), var(--ipx));
   --gap-md: round(clamp(1rem, 3svh, 2rem), var(--ipx));
   --gap-lg: round(clamp(1rem, 4svh, 3.5rem), var(--ipx));
@@ -118,7 +123,15 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
 }
-@media (width >= 40rem) {
+/* Clear the corner menus. */
+@media (width >= 40rem) and (height < 30rem) {
+  :root {
+    --section-pt: calc(
+      var(--edge) + round(up, 44px, var(--ipx)) + var(--p) * 4
+    );
+  }
+}
+@media (width >= 40rem) and (height >= 30rem) {
   :root {
     --p: calc(var(--ipx) * 3);
     --fp-display-lg: calc(var(--ipx) * 11);
@@ -142,14 +155,23 @@
     );
   }
 }
-@media (width >= 64rem) {
+@media (width >= 40rem) and (height >= 30rem) and (orientation: portrait) {
+  :root {
+    --fp-display-md: round(clamp(4.5px, 1.4vw, 11px), var(--ipx));
+    --fp-headline-md: round(
+      clamp(calc(var(--ipx) * 3), min(0.7vw, 0.75svh), calc(var(--ipx) * 7)),
+      var(--ipx)
+    );
+  }
+}
+@media (width >= 64rem) and (height >= 30rem) {
   :root {
     --fp-display-lg: calc(var(--ipx) * 14);
     --fp-display-sm: calc(var(--ipx) * 10);
     --companion-scale: 5;
   }
 }
-@media (width >= 90rem) {
+@media (width >= 90rem) and (height >= 30rem) {
   :root {
     --companion-scale: 6;
   }
@@ -287,21 +309,27 @@
   }
 
   @keyframes float-tilt {
-    from {
-      rotate: calc(var(--tilt, 0deg) - 1deg);
+    0%,
+    50% {
+      rotate: 0deg;
+      animation-timing-function: ease-out;
     }
-    to {
-      rotate: calc(var(--tilt, 0deg) + 1deg);
+    25% {
+      rotate: var(--tilt, 1deg);
+      animation-timing-function: ease-in;
+    }
+    75% {
+      rotate: calc(var(--tilt, 1deg) * -1);
+      animation-timing-function: ease-in;
+    }
+    100% {
+      rotate: 0deg;
     }
   }
   @keyframes float-bob {
     to {
       translate: 0 calc(var(--px) * -2);
     }
-  }
-  .float-body,
-  .float-shadow {
-    rotate: var(--tilt, 0deg);
   }
   .float-shadow {
     position: absolute;
@@ -311,12 +339,11 @@
   }
   @media (prefers-reduced-motion: no-preference) {
     .float-shadow {
-      animation: float-tilt 5s ease-in-out var(--float-delay, 0s) infinite
-        alternate;
+      animation: float-tilt 10s var(--float-delay, 0s) infinite;
     }
     .float-body {
       animation:
-        float-tilt 5s ease-in-out var(--float-delay, 0s) infinite alternate,
+        float-tilt 10s var(--float-delay, 0s) infinite,
         float-bob 2s ease-in-out var(--float-delay, 0s) infinite alternate;
     }
   }

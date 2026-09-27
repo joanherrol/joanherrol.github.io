@@ -26,26 +26,28 @@ A shadowed element must never transform or animate itself. Put the reveal, bob o
 A floating frame uses two siblings instead of a pseudo: the shadow tilts along with the body but never bobs, so it reads as the ground.
 
 ```tsx
-<figure data-reveal className="relative" style={{ "--tilt": `${tilt}deg`, "--float-delay": `${-delay}s` }}>
+<figure data-reveal className="relative" style={{ "--tilt": `${tilt}deg`, "--float-delay": `${delay}s` }}>
   <div aria-hidden="true" className="float-shadow" />
   <div className="float-body bg-cream">{children}</div>
 </figure>
 ```
 
 ```css
-.float-body, .float-shadow { rotate: var(--tilt, 0deg); }
 .float-shadow { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
 .float-shadow::before { /* same grown black copy as .pixel-float::before */ }
+/* Starts upright, leans to --tilt, back through upright to -tilt: a sine-like sway. */
 @keyframes float-tilt {
-  from { rotate: calc(var(--tilt, 0deg) - 1deg); }
-  to   { rotate: calc(var(--tilt, 0deg) + 1deg); }
+  0%, 50% { rotate: 0deg; animation-timing-function: ease-out; }
+  25% { rotate: var(--tilt, 1deg); animation-timing-function: ease-in; }
+  75% { rotate: calc(var(--tilt, 1deg) * -1); animation-timing-function: ease-in; }
+  100% { rotate: 0deg; }
 }
 @keyframes float-bob { to { translate: 0 calc(var(--px) * -2); } }
 @media (prefers-reduced-motion: no-preference) {
-  .float-shadow { animation: float-tilt 5s ease-in-out var(--float-delay, 0s) infinite alternate; }
+  .float-shadow { animation: float-tilt 10s var(--float-delay, 0s) infinite; }
   .float-body {
     animation:
-      float-tilt 5s ease-in-out var(--float-delay, 0s) infinite alternate,
+      float-tilt 10s var(--float-delay, 0s) infinite,
       float-bob 2s ease-in-out var(--float-delay, 0s) infinite alternate;
   }
 }

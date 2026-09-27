@@ -50,7 +50,7 @@ export function Contact() {
         </SectionTitle>
         <ul
           data-reveal
-          className="mt-(--gap-lg) grid w-fit max-w-full gap-8 text-left sm:grid-cols-[minmax(0,auto)_minmax(0,auto)] sm:gap-14"
+          className="mt-(--gap-lg) grid w-fit max-w-full gap-8 text-left min-[40rem]:grid-cols-[minmax(0,auto)_minmax(0,auto)] sm:gap-14"
         >
           {details.map((d) => (
             <li key={d.label} className="min-w-0">
@@ -85,10 +85,12 @@ export function Contact() {
                 rel="noopener noreferrer"
                 aria-label={social.label}
                 data-sound="ui"
-                className={`${CARD} size-[round(up,48px,var(--ipx))] justify-center gap-6 text-body sm:w-auto sm:px-8`}
+                className={`${CARD} size-[round(up,48px,var(--ipx))] justify-center gap-6 text-body min-[40rem]:w-auto min-[40rem]:px-8`}
               >
                 <PixelIcon name={social.icon} />
-                <span className="hidden sm:inline">{social.label}</span>
+                <span className="hidden min-[40rem]:inline">
+                  {social.label}
+                </span>
               </a>
             </li>
           ))}
