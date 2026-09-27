@@ -43,7 +43,7 @@ export function Education() {
         {education.map((e) => (
           // Reveals move the wrapper: a moving card would lift its own shadow.
           <li key={e.institution} data-reveal>
-            <div className="card-cream pixel-float grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4 p-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:gap-8 sm:p-6">
+            <div className="card-cream pixel-flat grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4 p-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:gap-8 sm:p-6">
               <div className="relative size-24 shrink-0 sm:size-26">
                 <Image
                   src={e.logo}

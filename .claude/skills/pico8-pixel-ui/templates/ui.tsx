@@ -41,7 +41,7 @@ export function SectionLabel({ children }: Readonly<{ children: ReactNode }>) {
   );
 }
 
-function DropText({ children }: Readonly<{ children: ReactNode }>) {
+export function DropText({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <>
       <span aria-hidden="true" className="drop-copy">

@@ -13,8 +13,7 @@ export function ContinuePrompt() {
     const prompt = promptRef.current;
     if (!prompt) return;
 
-    // Off screen it only pauses. Pressing it starts over, once it has left
-    // the screen, so the count is never seen jumping back.
+    // A press restarts the count only once it is off screen.
     let pressed = false;
     const observer = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting && pressed) {

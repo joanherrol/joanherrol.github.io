@@ -96,7 +96,6 @@ export function PaletteSwitcher() {
                     aria-pressed={p.id === current.id}
                     className={`group ${dropdown.item}`}
                   >
-                    {/* On the accent hover row, white keeps its accent chip apart. */}
                     <Swatch
                       palette={p}
                       className="outline-cream group-hover:outline-solid group-hover:outline-[0.125em]"

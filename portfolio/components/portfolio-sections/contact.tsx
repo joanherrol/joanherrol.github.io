@@ -94,7 +94,7 @@ export function Contact() {
           ))}
         </ul>
 
-        <p className="mt-(--gap-md) type-label-md text-light-grey">
+        <p className="mt-(--gap-lg) type-label-md text-light-grey">
           © {new Date().getFullYear()} Joan Hervás Roldán
         </p>
       </div>

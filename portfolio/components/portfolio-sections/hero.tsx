@@ -42,7 +42,6 @@ export function Hero() {
       <div className="flex-[1.07_1_0%]" />
       {/* The subtitle (w-0 min-w-full) wraps within the name's width. */}
       <div className="mx-auto flex w-fit flex-col items-center text-center">
-        {/* Its shadow is one of its own pixels, not a title pixel. */}
         <h1
           ref={titleRef}
           className="relative text-left type-display-md [--s:0.125em]"
