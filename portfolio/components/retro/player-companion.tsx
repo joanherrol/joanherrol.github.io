@@ -30,7 +30,17 @@ import {
   PixelBurst,
   type BurstPiece,
 } from "@/components/retro/pixel-burst";
+import {
+  readCovers,
+  restAgainst,
+  strike,
+  sweep,
+  type Box,
+  type Cover,
+  type Hit,
+} from "@/components/retro/collision";
 
+// Character pixels in device pixels on phones, where there are no lanes.
 const PHONE_SCALE = 4;
 const PHONE_SHOW_AT = 0.6;
 
@@ -52,9 +62,9 @@ const BURST_MS = 500;
 const IDLE_CYCLES_PER_ATTACK = 3;
 const PLAYER_HP = 3;
 const PLAYER_RESPAWN_MS = 2000;
-const HURT_MS = 300;
-const BODY_WIDTH = 8;
-const BODY_HEIGHT = 10;
+// Solid palette flashes, since blending would leave the palette.
+const HURT_FLASHES = [0, 140];
+const FLASH_MS = 70;
 const BOX_HEIGHT = 11;
 const FLOOR_ROW = 9;
 const PLAYER_SHADOW_TOP = 9;
@@ -73,111 +83,7 @@ type Shot = {
   floor: number;
 };
 
-// Page elements that stop bullets; titles block with their glyphs only.
-const COVER = ".card-cream, .card-accent, main figure";
-const TITLES = "main h1, main h2";
 const SPARK_MS = 250;
-
-type Cover = { key: string; rect: DOMRect };
-
-function onScreen(rect: DOMRect) {
-  return rect.width > 0 && rect.bottom > 0 && rect.top < window.innerHeight;
-}
-
-function coverRects(): Cover[] {
-  const covers: Cover[] = [];
-  document.querySelectorAll(COVER).forEach((el, i) => {
-    covers.push({ key: `c${i}`, rect: el.getBoundingClientRect() });
-  });
-  const range = document.createRange();
-  document.querySelectorAll(TITLES).forEach((title, i) => {
-    if (!onScreen(title.getBoundingClientRect())) return;
-    const walker = document.createTreeWalker(title, NodeFilter.SHOW_TEXT);
-    for (let n = 0, node = walker.nextNode(); node; node = walker.nextNode()) {
-      if (node.parentElement?.closest("button")) continue;
-      range.selectNodeContents(node);
-      for (const rect of range.getClientRects())
-        covers.push({ key: `t${i}.${n++}`, rect });
-    }
-  });
-  return covers.filter((c) => onScreen(c.rect));
-}
-
-type Box = { x: number; y: number; size: number };
-type Target = { left: number; top: number; width: number; height: number };
-
-// The cover a bullet flying in `dir` reaches within `lead` pixels.
-function findCover(covers: Cover[], box: Box, dir: number, lead: number) {
-  const left = dir > 0 ? box.x : box.x - lead;
-  const right = box.x + box.size + (dir > 0 ? lead : 0);
-  return covers.find(
-    ({ rect: r }) =>
-      right > r.left &&
-      left < r.right &&
-      box.y + box.size > r.top &&
-      box.y < r.bottom,
-  );
-}
-
-// Characters are hit a third of the way in from the side the bullet comes.
-function crosses(box: Box, dir: number, lead: number, target?: Target) {
-  if (!target?.width) return false;
-  if (!overlaps(box.y, box.size, target.top, target.height)) return false;
-  const right = target.left + target.width;
-  if (dir > 0) {
-    return (
-      box.x + box.size + lead >= target.left + target.width / 3 && box.x < right
-    );
-  }
-  return (
-    box.x - lead <= target.left + (target.width * 2) / 3 &&
-    box.x + box.size > target.left
-  );
-}
-
-// The struck face is the one the bullet crossed last this frame.
-function hitNormal(
-  box: { x: number; y: number; size: number },
-  prev: { x: number; y: number } | undefined,
-  rect: DOMRect,
-  before: DOMRect | undefined,
-  dir: number,
-): [number, number] {
-  if (!prev || !before) return [-dir, 0];
-  const entry = (gapBefore: number, gapNow: number) =>
-    gapBefore > 0 ? gapBefore / (gapBefore - gapNow) : -1;
-  const left = entry(
-    before.left - prev.x - box.size,
-    rect.left - box.x - box.size,
-  );
-  const right = entry(prev.x - before.right, box.x - rect.right);
-  const top = entry(
-    before.top - prev.y - box.size,
-    rect.top - box.y - box.size,
-  );
-  const bottom = entry(prev.y - before.bottom, box.y - rect.bottom);
-  const across = Math.max(left, right);
-  if (Math.max(top, bottom) > across) return top > bottom ? [0, -1] : [0, 1];
-  if (across < 0) return [-dir, 0];
-  return left > right ? [-1, 0] : [1, 0];
-}
-
-// Centred on the bullet, just outside the face it struck.
-function sparkOrigin(
-  box: { x: number; y: number; size: number },
-  rect: DOMRect,
-  [nx, ny]: [number, number],
-  scale: number,
-) {
-  const clamp = (v: number, lo: number, hi: number) =>
-    Math.min(Math.max(v, lo), hi);
-  const middle = (box.size - scale) / 2;
-  let x = clamp(box.x + middle, rect.left, rect.right - scale);
-  let y = clamp(box.y + middle, rect.top, rect.bottom - scale);
-  if (nx) x = nx < 0 ? rect.left - scale : rect.right;
-  if (ny) y = ny < 0 ? rect.top - scale : rect.bottom;
-  return { x, y };
-}
 
 function sparkPieces(color: string, [nx, ny]: [number, number]): BurstPiece[] {
   return Array.from({ length: 6 }, (_, i) => {
@@ -193,9 +99,6 @@ function sparkPieces(color: string, [nx, ny]: [number, number]): BurstPiece[] {
   });
 }
 
-function overlaps(top: number, height: number, top2: number, height2: number) {
-  return top < top2 + height2 && top2 < top + height;
-}
 type Pixel = { x: number; y: number; color: string };
 
 // Reads the frame on screen, so a burst never waits on a download.
@@ -245,6 +148,26 @@ function burstPieces(
       dy: Math.round(Math.sin(angle) * distance),
     };
   });
+}
+
+function solids(track: HTMLElement | null) {
+  return (
+    track?.querySelectorAll<HTMLCanvasElement>("canvas.sprite-solid") ?? []
+  );
+}
+
+// Rests every copy of a bullet against what it struck, or hides it.
+function land(id: number, x: number | null) {
+  for (const el of document.querySelectorAll<HTMLElement>(
+    `[data-shot="${id}"]`,
+  )) {
+    if (x === null) {
+      el.style.visibility = "hidden";
+      continue;
+    }
+    el.style.animation = "none";
+    el.style.transform = `translateX(${x - Number.parseFloat(el.style.left)}px)`;
+  }
 }
 
 type Phase = "alive" | "bursting" | "gone";
@@ -307,7 +230,7 @@ export function PlayerCompanion() {
   const { shooting, shoot } = useShoot();
   const [shots, setShots] = useState<Shot[]>([]);
   const nextShot = useRef(0);
-  const live = useRef(new Map<number, Shot & { vw: number }>());
+  const live = useRef(new Map<number, Shot>());
   const removeShot = useCallback((id: number) => {
     live.current.delete(id);
     setShots((all) => all.filter((s) => s.id !== id));
@@ -331,11 +254,7 @@ export function PlayerCompanion() {
   const addShot = useCallback(
     (shot: Omit<Shot, "id">) => {
       const id = nextShot.current++;
-      live.current.set(id, {
-        ...shot,
-        id,
-        vw: window.innerWidth,
-      });
+      live.current.set(id, { ...shot, id });
       setShots((all) => [
         ...all,
         { ...shot, id, x: devicePx(shot.x), y: devicePx(shot.y) },
@@ -369,7 +288,15 @@ export function PlayerCompanion() {
     preloadEnemySprites();
   }, []);
   const [hurt, setHurt] = useState(false);
-  const hurtTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const hurtTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const flashHurt = useCallback((flashes: number[]) => {
+    hurtTimers.current.forEach(clearTimeout);
+    setHurt(false);
+    hurtTimers.current = flashes.flatMap((at) => [
+      setTimeout(() => setHurt(true), at),
+      setTimeout(() => setHurt(false), at + FLASH_MS),
+    ]);
+  }, []);
   const enemyRef = useLatest(enemy);
 
   useEffect(() => {
@@ -381,10 +308,10 @@ export function PlayerCompanion() {
           ),
         ) || 0;
       setAtBottomOnly(laneScale === 0);
-      setScale(devicePx(laneScale || PHONE_SCALE));
+      setScale((laneScale || PHONE_SCALE) * artPx());
       // Same inset as the corner menus.
       const probe = document.createElement("div");
-      probe.style.cssText = "position:fixed;width:calc(var(--grid) * 3)";
+      probe.style.cssText = "position:fixed;width:var(--edge)";
       document.body.append(probe);
       setEdge(probe.getBoundingClientRect().width);
       probe.remove();
@@ -551,19 +478,16 @@ export function PlayerCompanion() {
     [enemyRef, visibleRef],
   );
   const hit = useCallback(
-    (shot: number) => {
-      if (live.current.has(shot) && damageEnemy(1)) removeShot(shot);
-    },
-    [damageEnemy, removeShot],
+    (shot: number) => live.current.has(shot) && damageEnemy(1),
+    [damageEnemy],
   );
   const explode = () => damageEnemy(ENEMY_HP);
 
   const playerHit = useCallback(
     (shot: number) => {
       const current = playerRef.current;
-      if (!live.current.has(shot)) return;
-      if (!visibleRef.current || current.phase !== "alive") return;
-      removeShot(shot);
+      if (!live.current.has(shot)) return false;
+      if (!visibleRef.current || current.phase !== "alive") return false;
       const hp = current.hp - 1;
       const next = { hp, phase: (hp > 0 ? "alive" : "bursting") as Phase };
       playerRef.current = next;
@@ -574,13 +498,10 @@ export function PlayerCompanion() {
         playSound("lose");
       }
       if (hp > 0) {
-        setHurt(true);
-        clearTimeout(hurtTimer.current);
-        hurtTimer.current = setTimeout(() => setHurt(false), HURT_MS);
-        return;
+        flashHurt(HURT_FLASHES);
+        return true;
       }
-      clearTimeout(hurtTimer.current);
-      setHurt(false);
+      flashHurt([]);
       const { frameWidth, frameHeight } = PLAYER_SPRITES.idle;
       setPlayerBurst(
         burstPieces(
@@ -602,8 +523,9 @@ export function PlayerCompanion() {
         PLAYER_RESPAWN_MS,
       );
       setTimeout(() => setPlayerBurst(null), BURST_MS);
+      return true;
     },
-    [removeShot, playerRef, visibleRef],
+    [playerRef, visibleRef, flashHurt],
   );
 
   const trackY = () => trackRef.current?.getBoundingClientRect().top ?? 0;
@@ -634,94 +556,80 @@ export function PlayerCompanion() {
     [scale, addShot, addSpark, enemyRef, walkingRef],
   );
 
-  const playerBody = useCallback((): Target | undefined => {
-    const r = trackRef.current?.getBoundingClientRect();
-    if (!r) return undefined;
-    return {
-      left: r.left,
-      top: r.top,
-      width: BODY_WIDTH * scale,
-      height: BODY_HEIGHT * scale,
-    };
-  }, [scale]);
-  const enemyBody = useCallback(
-    () =>
-      enemyTrackRef.current
-        ?.querySelector(".enemy-drop canvas:last-child")
-        ?.getBoundingClientRect(),
-    [],
-  );
-  // A bullet stopped by cover sparks off the face it struck.
+  // A bullet stopped by cover rests on the face it struck and sparks off it.
   const block = useCallback(
-    (
-      shot: Shot,
-      box: Box,
-      prev: Box | undefined,
-      cover: Cover,
-      coverBefore: DOMRect | undefined,
-    ) => {
-      removeShot(shot.id);
+    (shot: Shot, box: Box, cover: Cover, hit: Hit) => {
       const dir = shot.from === "enemy" ? -1 : 1;
-      const normal = hitNormal(box, prev, cover.rect, coverBefore, dir);
-      const at = sparkOrigin(box, cover.rect, normal, scale);
+      const [nx, ny] = hit.normal;
+      const side = Math.abs(nx) > Math.abs(ny);
+      const x = side ? restAgainst(box, cover, dir) : null;
+      land(shot.id, x);
+      removeShot(shot.id);
+      const face =
+        x === null
+          ? hit.face
+          : { x: dir > 0 ? x + box.size : x, y: box.y + box.size / 2 };
       playSound("spark");
       addSpark(
-        at.x,
-        at.y,
-        sparkPieces(shot.from === "enemy" ? "#ff004d" : "#fff1e8", normal),
+        face.x + ((nx - 1) * scale) / 2,
+        face.y + ((ny - 1) * scale) / 2,
+        sparkPieces(shot.from === "enemy" ? "#ff004d" : "#fff1e8", hit.normal),
       );
     },
     [removeShot, addSpark, scale],
   );
 
-  // Moves one bullet's collision state on by a frame of `dt` ms.
   const advance = useCallback(
     (
-      shot: Shot & { vw: number },
-      dt: number,
+      shot: Shot,
       covers: Cover[],
       last: Map<number, Box>,
-      before: Map<string, DOMRect>,
+      before: Map<string, Cover>,
     ) => {
       const rect = document
-        .querySelector(`[data-shot="${shot.id}"]`)
+        .querySelector(`.shot:not(.shot-shadow)[data-shot="${shot.id}"]`)
         ?.getBoundingClientRect();
       if (!rect) return;
       const enemyShot = shot.from === "enemy";
       const dir = enemyShot ? -1 : 1;
-      const box = { x: rect.left, y: rect.top, size: rect.width };
-      const lead = ((shot.vw / BULLET_MS) * dt) / 2;
-      const prev = last.get(shot.id);
-      last.set(shot.id, box);
-      const cover = findCover(covers, box, dir, lead);
-      if (cover) {
-        block(shot, box, prev, cover, before.get(cover.key));
-      } else if (
-        crosses(box, dir, lead, enemyShot ? playerBody() : enemyBody())
-      ) {
-        (enemyShot ? playerHit : hit)(shot.id);
+      const now = { x: rect.left, y: rect.top, size: rect.width };
+      const prev = last.get(shot.id) ?? { ...now, x: shot.x };
+      last.set(shot.id, now);
+
+      let best: { cover: Cover; hit: Hit } | undefined;
+      for (const cover of covers) {
+        const hit = sweep(prev, now, cover, before.get(cover.key), dir);
+        if (hit && (!best || hit.t < best.hit.t)) best = { cover, hit };
       }
+      const target = solids(
+        enemyShot ? trackRef.current : enemyTrackRef.current,
+      );
+      const struck = strike(prev, now, dir, target);
+      if (struck && (!best || struck.t <= best.hit.t)) {
+        if ((enemyShot ? playerHit : hit)(shot.id)) {
+          land(shot.id, struck.x);
+          removeShot(shot.id);
+          return;
+        }
+      }
+      if (best) block(shot, now, best.cover, best.hit);
     },
-    [block, playerBody, enemyBody, hit, playerHit],
+    [block, hit, playerHit, removeShot],
   );
 
-  // While bullets fly, test their on-screen boxes half a frame ahead.
   const flying = shots.length > 0;
   useEffect(() => {
     if (!flying) return;
     let raf = 0;
-    let lastT = 0;
-    let before = new Map<string, DOMRect>();
+    let before = new Map<string, Cover>();
     const last = new Map<number, Box>();
-    const tick = (t: number) => {
-      const dt = lastT ? Math.min(t - lastT, 50) : 16;
-      lastT = t;
-      const covers = coverRects();
+    const tick = () => {
+      const covers = readCovers();
       for (const shot of live.current.values()) {
-        advance(shot, dt, covers, last, before);
+        advance(shot, covers, last, before);
       }
       for (const id of last.keys()) if (!live.current.has(id)) last.delete(id);
-      before = new Map(covers.map((c) => [c.key, c.rect]));
+      before = new Map(covers.map((c) => [c.key, c]));
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -790,18 +698,14 @@ export function PlayerCompanion() {
 
   const layer = atBottomOnly ? "z-[-1]" : "z-40";
 
-  const renderShot = (
-    shot: Shot,
-    part: "bullet" | "shadow",
-    tracked = false,
-  ) => {
+  const renderShot = (shot: Shot, part: "bullet" | "shadow") => {
     const size = (shot.from === "enemy" ? 2 : 1) * scale;
     const bullet = shot.from === "enemy" ? "enemy-bullet" : "player-bullet";
     const look = part === "shadow" ? "shot-shadow" : bullet;
     return (
       <span
         key={shot.id}
-        data-shot={tracked ? shot.id : undefined}
+        data-shot={shot.id}
         className={`shot absolute ${look} ${shot.from === "enemy" ? "is-left" : ""}`}
         style={{
           left: shot.x,
@@ -894,7 +798,7 @@ export function PlayerCompanion() {
         className="pointer-events-none fixed inset-0 z-[-1]"
         aria-hidden="true"
       >
-        {shots.map((shot) => renderShot(shot, "bullet", true))}
+        {shots.map((shot) => renderShot(shot, "bullet"))}
       </div>
       <div
         className="pointer-events-none fixed inset-0 z-40"

@@ -37,21 +37,21 @@ export function Skills() {
         {copy.skills.titleStart} <Mark>{copy.skills.titleMark}</Mark>
       </SectionTitle>
 
-      <div className="mt-(--gap-lg) grid gap-(--gap-md) md:grid-cols-2 md:gap-x-7">
+      <div className="mt-(--gap-lg) grid gap-(--gap-md) md:grid-cols-2 md:gap-x-14">
         {skillGroups.map((g, i) => (
           <div
             key={copy.skills.categories[i]}
             data-reveal
-            className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-start gap-3 md:grid-cols-1 md:gap-1"
+            className="grid grid-cols-[calc(var(--p)*60)_minmax(0,1fr)] items-start gap-6 md:grid-cols-1 md:gap-2"
           >
-            <p className="text-body uppercase tracking-[0.25em] opacity-70">
+            <p className="type-label-md leading-snug text-light-grey">
               {copy.skills.categories[i]}
             </p>
-            <ul className="flex flex-wrap gap-2 sm:gap-2">
+            <ul className="flex flex-wrap gap-4">
               {g.skills.map((s) => (
                 <li
                   key={s}
-                  className={`px-1.5 py-1 text-body leading-none sm:px-2 ${
+                  className={`px-3 py-2 text-body leading-none sm:px-4 ${
                     g.featured ? "card-accent" : "card-cream"
                   }`}
                 >
@@ -64,12 +64,12 @@ export function Skills() {
 
         <div
           data-reveal
-          className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-start gap-3 md:grid-cols-1 md:gap-1"
+          className="grid grid-cols-[calc(var(--p)*60)_minmax(0,1fr)] items-start gap-6 md:grid-cols-1 md:gap-2"
         >
-          <p className="text-body uppercase tracking-[0.25em] opacity-70">
+          <p className="type-label-md leading-snug text-light-grey">
             {copy.skills.languagesLabel}
           </p>
-          <ul className="flex flex-wrap gap-x-7 gap-y-2 text-body">
+          <ul className="flex flex-wrap gap-x-14 gap-y-4 text-body">
             {copy.skills.languagesList.map((l) => (
               <li key={l.name}>
                 <span>{l.name}</span>{" "}

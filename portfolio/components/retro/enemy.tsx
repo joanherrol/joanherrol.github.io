@@ -253,7 +253,7 @@ export function Enemy({
         }
         scale={scale}
         flipX={kind.flipX}
-        className="absolute left-0"
+        className="sprite-solid absolute left-0"
         style={{ top: (kind.sink ?? 0) * scale }}
       />
     </div>

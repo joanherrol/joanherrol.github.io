@@ -23,9 +23,12 @@ function readSaved(): Palette {
   }
 }
 
-const CHIPS = Array.from({ length: 6 }, () => "bbbbbb#gggggg#aaaaaa");
+const CHIPS = Array.from({ length: 6 }, () => "bbbbbbggggggaaaaaa");
 
-function Swatch({ palette }: Readonly<{ palette: Palette }>) {
+function Swatch({
+  palette,
+  className = "",
+}: Readonly<{ palette: Palette; className?: string }>) {
   return (
     <PixelArt
       rows={CHIPS}
@@ -33,9 +36,8 @@ function Swatch({ palette }: Readonly<{ palette: Palette }>) {
         b: palette.bg,
         g: palette.bg2,
         a: palette.accent,
-        "#": "var(--pico-black)",
       }}
-      className="box-content w-[2.5em] shrink-0 border-(length:--text-px) border-black"
+      className={`w-[2.25em] shrink-0 ${className}`}
     />
   );
 }
@@ -65,7 +67,7 @@ export function PaletteSwitcher() {
   return (
     <div
       ref={rootRef}
-      className="tone-light pointer-events-none fixed left-3 top-3 z-50 flex items-start gap-3 bg-transparent!"
+      className="tone-light pointer-events-none fixed left-(--edge) top-(--edge) z-50 flex items-start gap-6 bg-transparent!"
     >
       <div className="relative">
         <button
@@ -74,16 +76,16 @@ export function PaletteSwitcher() {
           data-sound="ui"
           aria-expanded={open}
           aria-label={`${copy.menu.palette}: ${current.name}`}
-          className={`${dropdown.trigger} px-2 text-body`}
+          className={`${dropdown.trigger} px-4 text-body`}
         >
           <Swatch palette={current} />
         </button>
 
         {open && (
           <div
-            className={`${dropdown.panel} absolute left-0 top-full w-max sm:w-[300px]`}
+            className={`${dropdown.panel} absolute left-0 top-full w-max sm:w-100`}
           >
-            <TitleBar title={copy.menu.palette} />
+            <TitleBar title={copy.menu.palette} divider />
             <ul>
               {PALETTES.map((p) => (
                 <li key={p.id}>
@@ -92,9 +94,13 @@ export function PaletteSwitcher() {
                     onClick={() => choose(p)}
                     data-sound="ui"
                     aria-pressed={p.id === current.id}
-                    className={dropdown.item}
+                    className={`group ${dropdown.item}`}
                   >
-                    <Swatch palette={p} />
+                    {/* On the accent hover row, white keeps its accent chip apart. */}
+                    <Swatch
+                      palette={p}
+                      className="outline-cream group-hover:outline-solid group-hover:outline-[0.125em]"
+                    />
                     {p.name}
                     <PixelIcon
                       name="check"

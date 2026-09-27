@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { copy } from "@/lib/copy";
-import { artPx } from "@/lib/pixel";
 import { playSound } from "@/lib/sound";
 import {
   Player,
@@ -10,23 +9,24 @@ import {
   useShoot,
 } from "@/components/retro/player";
 
-// One art pixel per font pixel.
-function useHeroScale() {
-  const [scale, setScale] = useState(11);
+// The player is drawn at the title's font pixel, which CSS picks.
+function useFontPixel(ref: RefObject<HTMLElement | null>) {
+  const [px, setPx] = useState(0);
   useEffect(() => {
     const update = () => {
-      const fontSize = Math.min(88, Math.max(36, window.innerWidth * 0.08));
-      setScale(Math.round(fontSize / 8 / artPx()) * artPx());
+      const el = ref.current;
+      if (el) setPx(Number.parseFloat(getComputedStyle(el).fontSize) / 8);
     };
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
-  }, []);
-  return scale;
+  }, [ref]);
+  return px;
 }
 
 export function Hero() {
-  const scale = useHeroScale();
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const scale = useFontPixel(titleRef);
   usePlayerSpritePreload();
   const { shooting, bullets, shoot } = useShoot();
   const fire = () => {
@@ -36,13 +36,23 @@ export function Hero() {
   return (
     <section
       id="home"
-      className="tone-dark section-paper relative flex min-h-screen-band flex-col overflow-hidden px-4 pb-(--band) pt-18 sm:px-7 lg:px-12"
+      className="tone-dark section-paper relative flex min-h-screen-band flex-col overflow-hidden px-8 pb-(--band) pt-28 sm:px-14 lg:px-24"
     >
       {/* Puts the name at 52% of the screen. */}
       <div className="flex-[1.07_1_0%]" />
       {/* The subtitle (w-0 min-w-full) wraps within the name's width. */}
       <div className="mx-auto flex w-fit flex-col items-center text-center">
-        <h1 className="text-drop text-left font-pixel text-[round(clamp(2.25rem,8vw,5.5rem),calc(var(--ipx)*8))] uppercase leading-none">
+        {/* Its shadow is one of its own pixels, not a title pixel. */}
+        <h1
+          ref={titleRef}
+          className="relative text-left type-display-md [--s:0.125em]"
+        >
+          <span aria-hidden="true" className="drop-copy">
+            <span className="block px-[0.125em]">Joan</span>
+            <span className="text-mark mt-[0.125em] inline-block px-[0.125em] pt-[0.125em]">
+              Hervás
+            </span>
+          </span>
           <span className="block px-[0.125em]">Joan</span>
           <span className="text-mark relative mt-[0.125em] inline-block px-[0.125em] pt-[0.125em]">
             <button
@@ -52,26 +62,27 @@ export function Hero() {
               style={{ right: `calc(0.125em + ${scale}px)` }}
               aria-label={copy.hero.playerLabel}
             >
-              <Player
-                animation="idle"
-                flipX
-                dropShadow
-                scale={scale}
-                shooting={shooting}
-                bullets={bullets}
-                shadow={false}
-                label={copy.hero.playerLabel}
-              />
+              {scale > 0 && (
+                <Player
+                  animation="idle"
+                  flipX
+                  scale={scale}
+                  shooting={shooting}
+                  bullets={bullets}
+                  shadow={false}
+                  label={copy.hero.playerLabel}
+                />
+              )}
             </button>
             <span className="relative z-10">Hervás</span>
           </span>
         </h1>
-        <p className="mt-7 w-0 min-w-full text-large uppercase tracking-[0.25em] text-balance">
+        <p className="mt-14 w-0 min-w-full type-body-lg uppercase tracking-[0.25em] text-balance">
           {copy.hero.subtitle}
         </p>
       </div>
 
-      <div className="flex flex-1 items-center justify-center text-large uppercase">
+      <div className="flex flex-1 items-center justify-center type-body-lg uppercase tracking-[0.125em]">
         <a href="#about" data-sound="start" className="blink hover:text-pop">
           {copy.hero.start}
         </a>

@@ -6,6 +6,7 @@ import { PixelIcon } from "@/components/retro/pixel-icon";
 import { Player } from "@/components/retro/player";
 import { dropdown, TitleBar } from "@/components/retro/ui";
 import { useDismiss } from "@/components/retro/use-dismiss";
+import { useBasePx } from "@/lib/use-base-px";
 
 type Level = { id: string; label: string; code: string };
 
@@ -13,6 +14,7 @@ export function LevelMenu({ levels }: Readonly<{ levels: Level[] }>) {
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
+  const p = useBasePx();
 
   const close = useCallback(() => setOpen(false), []);
   useDismiss(rootRef, open, close);
@@ -41,14 +43,14 @@ export function LevelMenu({ levels }: Readonly<{ levels: Level[] }>) {
   return (
     <div
       ref={rootRef}
-      className="tone-light pointer-events-none fixed right-3 top-3 z-50 flex flex-col items-end bg-transparent!"
+      className="tone-light pointer-events-none fixed right-(--edge) top-(--edge) z-50 flex flex-col items-end bg-transparent!"
     >
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         data-sound="ui"
         aria-expanded={open}
-        className={`${dropdown.trigger} gap-3 px-3 text-body uppercase tracking-[0.125em]`}
+        className={`${dropdown.trigger} gap-6 px-6 text-body uppercase tracking-[0.125em]`}
       >
         <PixelIcon name={open ? "close" : "menu"} />
         {copy.menu.open}
@@ -57,9 +59,9 @@ export function LevelMenu({ levels }: Readonly<{ levels: Level[] }>) {
       {open && (
         <nav
           aria-label={copy.menu.title}
-          className={`${dropdown.panel} w-max max-w-[calc(100vw-1.5rem)]`}
+          className={`${dropdown.panel} w-max max-w-[calc(100vw-var(--edge)*2)]`}
         >
-          <TitleBar title={copy.menu.title} />
+          <TitleBar title={copy.menu.title} divider />
           <ul>
             {levels.map((level, i) => (
               <li key={level.id}>
@@ -69,11 +71,11 @@ export function LevelMenu({ levels }: Readonly<{ levels: Level[] }>) {
                   data-sound="start"
                   onMouseEnter={() => setHovered(i)}
                   onFocus={() => setHovered(i)}
-                  className={dropdown.item}
+                  className={`${dropdown.item} ${hovered === i ? "bg-pico-accent text-cream" : ""}`}
                 >
-                  <span className="flex h-[33px] w-[40px] shrink-0 items-center justify-center">
-                    {hovered === i && (
-                      <Player animation="idle" scale={3} flipX />
+                  <span className="flex h-11 w-10 shrink-0 items-center justify-center">
+                    {hovered === i && p > 0 && (
+                      <Player animation="idle" scale={p} flipX />
                     )}
                   </span>
                   <span className="shrink-0 whitespace-nowrap">

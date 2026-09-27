@@ -43,7 +43,7 @@ export function Projects() {
         const tone: Tone = i % 2 === 0 ? "dark" : "alt";
         return (
           <Section key={p.id} id={p.id} tone={tone} className="overflow-x-clip">
-            <div className="grid items-center gap-(--gap-lg) md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-10">
+            <div className="grid items-center gap-(--gap-lg) md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-20">
               <div>
                 <SectionLabel>2-{i + 1}</SectionLabel>
                 <SectionTitle>
@@ -51,7 +51,7 @@ export function Projects() {
                 </SectionTitle>
                 <p
                   data-reveal
-                  className="mt-(--gap-md) max-w-lg text-body leading-snug opacity-80"
+                  className="mt-(--gap-md) max-w-170 text-body leading-snug"
                 >
                   {p.description}
                 </p>
@@ -64,7 +64,9 @@ export function Projects() {
 
               <WindowFrame
                 title={p.image.split("/").pop()?.toLowerCase() ?? ""}
-                className={`mx-auto mt-4 w-full max-w-[min(100%,50svh)] md:mt-0 md:max-w-none ${i % 2 === 0 ? "-rotate-1" : "rotate-1"}`}
+                tilt={i % 2 === 0 ? -1 : 1}
+                delay={1.3 + i * 1.6}
+                className="mx-auto mt-8 w-full max-w-[min(100%,50svh)] md:mt-0 md:max-w-none"
               >
                 <Image
                   src={p.image}

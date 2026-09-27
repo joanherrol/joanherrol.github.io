@@ -13,13 +13,27 @@ export function ContinuePrompt() {
     const prompt = promptRef.current;
     if (!prompt) return;
 
+    // Off screen it only pauses. Pressing it starts over, once it has left
+    // the screen, so the count is never seen jumping back.
+    let pressed = false;
     const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting && pressed) {
+        pressed = false;
+        setCount(START);
+      }
       setActive(entry.isIntersecting);
-      if (!entry.isIntersecting) setCount(START);
     });
     observer.observe(prompt);
+    const link = prompt.closest("a");
+    const restart = () => {
+      pressed = true;
+    };
+    link?.addEventListener("click", restart);
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      link?.removeEventListener("click", restart);
+    };
   }, []);
 
   useEffect(() => {

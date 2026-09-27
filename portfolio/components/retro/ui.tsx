@@ -25,7 +25,7 @@ export function Section({
       className={`tone-${tone} section-paper relative flex min-h-screen-band flex-col justify-center py-(--section-py) px-(--lane) ${edge ? "pixel-edge" : ""} ${className}`}
     >
       <div
-        className={`relative mx-auto w-full max-w-6xl ${fill ? "flex flex-1 flex-col" : ""}`}
+        className={`relative mx-auto w-full max-w-384 ${fill ? "flex flex-1 flex-col" : ""}`}
       >
         {children}
       </div>
@@ -35,12 +35,21 @@ export function Section({
 
 export function SectionLabel({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <p
-      data-reveal
-      className="text-body uppercase leading-relaxed tracking-[0.25em] opacity-70"
-    >
+    <p data-reveal className="type-label-md text-light-grey">
       {children}
     </p>
+  );
+}
+
+/** Text with its one-pixel shadow on the ground layer, below the bullets. */
+function DropText({ children }: Readonly<{ children: ReactNode }>) {
+  return (
+    <>
+      <span aria-hidden="true" className="drop-copy">
+        {children}
+      </span>
+      {children}
+    </>
   );
 }
 
@@ -54,21 +63,21 @@ export function SectionTitle({
   return (
     <Tag
       data-reveal
-      // 8 grid units tall; 9px line height leaves a 1px gap between lines.
-      className="text-drop mt-(--gap-sm) font-pixel text-[calc(var(--grid)*8)] uppercase leading-[1.125] text-balance"
+      // 9 font pixels per line leave one between lines.
+      className="relative mt-(--gap-sm) type-headline-md text-balance"
     >
-      {children}
+      <DropText>{children}</DropText>
     </Tag>
   );
 }
 
 export function Mark({ children }: Readonly<{ children: ReactNode }>) {
-  // Taller lines make room for the outline and shadow.
+  // Taller lines make room for the ring and shadow.
   return <span className="text-mark leading-snug">{children}</span>;
 }
 
 const buttonClasses =
-  "card-accent inline-flex items-center justify-center gap-1.5 px-3 py-2 text-body uppercase leading-none tracking-[0.125em] sm:gap-2 sm:px-4 sm:py-3 sm:text-large pixel-shadow-2 transition-[translate,box-shadow] duration-100 hover:pixel-lift-1 hover:pixel-shadow-3 sm:border-(length:--px) sm:[--px:calc(var(--ipx)*4)] active:pixel-press-1 active:pixel-shadow-1";
+  "card-accent pixel-float pixel-button inline-flex items-center justify-center gap-3 px-6 py-4 text-body uppercase leading-none tracking-[0.125em] sm:gap-5 sm:px-11 sm:py-8 sm:text-body-lg";
 
 export function PixelButton({
   href,
@@ -99,21 +108,31 @@ export function PixelButton({
 
 export const dropdown = {
   trigger:
-    "pixel-box pointer-events-auto flex h-[round(44px,var(--text-px))] cursor-pointer items-center border-(length:--text-px) border-black bg-paper pixel-shadow-2 transition-[translate,box-shadow] duration-100 hover:pixel-lift-1 hover:pixel-shadow-3 active:pixel-press-1 active:pixel-shadow-1",
-  panel:
-    "pixel-box pointer-events-auto mt-3 border-(length:--text-px) border-black bg-paper pixel-shadow-3",
-  item: "flex w-full cursor-pointer items-center gap-3 whitespace-nowrap px-3 py-2 text-left text-body uppercase leading-none tracking-[0.125em] hover:bg-pico-accent hover:text-cream",
+    "pixel-float pixel-button flex h-[round(up,44px,var(--ipx))] cursor-pointer items-center bg-paper",
+  panel: "pixel-float pointer-events-auto mt-6 bg-paper",
+  item: "flex w-full cursor-pointer items-center gap-6 whitespace-nowrap px-6 py-4 text-left text-body uppercase leading-none tracking-[0.125em] hover:bg-pico-accent hover:text-cream",
 };
 
-const LIGHTS = ["bg-[#ff004d]", "bg-[#ffec27]", "bg-[#00e436]"];
+// Each light is outlined in a darker shade of its own hue.
+const LIGHTS = [
+  "bg-red border-dark-red",
+  "bg-yellow border-orange",
+  "bg-green border-medium-green",
+];
 
-export function TitleBar({ title }: Readonly<{ title: string }>) {
+// Menus divide the bar from their cream list; over a picture it needs none.
+export function TitleBar({
+  title,
+  divider = false,
+}: Readonly<{ title: string; divider?: boolean }>) {
   return (
-    <div className="flex items-center gap-[0.25em] border-b-[0.125em] border-black bg-cream px-[0.5em] py-[0.375em] text-body text-black">
+    <div
+      className={`flex items-center gap-[0.25em] bg-cream px-[0.5em] py-[0.375em] text-body text-black ${divider ? "border-b-[0.125em] border-light-grey" : ""}`}
+    >
       {LIGHTS.map((bg) => (
         <span
           key={bg}
-          className={`size-[0.625em] shrink-0 border-[0.125em] border-black ${bg}`}
+          className={`size-[0.625em] shrink-0 border-[0.125em] ${bg}`}
           aria-hidden="true"
         />
       ))}
@@ -124,24 +143,47 @@ export function TitleBar({ title }: Readonly<{ title: string }>) {
   );
 }
 
-export function WindowFrame({
-  title,
-  className = "",
-  children,
-}: Readonly<{
+type FloatProps = Readonly<{
   title: string;
+  /** Resting tilt in degrees. */
+  tilt?: number;
+  /** Seconds into the float cycle, so neighbours drift apart. */
+  delay?: number;
   className?: string;
   children: ReactNode;
-}>) {
+}>;
+
+// The shadow tilts with the body but never bobs, so it reads as the ground.
+function FloatFrame({
+  tilt = 0,
+  delay = 0,
+  className,
+  bodyClassName,
+  children,
+}: Omit<FloatProps, "title"> & Readonly<{ bodyClassName: string }>) {
   return (
     <figure
       data-reveal
-      // Black backing hides hairlines on tilted edges.
-      className={`border-(length:--text-px) border-black bg-black pixel-shadow-4 ${className}`}
+      className={`relative ${className}`}
+      style={
+        {
+          "--tilt": `${tilt}deg`,
+          "--float-delay": `${-delay}s`,
+        } as React.CSSProperties
+      }
     >
-      <TitleBar title={title} />
-      {children}
+      <div aria-hidden="true" className="float-shadow" />
+      <div className={`float-body ${bodyClassName}`}>{children}</div>
     </figure>
+  );
+}
+
+export function WindowFrame({ title, className = "", ...props }: FloatProps) {
+  return (
+    <FloatFrame {...props} className={className} bodyClassName="bg-cream">
+      <TitleBar title={title} />
+      {props.children}
+    </FloatFrame>
   );
 }
 
@@ -150,7 +192,7 @@ export function PixelArt({
   colors,
   className = "",
 }: Readonly<{
-  rows: string[];
+  rows: readonly string[];
   colors: Record<string, string>;
   className?: string;
 }>) {
@@ -175,78 +217,88 @@ export function PixelArt({
 }
 
 const DPAD = [
-  "....#####....",
-  "....#####....",
-  "....#####....",
-  "....#####....",
-  "#############",
-  "#############",
-  "#############",
-  "#############",
-  "#############",
-  "....#####....",
-  "....#####....",
-  "....#####....",
-  "....#####....",
+  "......hhhhhhh......",
+  "......h######......",
+  "......h######......",
+  "......h######......",
+  "......h######......",
+  "......h######......",
+  "hhhhhh#######hhhhhh",
+  "h##################",
+  "h#######ddd########",
+  "h#######ddd########",
+  "h#######ddd########",
+  "h##################",
+  "h##################",
+  "......h######......",
+  "......h######......",
+  "......h######......",
+  "......h######......",
+  "......h######......",
+  "......h######......",
 ];
-
-const ROUND_BUTTON = [
-  "..#####..",
-  ".#aaaaa#.",
-  "#awaaaaa#",
-  "#aaaaaaa#",
-  "#aaaaaaa#",
-  "#aaaaaaa#",
-  "#aaaaaaa#",
-  ".#aaaaa#.",
-  "..#####..",
-];
-const BUTTON_COLORS = {
-  "#": "#000",
-  a: "var(--pico-accent)",
-  w: "var(--pico-white)",
+// Lit from the top left: its top and left edges catch the light.
+const DPAD_COLORS = {
+  "#": "var(--color-black)",
+  h: "var(--color-dark-grey)",
+  d: "var(--color-dark-grey)",
 };
 
-export function ConsoleFrame({
-  title,
-  className = "",
-  children,
-}: Readonly<{
-  title: string;
-  className?: string;
-  children: ReactNode;
-}>) {
+// Each drops a one-pixel black shadow down and right.
+const ROUND_BUTTON = [
+  "....aaaaa.....",
+  "..aaaaaaaaa...",
+  ".aaawwaaaaaa..",
+  ".aawaaaaaaaa#.",
+  "aaawaaaaaaaaa.",
+  "aaaaaaaaaaaaa#",
+  "aaaaaaaaaaaaa#",
+  "aaaaaaaaaaaaa#",
+  "aaaaaaaaaaaaa#",
+  ".aaaaaaaaaaa##",
+  ".aaaaaaaaaaa#.",
+  "..aaaaaaaaa##.",
+  "...#aaaaa###..",
+  ".....#####....",
+];
+const BUTTON_COLORS = {
+  a: "var(--pico-accent)",
+  w: "var(--color-white)",
+  "#": "var(--color-black)",
+};
+
+// One art pixel per base pixel, so w-19 is exactly 19 of them.
+export function ConsoleFrame({ title, className = "", ...props }: FloatProps) {
   return (
-    <figure data-reveal className={`@container ${className}`}>
-      <div className="flex items-center justify-between gap-[round(4cqw,var(--text-px))] border-(length:--text-px) border-black bg-cream px-[round(4cqw,var(--text-px))] py-[round(5cqw,var(--text-px))] text-black pixel-shadow-4">
-        <PixelArt
-          rows={DPAD}
-          colors={{ "#": "#000" }}
-          className="w-[calc(var(--large-px)*13)] shrink-0"
-        />
-        <div className="min-w-0 flex-1 border-(length:--text-px) border-black bg-black px-[calc(var(--text-px)*3)] pb-[calc(var(--text-px)*3)]">
-          <div className="flex items-center gap-[0.5em] py-[0.375em] text-body uppercase leading-none tracking-[0.125em] text-cream">
-            <span
-              className="size-[0.625em] shrink-0 border-[0.125em] border-black bg-pico-accent"
-              aria-hidden="true"
-            />
-            {title}
-          </div>
-          {children}
-        </div>
-        <div className="relative size-[calc(var(--large-px)*17)] shrink-0">
-          <PixelArt
-            rows={ROUND_BUTTON}
-            colors={BUTTON_COLORS}
-            className="absolute bottom-0 left-0 w-[calc(var(--large-px)*9)]"
+    <FloatFrame
+      {...props}
+      className={className}
+      bodyClassName="flex items-center justify-between gap-6 bg-cream px-6 py-8"
+    >
+      <PixelArt rows={DPAD} colors={DPAD_COLORS} className="w-19 shrink-0" />
+      <div className="min-w-0 flex-1 bg-dark-grey px-3 pb-3">
+        <div className="flex items-center gap-[0.5em] py-[0.375em] text-body uppercase leading-none tracking-[0.125em] text-cream">
+          <span
+            className="size-[0.625em] shrink-0 border-[0.125em] border-dark-red bg-red"
+            aria-hidden="true"
           />
-          <PixelArt
-            rows={ROUND_BUTTON}
-            colors={BUTTON_COLORS}
-            className="absolute right-0 top-0 w-[calc(var(--large-px)*9)]"
-          />
+          {title}
         </div>
+        {/* Recessed: a shadow falls along its top and left edges. */}
+        <div className="bg-black pl-(--p) pt-(--p)">{props.children}</div>
       </div>
-    </figure>
+      <div className="relative size-25 shrink-0">
+        <PixelArt
+          rows={ROUND_BUTTON}
+          colors={BUTTON_COLORS}
+          className="absolute bottom-0 left-0 w-14"
+        />
+        <PixelArt
+          rows={ROUND_BUTTON}
+          colors={BUTTON_COLORS}
+          className="absolute right-0 top-0 w-14"
+        />
+      </div>
+    </FloatFrame>
   );
 }

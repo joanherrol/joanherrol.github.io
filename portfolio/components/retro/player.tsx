@@ -79,7 +79,6 @@ type PlayerProps = {
   scale?: number;
   flipX?: boolean;
   shadow?: boolean;
-  dropShadow?: boolean;
   weapon?: boolean;
   shooting?: boolean;
   hurt?: boolean;
@@ -93,7 +92,6 @@ export function Player({
   scale = 4,
   flipX = false,
   shadow = true,
-  dropShadow = false,
   weapon = true,
   shooting = false,
   hurt = false,
@@ -115,16 +113,7 @@ export function Player({
         } as React.CSSProperties
       }
     >
-      <div
-        className="absolute inset-0"
-        style={
-          dropShadow
-            ? {
-                filter: `drop-shadow(-${scale}px 0 0 #000) drop-shadow(0 ${scale}px 0 #000)`,
-              }
-            : undefined
-        }
-      >
+      <div className="absolute inset-0">
         {shadow && weapon && (
           <PixelSprite
             sheet={
@@ -154,7 +143,7 @@ export function Player({
           flipX={flipX}
           tint={tint}
           label={label}
-          className="absolute left-0 top-0"
+          className="sprite-solid absolute left-0 top-0"
         />
         {weapon && (
           <PixelSprite
@@ -162,17 +151,19 @@ export function Player({
             loop={false}
             scale={scale}
             flipX={flipX}
-            className="absolute"
+            tint={tint}
+            className="sprite-solid absolute"
             style={{ left: GUN[side] * scale, top: GUN.top * scale }}
           />
         )}
       </div>
       {weapon && (
+        // Standing on something (no ground shadow), the floor is its feet.
         <Bullets
           bullets={bullets}
           scale={scale}
           flipX={flipX}
-          floor={dropShadow ? 6 : 5}
+          floor={shadow ? 5 : 6}
         />
       )}
     </div>
@@ -183,12 +174,13 @@ function Bullets({
   bullets,
   scale,
   flipX = false,
-  floor = 5,
+  floor,
 }: Readonly<{
   bullets: number[];
   scale: number;
   flipX?: boolean;
-  floor?: number;
+  /** Rows from the bullet down to its shadow. */
+  floor: number;
 }>) {
   const side = flipX ? "right" : "left";
   const muzzle = { left: MUZZLE[side] * scale, top: MUZZLE.top * scale };

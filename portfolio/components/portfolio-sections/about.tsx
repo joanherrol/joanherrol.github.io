@@ -22,7 +22,7 @@ export function About() {
           </SectionTitle>
           <p
             data-reveal
-            className="mt-(--gap-md) max-w-xl text-body leading-snug opacity-80"
+            className="mt-(--gap-md) max-w-192 text-body leading-snug"
           >
             {copy.about.body}
           </p>
@@ -36,7 +36,8 @@ export function About() {
 
         <ConsoleFrame
           title="P1"
-          className="mx-auto mt-4 w-full max-w-[min(92%,56svh)] lg:mt-0 rotate-2 sm:max-w-[min(32rem,80svh)]"
+          tilt={2}
+          className="mx-auto mt-8 w-full max-w-[min(92%,56svh)] lg:mt-0 sm:max-w-[min(32rem,80svh)]"
         >
           <div className="relative aspect-square">
             <Image

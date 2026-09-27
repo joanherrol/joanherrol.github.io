@@ -25,7 +25,6 @@ type PixelSpriteProps = {
   style?: CSSProperties;
 };
 
-const TINT_ALPHA = 0.7;
 // Frames may draw this early, so the nearest refresh takes them.
 const EARLY_MS = 8;
 
@@ -49,6 +48,62 @@ function loadImage(src: string) {
     imageCache.set(src, promise);
   }
   return promise;
+}
+
+type Shown = {
+  img: HTMLImageElement;
+  frame: number;
+  w: number;
+  h: number;
+  flip: boolean;
+};
+// What each canvas shows now, so collisions can find its coloured pixels.
+const shown = new WeakMap<HTMLCanvasElement, Shown>();
+const alphas = new WeakMap<HTMLImageElement, Uint8ClampedArray | null>();
+type Spans = ([number, number] | null)[];
+const spanCache = new WeakMap<HTMLImageElement, Map<string, Spans>>();
+
+function alphaOf(img: HTMLImageElement) {
+  if (alphas.has(img)) return alphas.get(img) ?? null;
+  const canvas = document.createElement("canvas");
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  ctx?.drawImage(img, 0, 0);
+  const data =
+    ctx?.getImageData(0, 0, canvas.width, canvas.height).data ?? null;
+  alphas.set(img, data);
+  return data;
+}
+
+/** The first and last coloured column of each row of the frame on screen. */
+export function solidRows(canvas: HTMLCanvasElement) {
+  const s = shown.get(canvas);
+  if (!s) return null;
+  let cache = spanCache.get(s.img);
+  if (!cache) spanCache.set(s.img, (cache = new Map()));
+  const key = `${s.frame} ${s.w} ${s.h} ${s.flip}`;
+  let spans = cache.get(key);
+  if (!spans) {
+    const data = alphaOf(s.img);
+    if (!data) return null;
+    const stride = s.img.naturalWidth;
+    spans = [];
+    for (let y = 0; y < s.h; y++) {
+      let first = -1;
+      let last = -1;
+      for (let x = 0; x < s.w; x++) {
+        if (data[(y * stride + s.frame * s.w + x) * 4 + 3] < 128) continue;
+        if (first < 0) first = x;
+        last = x;
+      }
+      if (first < 0) spans.push(null);
+      else
+        spans.push(s.flip ? [s.w - 1 - last, s.w - 1 - first] : [first, last]);
+    }
+    cache.set(key, spans);
+  }
+  return { width: s.w, spans };
 }
 
 export function preloadSprites(sheets: SpriteSheet[]) {
@@ -131,14 +186,14 @@ export function PixelSprite({
         w * blockSize,
         h * blockSize,
       );
+      shown.set(canvas, { img, frame, w, h, flip: flipRef.current });
       if (tintRef.current) {
         ctx.setTransform(1, 0, 0, 1, 0, 0);
+        // A solid palette colour, as PICO-8 flashes sprites.
         ctx.globalCompositeOperation = "source-atop";
-        ctx.globalAlpha = TINT_ALPHA;
         ctx.fillStyle = tintRef.current;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.globalCompositeOperation = "source-over";
-        ctx.globalAlpha = 1;
       }
     };
     redrawRef.current = draw;
@@ -204,6 +259,7 @@ export function PixelSprite({
 
     return () => {
       cancelled = true;
+      shown.delete(canvas);
       observer.disconnect();
       stop();
       window.removeEventListener("resize", onResize);

@@ -1,47 +1,130 @@
 @import "tailwindcss";
 
+/* Registered so scripts can read them as resolved values. */
+@property --p {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 2px;
+}
+/* How far a pressable element's face sits above rest (negative: below). */
+@property --raise {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+/* The PICO-8 palette, standard and secret. No other colours exist. */
+@theme static {
+  --color-*: initial;
+  --color-black: #000000;
+  --color-dark-blue: #1d2b53;
+  --color-dark-purple: #7e2553;
+  --color-dark-green: #008751;
+  --color-brown: #ab5236;
+  --color-dark-grey: #5f574f;
+  --color-light-grey: #c2c3c7;
+  --color-white: #fff1e8;
+  --color-red: #ff004d;
+  --color-orange: #ffa300;
+  --color-yellow: #ffec27;
+  --color-green: #00e436;
+  --color-blue: #29adff;
+  --color-lavender: #83769c;
+  --color-pink: #ff77a8;
+  --color-peach: #ffccaa;
+  --color-darkest-brown: #291814;
+  --color-darker-blue: #111d35;
+  --color-darker-purple: #422136;
+  --color-blue-green: #125359;
+  --color-dark-brown: #742f29;
+  --color-darker-grey: #49333b;
+  --color-medium-grey: #a28879;
+  --color-light-yellow: #f3ef7d;
+  --color-dark-red: #be1250;
+  --color-dark-orange: #ff6c24;
+  --color-lime-green: #a8e72e;
+  --color-medium-green: #00b543;
+  --color-true-blue: #065ab5;
+  --color-mauve: #754665;
+  --color-dark-peach: #ff6e59;
+  --color-light-peach: #ff9d81;
+}
+
+/* Every length is a whole number of device pixels (--ipx), so nothing ever
+   renders a half pixel. */
 @theme inline {
+  --font-*: initial;
   --font-sans: var(--font-body);
   --font-pixel: var(--font-display);
+  --font-weight-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-*: initial;
+  --text-body: calc(var(--fp-body-md) * 8);
+  --text-body-lg: calc(var(--fp-body-lg) * 8);
 
   --color-paper: var(--paper);
   --color-pop: var(--pop);
   --color-pico-accent: var(--pico-accent);
-  --color-cream: var(--pico-white);
+  --color-cream: var(--color-white);
 
-  --spacing: var(--grid);
+  --spacing: var(--p);
 }
 
 :root {
-  /* One art pixel on whole device pixels (set by pixelBootScript). */
+  /* One device-aligned CSS pixel (set by pixelBootScript). */
   --ipx: 1px;
-  /* Spacing grid: one section-title pixel, 3px to 7px. */
-  --grid: round(clamp(3px, min(0.475vw, 0.75svh), 7px), var(--ipx));
-  /* One font pixel of text-body, for borders next to body text. */
-  --text-px: calc(var(--ipx) * 2);
-  --text-large: calc(var(--ipx) * 24);
-  /* One font pixel of text-large, for pixel art beside large text. */
-  --large-px: calc(var(--text-large) / 8);
+  /* The base pixel: the spacing step. */
+  --p: calc(var(--ipx) * 2);
+  /* The pixel of the element being drawn; text pixels by default. */
+  --px: var(--fp-body-md);
+  /* The shadow pixel: one title pixel everywhere, whatever the element. */
+  --s: var(--fp-headline-md);
+  --edge: calc(var(--p) * 6);
   /* Height of the pixel teeth above each section. */
-  --band: calc(var(--text-px) * 4);
+  --band: calc(var(--p) * 4);
 
-  --section-py: round(clamp(2.5rem, 8.5svh, 8rem), var(--grid));
-  --gap-sm: round(clamp(0.5rem, 2svh, 1.25rem), var(--grid));
-  --gap-md: round(clamp(1rem, 3svh, 2rem), var(--grid));
-  --gap-lg: round(clamp(1rem, 4svh, 3.5rem), var(--grid));
+  --section-py: round(clamp(2.5rem, 8.5svh, 8rem), var(--ipx));
+  --gap-sm: round(clamp(0.5rem, 2svh, 1.25rem), var(--ipx));
+  --gap-md: round(clamp(1rem, 3svh, 2rem), var(--ipx));
+  --gap-lg: round(clamp(1rem, 4svh, 3.5rem), var(--ipx));
 
-  /* Companion size (px per art pixel); equal side lanes fit the widest enemy. */
+  /* Type scale: each style's glyph pixel in whole device pixels; its font
+     size is 8 of them. Display to title use Press Start, body and label
+     Tiny5. Below 2 device pixels text stops being readable. */
+  --fp-display-lg: calc(var(--ipx) * 7);
+  /* Display and headline medium follow the viewport, snapped to whole
+     device pixels. */
+  --fp-display-md: round(clamp(4.5px, 1vw, 11px), var(--ipx));
+  --fp-display-sm: calc(var(--ipx) * 5);
+  --fp-headline-lg: calc(var(--ipx) * 5);
+  --fp-headline-md: round(
+    clamp(calc(var(--ipx) * 3), min(0.475vw, 0.75svh), calc(var(--ipx) * 7)),
+    var(--ipx)
+  );
+  --fp-headline-sm: calc(var(--ipx) * 3);
+  --fp-title-lg: calc(var(--ipx) * 3);
+  --fp-title-md: calc(var(--ipx) * 2);
+  --fp-title-sm: calc(var(--ipx) * 2);
+  --fp-body-lg: calc(var(--ipx) * 3);
+  --fp-body-md: calc(var(--ipx) * 2);
+  --fp-body-sm: calc(var(--ipx) * 2);
+  --fp-label-lg: calc(var(--ipx) * 3);
+  --fp-label-md: calc(var(--ipx) * 2);
+  --fp-label-sm: calc(var(--ipx) * 1);
+
+  /* Character pixels in device pixels; 0 keeps them at the bottom on phones. */
   --companion-scale: 0;
-  --lane: calc(var(--grid) * 6);
+  --lane: calc(var(--p) * 9);
 
-  --pico-bg: #1d2b53;
-  --pico-bg2: #422136;
-  --pico-accent: #ff004d;
-  --pico-white: #fff1e8;
-  --pico-black: #000000;
+  --pico-bg: var(--color-dark-blue);
+  --pico-bg2: var(--color-darker-blue);
+  --pico-accent: var(--color-red);
 
   --paper: var(--pico-bg);
-  --ink: var(--pico-white);
+  --ink: var(--color-white);
   --pop: var(--pico-accent);
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -49,18 +132,32 @@
 }
 @media (width >= 40rem) {
   :root {
-    --text-px: calc(var(--ipx) * 3);
-    --text-large: calc(var(--ipx) * 32);
+    --p: calc(var(--ipx) * 3);
+    --fp-display-lg: calc(var(--ipx) * 11);
+    --fp-display-sm: calc(var(--ipx) * 7);
+    --fp-headline-lg: calc(var(--ipx) * 8);
+    --fp-headline-sm: calc(var(--ipx) * 5);
+    --fp-title-lg: calc(var(--ipx) * 4);
+    --fp-title-md: calc(var(--ipx) * 3);
+    --fp-title-sm: calc(var(--ipx) * 2);
+    --fp-body-lg: calc(var(--ipx) * 4);
+    --fp-body-md: calc(var(--ipx) * 3);
+    --fp-body-sm: calc(var(--ipx) * 2);
+    --fp-label-lg: calc(var(--ipx) * 4);
+    --fp-label-md: calc(var(--ipx) * 3);
+    --fp-label-sm: calc(var(--ipx) * 1);
     --companion-scale: 4;
     --lane: round(
       up,
-      calc(var(--companion-scale) * 20px + var(--grid) * 3),
-      var(--grid)
+      calc(var(--companion-scale) * var(--ipx) * 20 + var(--edge)),
+      var(--ipx)
     );
   }
 }
 @media (width >= 64rem) {
   :root {
+    --fp-display-lg: calc(var(--ipx) * 14);
+    --fp-display-sm: calc(var(--ipx) * 10);
     --companion-scale: 5;
   }
 }
@@ -70,22 +167,27 @@
   }
 }
 
-/* Solid one-pixel shadow along the whole left and underside. */
-.text-drop {
+/* Title shadows are a black copy of the text on the ground layer, one shadow
+   pixel down and right, so bullets fly between shadow and letters. */
+.drop-copy {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  color: var(--color-black);
   text-shadow:
-    -0.125em 0 var(--pico-black),
-    0 0.125em var(--pico-black),
-    -0.125em 0.125em var(--pico-black);
+    var(--s) 0 var(--color-black),
+    0 var(--s) var(--color-black),
+    var(--s) var(--s) var(--color-black);
+  pointer-events: none;
+  user-select: none;
 }
 
-/* Accent outline plus a black shadow along its whole left and underside;
-   1/8em is one font pixel, so font sizes are multiples of 8 art pixels. */
+/* Marked words get an accent ring one font pixel wide; their copy shadows
+   the ring as well. */
 .text-mark {
   --u: 0.125em;
   --n: calc(var(--u) * -1);
-  --nn: calc(var(--u) * -2);
-  --uu: calc(var(--u) * 2);
-  color: var(--pico-white);
+  color: var(--color-white);
   text-shadow:
     var(--u) 0 var(--pico-accent),
     var(--n) 0 var(--pico-accent),
@@ -94,38 +196,149 @@
     var(--u) var(--u) var(--pico-accent),
     var(--u) var(--n) var(--pico-accent),
     var(--n) var(--u) var(--pico-accent),
-    var(--n) var(--n) var(--pico-accent),
-    var(--n) var(--u) var(--pico-black),
-    0 var(--u) var(--pico-black),
-    var(--nn) var(--u) var(--pico-black),
-    var(--n) var(--uu) var(--pico-black),
-    0 var(--uu) var(--pico-black),
-    var(--nn) var(--uu) var(--pico-black),
-    var(--n) 0 var(--pico-black),
-    var(--nn) 0 var(--pico-black),
-    var(--nn) var(--n) var(--pico-black),
-    var(--u) var(--uu) var(--pico-black);
+    var(--n) var(--n) var(--pico-accent);
+}
+.drop-copy .text-mark {
+  color: var(--color-black);
+  text-shadow:
+    var(--n) var(--n) var(--color-black),
+    0px var(--n) var(--color-black),
+    var(--u) var(--n) var(--color-black),
+    var(--n) 0px var(--color-black),
+    var(--u) 0px var(--color-black),
+    var(--n) var(--u) var(--color-black),
+    0px var(--u) var(--color-black),
+    var(--u) var(--u) var(--color-black),
+    calc(var(--n) + var(--s)) var(--n) var(--color-black),
+    calc(0px + var(--s)) var(--n) var(--color-black),
+    calc(var(--u) + var(--s)) var(--n) var(--color-black),
+    calc(var(--n) + var(--s)) 0px var(--color-black),
+    calc(0px + var(--s)) 0px var(--color-black),
+    calc(var(--u) + var(--s)) 0px var(--color-black),
+    calc(var(--n) + var(--s)) var(--u) var(--color-black),
+    calc(0px + var(--s)) var(--u) var(--color-black),
+    calc(var(--u) + var(--s)) var(--u) var(--color-black),
+    var(--n) calc(var(--n) + var(--s)) var(--color-black),
+    0px calc(var(--n) + var(--s)) var(--color-black),
+    var(--u) calc(var(--n) + var(--s)) var(--color-black),
+    var(--n) calc(0px + var(--s)) var(--color-black),
+    0px calc(0px + var(--s)) var(--color-black),
+    var(--u) calc(0px + var(--s)) var(--color-black),
+    var(--n) calc(var(--u) + var(--s)) var(--color-black),
+    0px calc(var(--u) + var(--s)) var(--color-black),
+    var(--u) calc(var(--u) + var(--s)) var(--color-black),
+    calc(var(--n) + var(--s)) calc(var(--n) + var(--s)) var(--color-black),
+    calc(0px + var(--s)) calc(var(--n) + var(--s)) var(--color-black),
+    calc(var(--u) + var(--s)) calc(var(--n) + var(--s)) var(--color-black),
+    calc(var(--n) + var(--s)) calc(0px + var(--s)) var(--color-black),
+    calc(0px + var(--s)) calc(0px + var(--s)) var(--color-black),
+    calc(var(--u) + var(--s)) calc(0px + var(--s)) var(--color-black),
+    calc(var(--n) + var(--s)) calc(var(--u) + var(--s)) var(--color-black),
+    calc(0px + var(--s)) calc(var(--u) + var(--s)) var(--color-black),
+    calc(var(--u) + var(--s)) calc(var(--u) + var(--s)) var(--color-black);
 }
 
 @layer components {
-  .card-cream,
-  .card-accent {
-    border: var(--text-px) solid var(--pico-black);
-  }
-  /* Inside text boxes one spacing unit is two of their font pixels. */
-  .card-cream,
-  .card-accent,
-  .pixel-box {
-    --grid: calc(var(--px, var(--text-px)) * 2);
-  }
   .card-cream {
-    background-color: var(--pico-white);
-    color: var(--pico-black);
+    background-color: var(--color-white);
+    color: var(--color-black);
   }
   .card-accent {
     background-color: var(--pico-accent);
-    color: var(--pico-white);
+    color: var(--color-white);
   }
+
+  /* Floating things cast a black copy of their shape, grown one shadow pixel
+     right and down and resting one down and right, so two show. It sits on
+     the ground layer (z-index -1) and stays put while the element moves, so
+     the background never shows between them. */
+  .pixel-float {
+    position: relative;
+  }
+  .pixel-float::before,
+  .float-shadow::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: calc(var(--s) + var(--raise)) calc(var(--s) * -2 - var(--raise))
+      calc(var(--s) * -2 - var(--raise)) calc(var(--s) + var(--raise));
+    background-color: var(--color-black);
+    pointer-events: none;
+  }
+  /* Pressable things float one shadow pixel up on a same-shaped shadow.
+     Hover lifts them one of their own pixels; pressing sets them flush on the
+     floor, hiding the shadow. Offsets rather than transforms, which would
+     carry the shadow along. */
+  .pixel-button {
+    --px: 0.125em;
+    position: relative;
+    top: calc(var(--raise) * -1);
+    left: calc(var(--raise) * -1);
+    transition: --raise 100ms var(--ease-out);
+  }
+  .pixel-button::before {
+    inset: calc(var(--s) + var(--raise)) calc(var(--s) * -1 - var(--raise))
+      calc(var(--s) * -1 - var(--raise)) calc(var(--s) + var(--raise));
+  }
+  /* The hit zone stays at rest while the face moves, so an edge under the
+     cursor never flickers between states. */
+  .pixel-button::after {
+    content: "";
+    position: absolute;
+    inset: var(--raise) calc(var(--raise) * -1) calc(var(--raise) * -1)
+      var(--raise);
+    pointer-events: auto;
+  }
+  @media (hover: hover) {
+    .pixel-button:hover {
+      --raise: var(--px);
+    }
+  }
+  .pixel-button:active {
+    --raise: calc(var(--s) * -1);
+  }
+
+  /* Image containers bob and tilt; their shadow tilts along but stays down. */
+  @keyframes float-tilt {
+    from {
+      rotate: calc(var(--tilt, 0deg) - 1deg);
+    }
+    to {
+      rotate: calc(var(--tilt, 0deg) + 1deg);
+    }
+  }
+  @keyframes float-bob {
+    to {
+      translate: 0 calc(var(--px) * -2);
+    }
+  }
+  .float-body,
+  .float-shadow {
+    rotate: var(--tilt, 0deg);
+  }
+  .float-shadow {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .float-shadow {
+      animation: float-tilt 5s ease-in-out var(--float-delay, 0s) infinite
+        alternate;
+    }
+    .float-body {
+      animation:
+        float-tilt 5s ease-in-out var(--float-delay, 0s) infinite alternate,
+        float-bob 2s ease-in-out var(--float-delay, 0s) infinite alternate;
+    }
+  }
+}
+
+/* Unlayered so it beats pointer-events utilities: only the resting hit zone
+   (::after) takes the pointer. */
+.pixel-button {
+  pointer-events: none;
 }
 
 .tone-dark,
@@ -135,11 +348,12 @@
   color: var(--ink);
 }
 
-/* Background on a layer so bullets (z-index -1) fly between it and content. */
+/* Background on the first ground-layer paint, so shadows and bullets (also
+   z-index -1) land on it and content stays above. */
 .section-paper {
   background-color: transparent;
 }
-.section-paper::after {
+.section-paper::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -149,44 +363,112 @@
 }
 .tone-dark {
   --paper: var(--pico-bg);
-  --ink: var(--pico-white);
+  --ink: var(--color-white);
   --pop: var(--pico-accent);
 }
 .tone-alt {
   --paper: var(--pico-bg2);
-  --ink: var(--pico-white);
+  --ink: var(--color-white);
   --pop: var(--pico-accent);
 }
 .tone-light {
-  --paper: var(--pico-white);
-  --ink: var(--pico-black);
+  --paper: var(--color-white);
+  --ink: var(--color-black);
   --pop: var(--pico-accent);
 }
 
-/* Hard shadows and presses in whole pixels of the element (--px). */
-@utility pixel-shadow-* {
-  box-shadow: calc(var(--px, var(--text-px)) * --value(integer))
-    calc(var(--px, var(--text-px)) * --value(integer)) 0 0 var(--pico-black);
+@utility type-display-lg {
+  font-family: var(--font-display);
+  font-size: calc(var(--fp-display-lg) * 8);
+  line-height: 1;
+  text-transform: uppercase;
 }
-@utility pixel-lift-* {
-  translate: calc(var(--px, var(--text-px)) * --value(integer) * -1)
-    calc(var(--px, var(--text-px)) * --value(integer) * -1);
+@utility type-display-md {
+  font-family: var(--font-display);
+  font-size: calc(var(--fp-display-md) * 8);
+  line-height: 1;
+  text-transform: uppercase;
 }
-@utility pixel-press-* {
-  translate: calc(var(--px, var(--text-px)) * --value(integer))
-    calc(var(--px, var(--text-px)) * --value(integer));
+@utility type-display-sm {
+  font-family: var(--font-display);
+  font-size: calc(var(--fp-display-sm) * 8);
+  line-height: 1;
+  text-transform: uppercase;
 }
-@utility text-body {
-  font-size: calc(var(--text-px) * 8);
+@utility type-headline-lg {
+  font-family: var(--font-display);
+  font-size: calc(var(--fp-headline-lg) * 8);
+  line-height: 1.125;
+  text-transform: uppercase;
 }
-@utility text-large {
-  font-size: var(--text-large);
+@utility type-headline-md {
+  font-family: var(--font-display);
+  font-size: calc(var(--fp-headline-md) * 8);
+  line-height: 1.125;
+  text-transform: uppercase;
+}
+@utility type-headline-sm {
+  font-family: var(--font-display);
+  font-size: calc(var(--fp-headline-sm) * 8);
+  line-height: 1.125;
+  text-transform: uppercase;
+}
+@utility type-title-lg {
+  font-family: var(--font-display);
+  font-size: calc(var(--fp-title-lg) * 8);
+  line-height: 1.375;
+}
+@utility type-title-md {
+  font-family: var(--font-display);
+  font-size: calc(var(--fp-title-md) * 8);
+  line-height: 1.375;
+}
+@utility type-title-sm {
+  font-family: var(--font-display);
+  font-size: calc(var(--fp-title-sm) * 8);
+  line-height: 1.375;
+}
+@utility type-body-lg {
+  font-family: var(--font-body);
+  font-size: calc(var(--fp-body-lg) * 8);
+  line-height: 1.375;
+}
+@utility type-body-md {
+  font-family: var(--font-body);
+  font-size: calc(var(--fp-body-md) * 8);
+  line-height: 1.375;
+}
+@utility type-body-sm {
+  font-family: var(--font-body);
+  font-size: calc(var(--fp-body-sm) * 8);
+  line-height: 1.375;
+}
+@utility type-label-lg {
+  font-family: var(--font-body);
+  font-size: calc(var(--fp-label-lg) * 8);
+  line-height: 1;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+@utility type-label-md {
+  font-family: var(--font-body);
+  font-size: calc(var(--fp-label-md) * 8);
+  line-height: 1;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+@utility type-label-sm {
+  font-family: var(--font-body);
+  font-size: calc(var(--fp-label-sm) * 8);
+  line-height: 1;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
 }
 
 @utility min-h-screen-band {
   min-height: calc(100svh + var(--band));
 }
-.pixel-edge::before {
+.pixel-edge::after {
   content: "";
   position: absolute;
   left: 0;
@@ -208,19 +490,19 @@
 
   body {
     /* No background: it would cover the section layers. */
-    color: var(--pico-white);
+    color: var(--color-white);
     -webkit-font-smoothing: none;
     font-smooth: never;
   }
 
   ::selection {
     background: var(--pico-accent);
-    color: var(--pico-black);
+    color: var(--color-black);
   }
 
   :focus-visible {
-    outline: var(--text-px) solid var(--pico-accent);
-    outline-offset: var(--text-px);
+    outline: var(--p) solid var(--pico-accent);
+    outline-offset: var(--p);
   }
 }
 
@@ -239,8 +521,8 @@
   }
 }
 .pixel-bullet {
-  background: var(--pico-white);
-  box-shadow: 0 calc(var(--px) * var(--floor, 5)) var(--pico-black);
+  background: var(--color-white);
+  box-shadow: 0 calc(var(--px) * var(--floor, 5)) var(--color-black);
   animation: pixel-bullet 1000ms linear both;
 }
 .pixel-bullet.is-left {
@@ -253,13 +535,13 @@
   --dir: -1;
 }
 .player-bullet {
-  background: var(--pico-white);
+  background: var(--color-white);
 }
 .enemy-bullet {
-  background: #ff004d;
+  background: var(--color-red);
 }
 .shot-shadow {
-  background: var(--pico-black);
+  background: var(--color-black);
 }
 
 @keyframes companion-track {
@@ -328,17 +610,18 @@
 }
 
 /* Blocks fade up as they enter, driven by scroll on the compositor so it
-   stays smooth on phones. Without support they simply show. */
+   stays smooth on phones. Filling backwards only drops the effect once in,
+   so it stops forming a stacking context that would lift ground shadows. */
 @keyframes reveal {
   from {
     opacity: 0;
-    transform: translate3d(0, 24px, 0);
+    transform: translate3d(0, calc(var(--p) * 8), 0);
   }
 }
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     [data-reveal] {
-      animation: reveal ease-out both;
+      animation: reveal ease-out backwards;
       animation-timeline: view();
       animation-range: entry 0% entry 100%;
     }

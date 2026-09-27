@@ -27,7 +27,7 @@ export function SoundToggle() {
       data-sound="ui"
       aria-pressed={on}
       aria-label={copy.menu.sound}
-      className={`${dropdown.trigger} px-3 text-body`}
+      className={`${dropdown.trigger} px-6 text-body`}
     >
       <PixelIcon name={on ? "sound" : "mute"} />
     </button>
