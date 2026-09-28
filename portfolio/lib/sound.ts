@@ -1,5 +1,7 @@
 // Web Audio sound effects. Off by default; files load only once turned on.
 
+import { random } from "@/lib/random";
+
 // Loudness of each file's loud part in dBFS, so levels below compare fairly.
 const LOUDNESS = {
   GunShot: -8,
@@ -142,7 +144,7 @@ export function playSound(name: SoundName) {
     source.buffer = buffer;
     const jitter = sound.jitter ?? DEFAULT_JITTER;
     source.playbackRate.value =
-      (sound.rate ?? 1) * (1 + (Math.random() * 2 - 1) * jitter);
+      (sound.rate ?? 1) * (1 + (random() * 2 - 1) * jitter);
     const gain = ctx.createGain();
     gain.gain.value = 10 ** ((sound.level - LOUDNESS[sound.file]) / 20);
     source.connect(gain).connect(ctx.destination);

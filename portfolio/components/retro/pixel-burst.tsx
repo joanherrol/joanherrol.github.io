@@ -1,4 +1,6 @@
 export type BurstPiece = {
+  /** Unique within its burst, for React keys. */
+  id: number;
   x: number;
   y: number;
   color: string;
@@ -31,6 +33,7 @@ export function flashPieces(
     const angle = spread * FLASH_CONE;
     const distance = 3 + noise(seed + i + 0.5) * 4;
     return {
+      id: i,
       x: 0,
       y: 0,
       color: colors[i % colors.length],
@@ -55,9 +58,9 @@ export function PixelBurst({
 }>) {
   return (
     <div className={`absolute ${className}`} style={style}>
-      {pieces.map((p, i) => (
+      {pieces.map((p) => (
         <span
-          key={i}
+          key={p.id}
           className="pixel-burst absolute"
           style={
             {

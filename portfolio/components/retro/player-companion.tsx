@@ -1,30 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  BULLET_MS,
-  MUZZLE,
-  PLAYER_SPRITES,
-  Player,
-  preloadPlayerSprites,
-  useShoot,
-} from "@/components/retro/player";
+  firstHit,
+  readCovers,
+  spriteRects,
+  type Hit,
+  type Rect,
+} from "@/components/retro/collision";
 import {
   attackTiming,
-  ENEMY_HP,
+  ENEMIES,
   Enemy,
+  ENEMY_HP,
   HIT_MS,
   IDLE_FRAME_MS,
   IDLE_FRAMES,
   nextEnemy,
   preloadEnemySprites,
-  ENEMIES,
-  type EnemyKind,
   type EnemyAnimation,
+  type EnemyKind,
 } from "@/components/retro/enemy";
-import { prefersReducedMotion } from "@/lib/motion";
-import { artPx, devicePx } from "@/lib/pixel";
-import { playSound } from "@/lib/sound";
 import {
   FLASH_COLORS,
   flashPieces,
@@ -32,10 +27,18 @@ import {
   type BurstPiece,
 } from "@/components/retro/pixel-burst";
 import {
-  firstHit,
-  readCovers,
-  spriteRects,
-} from "@/components/retro/collision";
+  BULLET_MS,
+  MUZZLE,
+  Player,
+  PLAYER_SPRITES,
+  preloadPlayerSprites,
+  useShoot,
+} from "@/components/retro/player";
+import { prefersReducedMotion } from "@/lib/motion";
+import { artPx, devicePx } from "@/lib/pixel";
+import { random } from "@/lib/random";
+import { playSound } from "@/lib/sound";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // Character pixels in device pixels on phones, where there are no lanes.
 const PHONE_SCALE = 4;
@@ -85,9 +88,10 @@ const SPARK_MS = 250;
 
 function sparkPieces(color: string, [nx, ny]: [number, number]): BurstPiece[] {
   return Array.from({ length: 6 }, (_, i) => {
-    const along = 2 + Math.random() * 4;
-    const across = (Math.random() - 0.5) * 8;
+    const along = 2 + random() * 4;
+    const across = (random() - 0.5) * 8;
     return {
+      id: i,
       x: 0,
       y: 0,
       color: i % 3 ? color : "#fff1e8",
@@ -134,11 +138,12 @@ function burstPieces(
 ): BurstPiece[] {
   const cx = width / 2;
   const cy = height / 2;
-  return pixels.map(({ x, y, color }) => {
+  return pixels.map(({ x, y, color }, i) => {
     const angle =
-      Math.atan2(y + 0.5 - cy, x + 0.5 - cx) + (Math.random() - 0.5) * 0.5;
-    const distance = 4 + Math.random() * 8;
+      Math.atan2(y + 0.5 - cy, x + 0.5 - cx) + (random() - 0.5) * 0.5;
+    const distance = 4 + random() * 8;
     return {
+      id: i,
       x,
       y,
       color,
@@ -146,6 +151,24 @@ function burstPieces(
       dy: Math.round(Math.sin(angle) * distance),
     };
   });
+}
+
+/** Where a shot stops this frame, and which way its sparks fly. */
+type Impact = {
+  x: number;
+  sparkX: number;
+  normal: [number, number];
+  cover: boolean;
+};
+
+function coverImpact(cover: Hit, dir: number, size: number, dy: number) {
+  const away = dy > 0 ? -1 : 1;
+  return {
+    x: cover.x,
+    sparkX: cover.x + (dir > 0 && !cover.vertical ? size : 0),
+    normal: cover.vertical ? [0, away] : [-dir, 0],
+    cover: true,
+  } satisfies Impact;
 }
 
 function place(shot: Shot, x: number) {
@@ -580,54 +603,71 @@ export function PlayerCompanion() {
     let raf = 0;
     let scrollY = window.scrollY;
     const last = new Map<number, number>();
+
+    // A target in front of any cover takes the hit; otherwise the cover stops the shot.
+    const impactOf = (
+      shot: Shot,
+      from: number,
+      to: number,
+      size: number,
+      covers: Rect[],
+      dy: number,
+    ): Impact | null => {
+      const enemyShot = shot.from === "enemy";
+      const dir = enemyShot ? -1 : 1;
+      const target = spriteRects(
+        enemyShot ? trackRef.current : enemyTrackRef.current,
+      );
+      const struck = firstHit(from, to, size, shot.y, target, 0);
+      const cover = firstHit(from, to, size, shot.y, covers, dy);
+      const beforeCover =
+        struck !== null && (cover === null || (struck.x - cover.x) * dir <= 0);
+      if (beforeCover && (enemyShot ? playerHit : hit)(shot.id)) {
+        return {
+          x: struck.x,
+          sparkX: struck.x + size / 2,
+          normal: [-dir, 0],
+          cover: false,
+        };
+      }
+      return cover ? coverImpact(cover, dir, size, dy) : null;
+    };
+
+    const move = (
+      shot: Shot,
+      now: number,
+      speed: number,
+      covers: Rect[],
+      dy: number,
+    ) => {
+      const enemyShot = shot.from === "enemy";
+      const dir = enemyShot ? -1 : 1;
+      const size = (enemyShot ? 2 : 1) * scale;
+      const from = last.get(shot.id) ?? shot.x;
+      const to = devicePx(shot.x + dir * speed * (now - shot.born));
+      const impact = impactOf(shot, from, to, size, covers, dy);
+      if (!impact) {
+        last.set(shot.id, to);
+        place(shot, to);
+        return;
+      }
+      place(shot, impact.x);
+      land(shot.id);
+      if (impact.cover) playSound("spark");
+      addSpark(
+        impact.sparkX - scale / 2,
+        shot.y + size / 2 - scale / 2,
+        sparkPieces(enemyShot ? "#ff004d" : "#fff1e8", impact.normal),
+      );
+    };
+
     const tick = (now: number) => {
       const covers = readCovers();
       const dy = window.scrollY - scrollY;
       scrollY = window.scrollY;
       const speed = prefersReducedMotion() ? 0 : window.innerWidth / BULLET_MS;
-      for (const shot of live.current.values()) {
-        const enemyShot = shot.from === "enemy";
-        const dir = enemyShot ? -1 : 1;
-        const size = (enemyShot ? 2 : 1) * scale;
-        const from = last.get(shot.id) ?? shot.x;
-        const to = devicePx(shot.x + dir * speed * (now - shot.born));
-        const target = spriteRects(
-          enemyShot ? trackRef.current : enemyTrackRef.current,
-        );
-        const struck = firstHit(from, to, size, shot.y, target, 0);
-        const cover = firstHit(from, to, size, shot.y, covers, dy);
-        if (
-          struck &&
-          (!cover || (struck.x - cover.x) * dir <= 0) &&
-          (enemyShot ? playerHit : hit)(shot.id)
-        ) {
-          place(shot, struck.x);
-          land(shot.id);
-          const normal: [number, number] = [-dir, 0];
-          addSpark(
-            struck.x + size / 2 - scale / 2,
-            shot.y + size / 2 - scale / 2,
-            sparkPieces(enemyShot ? "#ff004d" : "#fff1e8", normal),
-          );
-          continue;
-        }
-        if (cover) {
-          place(shot, cover.x);
-          land(shot.id);
-          playSound("spark");
-          const normal: [number, number] = cover.vertical
-            ? [0, dy > 0 ? -1 : 1]
-            : [-dir, 0];
-          addSpark(
-            cover.x + (dir > 0 && !cover.vertical ? size : 0) - scale / 2,
-            shot.y + size / 2 - scale / 2,
-            sparkPieces(enemyShot ? "#ff004d" : "#fff1e8", normal),
-          );
-          continue;
-        }
-        last.set(shot.id, to);
-        place(shot, to);
-      }
+      for (const shot of live.current.values())
+        move(shot, now, speed, covers, dy);
       for (const id of last.keys()) if (!live.current.has(id)) last.delete(id);
       raf = requestAnimationFrame(tick);
     };

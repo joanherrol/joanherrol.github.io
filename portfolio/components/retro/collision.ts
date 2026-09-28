@@ -2,6 +2,9 @@
 
 export type Rect = { left: number; top: number; right: number; bottom: number };
 
+/** Where a moving shot first touches a rect; `vertical` when it started inside one. */
+export type Hit = { x: number; vertical: boolean };
+
 const COVERS = "main .card-cream, main .card-accent, main .float-body";
 const TITLES = "main h1, main h2";
 
@@ -67,13 +70,14 @@ export function firstHit(
   const dir = Math.sign(to - from) || 1;
   const left = Math.min(from, to);
   const right = Math.max(from, to) + size;
-  let best: { x: number; vertical: boolean } | null = null;
+  let best: Hit | null = null;
   for (const r of rects) {
     if (r.right <= left || r.left >= right) continue;
     if (Math.max(r.bottom, r.bottom + dy) <= top) continue;
     if (Math.min(r.top, r.top + dy) >= top + size) continue;
     const inside = r.left < from + size && r.right > from;
-    const x = inside ? from : dir > 0 ? r.left - size : r.right;
+    const edge = dir > 0 ? r.left - size : r.right;
+    const x = inside ? from : edge;
     if (!best || (x - best.x) * dir < 0) best = { x, vertical: inside };
   }
   return best;
