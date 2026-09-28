@@ -603,6 +603,12 @@ export function PlayerCompanion() {
         ) {
           place(shot, struck.x);
           land(shot.id);
+          const normal: [number, number] = [-dir, 0];
+          addSpark(
+            struck.x + size / 2 - scale / 2,
+            shot.y + size / 2 - scale / 2,
+            sparkPieces(enemyShot ? "#ff004d" : "#fff1e8", normal),
+          );
           continue;
         }
         if (cover) {
