@@ -6,6 +6,7 @@ import {
   DropText,
   Mark,
   PixelButton,
+  PixelShadow,
   TitleBar,
   WindowFrame,
   dropdown,
@@ -231,29 +232,35 @@ export default function DesignSheet() {
 
           <Block
             title="Shadow"
-            note="Black, down and right, in title pixels. Titles 1; floating things 2 on a grown copy; pressables float 1, lift one of their own pixels on hover and sit flush when pressed."
+            note="Black, down and right, in title pixels. Titles 1; resting cards 1 and floating things 2 on a grown copy; pressables float 1, lift one of their own pixels on hover and sit flush when pressed. Corners step in by one title pixel per 12 of the shorter side, up to 2; only the console keeps growing."
           >
             <div className="flex flex-wrap items-start gap-16">
               <div className="flex flex-col gap-4">
                 <Caption>Floating card</Caption>
-                <div className="card-cream pixel-float p-8 type-body-md">
-                  Card, menu, frame
+                <div className="pixel-float pixel-cut">
+                  <PixelShadow />
+                  <div className="pixel-face card-cream p-8 type-body-md">
+                    Card, menu, frame
+                  </div>
                 </div>
               </div>
               {(
                 [
-                  ["Rest", "0px"],
-                  ["Hover", "0.125em"],
-                  ["Pressed", "calc(var(--s) * -1)"],
+                  ["Rest", "0 0"],
+                  ["Hover", "-0.125em -0.125em"],
+                  ["Pressed", "var(--s) var(--s)"],
                 ] as const
-              ).map(([label, raise]) => (
+              ).map(([label, translate]) => (
                 <div key={label} className="flex flex-col gap-4">
                   <Caption>{label}</Caption>
-                  <span
-                    className="card-accent pixel-float pixel-button inline-flex px-6 py-4 type-body-md uppercase tracking-[0.125em]"
-                    style={{ "--raise": raise } as React.CSSProperties}
-                  >
-                    Button
+                  <span className="pixel-button pixel-cut inline-flex">
+                    <PixelShadow />
+                    <span
+                      className="pixel-face card-accent px-6 py-4 type-body-md uppercase tracking-[0.125em]"
+                      style={{ translate }}
+                    >
+                      Button
+                    </span>
                   </span>
                 </div>
               ))}
@@ -269,21 +276,25 @@ export default function DesignSheet() {
                 Link out
               </PixelButton>
               <div className="tone-light flex gap-6 bg-transparent!">
-                <button
-                  type="button"
-                  className={`${dropdown.trigger} gap-6 px-6 type-body-md uppercase tracking-[0.125em]`}
-                >
-                  <PixelIcon name="menu" />
-                  Menu
+                <button type="button" className={dropdown.trigger}>
+                  <PixelShadow />
+                  <span
+                    className={`${dropdown.triggerFace} gap-6 px-6 type-body-md uppercase tracking-[0.125em]`}
+                  >
+                    <PixelIcon name="menu" />
+                    Menu
+                  </span>
                 </button>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-4 type-body-md">
-              <span className="card-accent px-4 py-2 leading-none">
+              <span className="pixel-cut pixel-face card-accent px-4 py-2 leading-none">
                 Featured chip
               </span>
-              <span className="card-cream px-4 py-2 leading-none">Chip</span>
-              <span className="card-accent flex items-center gap-4 px-4 py-2 uppercase">
+              <span className="pixel-cut pixel-face card-cream px-4 py-2 leading-none">
+                Chip
+              </span>
+              <span className="pixel-cut pixel-face card-accent flex items-center gap-4 px-4 py-2 uppercase">
                 <PixelIcon name="star" />
                 Badge
               </span>
@@ -302,11 +313,14 @@ export default function DesignSheet() {
             <div className="grid gap-12 sm:grid-cols-2">
               <div className="flex flex-col gap-4">
                 <Caption>Menu title bar (divided)</Caption>
-                <div className="pixel-float bg-cream">
-                  <TitleBar title="Menu title" divider />
-                  <p className="px-6 py-4 type-body-md text-black uppercase tracking-[0.125em]">
-                    Menu item
-                  </p>
+                <div className={dropdown.panel}>
+                  <PixelShadow />
+                  <div className={dropdown.panelFace}>
+                    <TitleBar title="Menu title" divider />
+                    <p className="px-6 py-4 type-body-md text-black uppercase tracking-[0.125em]">
+                      Menu item
+                    </p>
+                  </div>
                 </div>
               </div>
               <div className="flex flex-col gap-4">

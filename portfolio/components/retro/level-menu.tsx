@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { copy } from "@/lib/copy";
 import { PixelIcon } from "@/components/retro/pixel-icon";
 import { Player } from "@/components/retro/player";
-import { dropdown, TitleBar } from "@/components/retro/ui";
+import { pixelCutRef } from "@/components/retro/pixel-corners";
+import { dropdown, PixelShadow, TitleBar } from "@/components/retro/ui";
 import { useDismiss } from "@/components/retro/use-dismiss";
 import { useBasePx } from "@/lib/use-base-px";
 
@@ -50,42 +51,51 @@ export function LevelMenu({ levels }: Readonly<{ levels: Level[] }>) {
         onClick={() => setOpen((o) => !o)}
         data-sound="open"
         aria-expanded={open}
-        className={`${dropdown.trigger} gap-6 px-6 text-body uppercase tracking-[0.125em]`}
+        className={dropdown.trigger}
       >
-        <PixelIcon name={open ? "close" : "menu"} />
-        {copy.menu.open}
+        <PixelShadow />
+        <span
+          className={`${dropdown.triggerFace} gap-6 px-6 text-body uppercase tracking-[0.125em]`}
+        >
+          <PixelIcon name={open ? "close" : "menu"} />
+          {copy.menu.open}
+        </span>
       </button>
 
       {open && (
         <nav
           aria-label={copy.menu.title}
+          ref={pixelCutRef}
           className={`${dropdown.panel} w-max max-w-[calc(100vw-var(--edge)*2)]`}
         >
-          <TitleBar title={copy.menu.title} divider />
-          <ul>
-            {levels.map((level, i) => (
-              <li key={level.id}>
-                <button
-                  type="button"
-                  onClick={() => go(level.id)}
-                  data-sound="start"
-                  onMouseEnter={() => setHovered(i)}
-                  onFocus={() => setHovered(i)}
-                  className={`${dropdown.item} ${hovered === i ? "bg-pico-accent text-cream" : ""}`}
-                >
-                  <span className="flex h-11 w-10 shrink-0 items-center justify-center">
-                    {hovered === i && p > 0 && (
-                      <Player animation="idle" scale={p} flipX />
-                    )}
-                  </span>
-                  <span className="shrink-0 whitespace-nowrap">
-                    {level.code}
-                  </span>
-                  {level.label}
-                </button>
-              </li>
-            ))}
-          </ul>
+          <PixelShadow />
+          <div className={dropdown.panelFace}>
+            <TitleBar title={copy.menu.title} divider />
+            <ul>
+              {levels.map((level, i) => (
+                <li key={level.id}>
+                  <button
+                    type="button"
+                    onClick={() => go(level.id)}
+                    data-sound="start"
+                    onMouseEnter={() => setHovered(i)}
+                    onFocus={() => setHovered(i)}
+                    className={`${dropdown.item} ${hovered === i ? "bg-pico-accent text-cream" : ""}`}
+                  >
+                    <span className="flex h-11 w-10 shrink-0 items-center justify-center">
+                      {hovered === i && p > 0 && (
+                        <Player animation="idle" scale={p} flipX />
+                      )}
+                    </span>
+                    <span className="shrink-0 whitespace-nowrap">
+                      {level.code}
+                    </span>
+                    {level.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </nav>
       )}
     </div>

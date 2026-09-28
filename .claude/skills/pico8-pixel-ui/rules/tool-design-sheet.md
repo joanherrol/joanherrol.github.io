@@ -27,4 +27,4 @@ const set = (name: string, n: number) => {
 el.textContent = `${size}px · pixel ${size / 8}px`;
 ```
 
-Put the tuner's `sticky` on a wrapper, never on the shadowed card (see `shadow-ground-layer`). Show state (rest, hover, pressed) by setting `--raise` inline on static copies.
+Put the tuner's `sticky` on a wrapper, never on the shadowed card (see `shadow-ground-layer`). Show state (rest, hover, pressed) by setting `translate` inline on the faces of static copies.

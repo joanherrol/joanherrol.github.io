@@ -7,7 +7,7 @@ tags: shadow, animation, reveal, transform
 
 ## Never Animate a Shadowed Element, Animate a Wrapper
 
-A shadowed element must never transform or animate itself. Put the reveal, bob or tilt on a wrapper, or split the element into separate shadow and body elements. For moving pressables, move with `top`/`left` offsets, not transforms (see `press-float-raise`).
+A shadowed element must never transform or animate itself. Put the reveal, bob or tilt on a wrapper, or split the element into separate shadow and body elements. Pressables are already split: only the face translates, and its sibling shadow stays on the ground (see `press-float-raise`).
 
 **Incorrect (the card is both revealed and shadowed):**
 

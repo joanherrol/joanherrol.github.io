@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { pixelCutRef } from "@/components/retro/pixel-corners";
+import { PixelShadow } from "@/components/retro/ui";
 
 // Tokens set as whole multiples of one device-aligned pixel (--ipx).
 const TOKENS = [
@@ -95,47 +97,53 @@ export function Tuner() {
     .join("\n");
 
   return (
-    <aside className="card-cream pixel-float flex flex-col gap-4 p-6 text-body">
-      <p className="text-body uppercase tracking-[0.25em]">
-        Tuning {phone ? "phone (under 40rem)" : "desktop (40rem and up)"}
-      </p>
-      <p className="text-dark-grey">
-        Whole device pixels per glyph pixel. Changes preview here only; send me
-        the snippet to keep them.
-      </p>
-      <div className="grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-2">
-        {TOKENS.map(({ name, label }) => (
-          <label key={name} className="contents">
-            <span className="capitalize">{label}</span>
-            <input
-              type="number"
-              min={1}
-              max={24}
-              value={values[name] ?? ""}
-              onChange={(e) => set(name, Number(e.target.value))}
-              className="w-20 bg-light-grey px-2 text-right text-black"
+    <aside ref={pixelCutRef} className="pixel-float pixel-cut">
+      <PixelShadow />
+      <div className="pixel-face card-cream flex flex-col gap-4 p-6 text-body">
+        <p className="text-body uppercase tracking-[0.25em]">
+          Tuning {phone ? "phone (under 40rem)" : "desktop (40rem and up)"}
+        </p>
+        <p className="text-dark-grey">
+          Whole device pixels per glyph pixel. Changes preview here only; send
+          me the snippet to keep them.
+        </p>
+        <div className="grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-2">
+          {TOKENS.map(({ name, label }) => (
+            <label key={name} className="contents">
+              <span className="capitalize">{label}</span>
+              <input
+                type="number"
+                min={1}
+                max={24}
+                value={values[name] ?? ""}
+                onChange={(e) => set(name, Number(e.target.value))}
+                className="w-20 bg-light-grey px-2 text-right text-black"
+              />
+            </label>
+          ))}
+        </div>
+        {snippet && (
+          <>
+            <textarea
+              readOnly
+              wrap="off"
+              value={snippet}
+              rows={Object.keys(changed).length}
+              className="w-full resize-none bg-light-grey p-2 text-black"
             />
-          </label>
-        ))}
+            <button
+              type="button"
+              onClick={reset}
+              className="pixel-button pixel-cut self-start"
+            >
+              <PixelShadow />
+              <span className="pixel-face card-accent px-6 py-4 uppercase tracking-[0.125em]">
+                Reset
+              </span>
+            </button>
+          </>
+        )}
       </div>
-      {snippet && (
-        <>
-          <textarea
-            readOnly
-            wrap="off"
-            value={snippet}
-            rows={Object.keys(changed).length}
-            className="w-full resize-none bg-light-grey p-2 text-black"
-          />
-          <button
-            type="button"
-            onClick={reset}
-            className="card-accent pixel-float pixel-button self-start px-6 py-4 uppercase tracking-[0.125em]"
-          >
-            Reset
-          </button>
-        </>
-      )}
     </aside>
   );
 }

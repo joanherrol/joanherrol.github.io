@@ -9,7 +9,7 @@ metadata:
 
 # PICO-8 Pixel UI
 
-A strict design system for flat pixel-art UIs that match PICO-8-style game characters, plus the techniques for animating those characters, their shadows, shots and collisions on a web page. It holds 44 rules across 10 categories, ordered by impact. The rules are strict: if something can't be built within them, change the design, not the rule.
+A strict design system for flat pixel-art UIs that match PICO-8-style game characters, plus the techniques for animating those characters, their shadows, shots and collisions on a web page. It holds 45 rules across 10 categories, ordered by impact. The rules are strict: if something can't be built within them, change the design, not the rule.
 
 ## When to Apply
 
@@ -20,13 +20,14 @@ A strict design system for flat pixel-art UIs that match PICO-8-style game chara
 - Adding shooting, bullets, collisions, sparks, deaths and respawns
 - Reviewing pixel UI for half pixels, off-palette colours, broken shadows or janky animation
 
-## The Five Laws
+## The Six Laws
 
 1. **Nothing renders a half pixel.** Every length is whole device pixels (`--ipx`), scaled by whole steps.
 2. **Only the 32 PICO-8 colours, flat.** No opacity, gradients or coloured shading at rest.
 3. **Shadows are black, down and right, in title pixels (`--s`)** (1 for titles and resting cards, 2 for floating things), drawn as solid same-shape copies on a ground layer. Never animate the shadowed element itself.
-4. **No black outlines.** Contrast comes from flat colour, spacing and shadow.
-5. **Two 8-pixel fonts.** Press Start 2P only for display and headlines; Tiny5 for everything else.
+4. **Corners are stair-stepped in `--s`**, never rounded: one step per 12 `--s` of the shorter side, up to 2 (only the console grows further).
+5. **No black outlines.** Contrast comes from flat colour, spacing and shadow.
+6. **Two 8-pixel fonts.** Press Start 2P only for display and headlines; Tiny5 for everything else.
 
 ## Rule Categories by Priority
 
@@ -65,7 +66,7 @@ A strict design system for flat pixel-art UIs that match PICO-8-style game chara
 ### 3. Shadows and Layers (CRITICAL)
 
 - `shadow-title-pixel-unit` - Every shadow is sized in the title glyph pixel `--s`
-- `shadow-solid-copy` - A black same-shape copy (resting: 1 along whole edges; floating: grown, 2 showing), never a band
+- `shadow-solid-copy` - A black same-shape sibling copy (resting: 1 along whole edges; floating: grown, 2 showing), never a band
 - `shadow-ground-layer` - Shadows at z −1 with no stacking contexts above; reveals fill `backwards`
 - `shadow-wrap-to-animate` - Animate a wrapper, never the shadowed element; frame shadows tilt but don't bob
 - `shadow-title-drop-copy` - Title shadows are an aria-hidden black text copy on the ground
@@ -80,8 +81,8 @@ A strict design system for flat pixel-art UIs that match PICO-8-style game chara
 
 ### 5. Pressables and Motion (HIGH)
 
-- `press-float-raise` - Float 1 `--s`, lift 1 own pixel on hover, sit flush when pressed, all with a registered `--raise`
-- `press-fixed-hit-zone` - The element ignores the pointer; an `::after` fixed at rest takes it
+- `press-float-raise` - Float 1 `--s`, lift 1 own pixel on hover, sit flush when pressed; only the face translates
+- `press-fixed-hit-zone` - The still host takes the pointer; the moving face ignores it
 - `press-menu-rows` - Hovered and selected menu rows share the accent fill
 - `press-float-frames` - Frames start upright, then bob 2 px and sway ±1°; the shadow only sways
 - `press-feedback-motion` - Scroll-timeline reveals, solid red hurt flashes, `steps(1)` blinks, reduced motion
@@ -89,6 +90,7 @@ A strict design system for flat pixel-art UIs that match PICO-8-style game chara
 
 ### 6. Outlines and Surfaces (MEDIUM-HIGH)
 
+- `surface-cut-corners` - Stair-stepped `clip-path` corners on a face beside its shadow, sized by `PixelCorners`
 - `surface-no-black-outlines` - No black outlines; exceptions are the accent ring, focus ring, hue-matched lights and menu dividers
 - `surface-image-frames` - Window frame (title bar, lights) and console frame (D-pad, bezel, recessed screen)
 
@@ -139,7 +141,8 @@ Each rule file has a short explanation of why it matters, an incorrect example w
 | `globals.css`                            | Palette, `--ipx`/`--p`/`--s`, 15 type tokens and utilities, shadows, pressables, frames, reveals, bullets |
 | `pixel.ts`                               | `pixelBootScript`, `artPx`, `devicePx`, `basePx`                               |
 | `palette.ts`                             | Token-referencing palettes, `applyPalette`, `paletteBootScript`                |
-| `ui.tsx`                                 | Section, DropText, Mark, PixelButton, dropdown, TitleBar, WindowFrame, ConsoleFrame, PixelArt |
+| `ui.tsx`                                 | Section, DropText, Mark, PixelShadow, PixelButton, dropdown, TitleBar, WindowFrame, ConsoleFrame, PixelArt |
+| `pixel-corners.tsx`                      | `PixelCorners` (mount once in the root layout) and `pixelCutRef` for late mounts |
 | `pixel-sprite.tsx`                       | Canvas sprite renderer with a fixed-step clock, tint and preload               |
 | `player.tsx`, `enemy.tsx`                | Layered player with gun and bullets, `useShoot`; enemy data and attack timing  |
 | `player-companion.tsx`                   | The game loop: tracks, attacks, shots, collisions, hurt, bursts, respawns      |

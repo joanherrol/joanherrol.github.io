@@ -7,27 +7,20 @@ tags: press, pointer-events, hover, hit-testing
 
 ## The Hit Zone Never Moves
 
-When a face lifts on hover, a cursor on its bottom or right edge ends up outside it, so it drops, re-enters, lifts again, and flickers. Make the element ignore the pointer and give a transparent `::after`, pinned to the resting position, the pointer instead. `:hover` and `:active` still match, because the pseudo belongs to the element.
+When a face lifts on hover, a cursor on its bottom or right edge ends up outside it, so it drops, re-enters, lifts again, and flickers. The host never moves, so it is the hit zone: it takes the pointer and the face ignores it. `:hover` and `:active` match on the host and move only the face.
 
-**Incorrect:**
+**Incorrect (the element's own box moves out from under the cursor):**
 
 ```css
-.pixel-button:hover { --raise: var(--px); } /* the element's own box moves out from under the cursor */
+.pixel-button:hover { translate: -0.125em -0.125em; }
 ```
 
 **Correct:**
 
 ```css
-@layer components {
-  .pixel-button::after {
-    content: "";
-    position: absolute;
-    inset: var(--raise) calc(var(--raise) * -1) calc(var(--raise) * -1) var(--raise);
-    pointer-events: auto;
-  }
-}
-/* Unlayered so it beats pointer-events utilities: only the resting hit zone takes the pointer. */
-.pixel-button { pointer-events: none; }
+.pixel-button { pointer-events: auto; }
+.pixel-button > .pixel-face { pointer-events: none; }
+.pixel-button:hover > .pixel-face { translate: -0.125em -0.125em; }
 ```
 
-Keep the `none` rule unlayered. Inside `@layer components`, a utility such as `pointer-events-auto` on a parent menu would override it.
+Set `pointer-events: auto` on the host explicitly: fixed menus are `pointer-events-none` so they don't block the page, and the host must still take clicks inside them. Delegated handlers (`data-sound`, links) sit on the host, so the click target is always the host.

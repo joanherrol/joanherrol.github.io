@@ -29,14 +29,14 @@ Section order, prefixes and impact. Rule files are named `<prefix>-<name>.md`.
 ## 5. Pressables and Motion (press)
 
 **Impact:** HIGH
-**Description:** Buttons float, lift one of their own pixels on hover and sit flush when pressed, with a hit zone that never moves. Floating frames, reveals and feedback.
+**Description:** Button faces float, lift one of their own pixels on hover and sit flush when pressed, while the host stays still as the hit zone. Floating frames, reveals and feedback.
 **Rules:** float-raise, fixed-hit-zone, menu-rows, float-frames, feedback-motion, sound-delegation
 
 ## 6. Outlines and Surfaces (surface)
 
 **Impact:** MEDIUM-HIGH
-**Description:** No black outlines; contrast from flat colour, spacing and shadow. Short list of allowed exceptions and the two image frames.
-**Rules:** no-black-outlines, image-frames
+**Description:** No black outlines; contrast from flat colour, spacing and shadow. Stair-stepped corners, a short list of allowed exceptions and the two image frames.
+**Rules:** cut-corners, no-black-outlines, image-frames
 
 ## 7. Sprites and Animation (sprite)
 

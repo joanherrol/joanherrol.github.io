@@ -7,7 +7,7 @@ tags: shadow, z-index, stacking-context, layers
 
 ## Keep Shadows on a Ground Layer With No Stacking Contexts Above
 
-Shadows are `z-index: -1` pseudo-elements. For them to land below projectiles and above the section background, the section paints its background on its own `::before` at `-1`, and neither the shadowed element nor any ancestor may form a stacking context. `transform`, `opacity < 1`, `filter`, `position: sticky`, `container-type`, `will-change`, `isolation` or `z-index` on a positioned element all trap the shadow inside.
+Shadows are `z-index: -1` elements (`.pixel-shadow` siblings, or the `::before` of an unclipped wrapper). For them to land below projectiles and above the section background, the section paints its background on its own `::before` at `-1`, and neither the shadowed element nor any ancestor may form a stacking context. `transform`, `opacity < 1`, `filter`, `position: sticky`, `container-type`, `will-change`, `isolation` or `z-index` on a positioned element all trap the shadow inside. A face's `clip-path` also forms a stacking context, which is why the shadow is the face's sibling, never its child.
 
 Layers, bottom to top:
 

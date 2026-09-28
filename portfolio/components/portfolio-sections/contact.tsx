@@ -1,7 +1,12 @@
 import { copy } from "@/lib/copy";
 import { PixelIcon, type PixelIconName } from "@/components/retro/pixel-icon";
 import { ContinuePrompt } from "@/components/retro/continue-prompt";
-import { Mark, Section, SectionTitle } from "@/components/retro/ui";
+import {
+  Mark,
+  PixelShadow,
+  Section,
+  SectionTitle,
+} from "@/components/retro/ui";
 
 const EMAIL = "joanherrol@gmail.com";
 
@@ -15,8 +20,9 @@ const SOCIALS: { icon: PixelIconName; label: string; href: string }[] = [
   { icon: "itch", label: "itch.io", href: "https://joan-hervas.itch.io/" },
 ];
 
-const CARD =
-  "card-cream pixel-float pixel-button flex items-center hover:bg-pico-accent hover:text-cream";
+const CARD = "pixel-button pixel-cut group flex min-w-0";
+const CARD_FACE =
+  "pixel-face card-cream flex min-w-0 flex-1 items-center group-hover:bg-pico-accent group-hover:text-cream";
 
 export function Contact() {
   const details: {
@@ -54,18 +60,17 @@ export function Contact() {
         >
           {details.map((d) => (
             <li key={d.label} className="min-w-0">
-              <a
-                href={d.href}
-                data-sound="confirm"
-                className={`${CARD} gap-8 px-8 py-6 text-body`}
-              >
-                <PixelIcon name={d.icon} />
-                <span className="min-w-0">
-                  <span className="block truncate text-body uppercase tracking-[0.125em]">
-                    {d.label}
-                  </span>
-                  <span className="mt-2 block truncate text-body">
-                    {d.value}
+              <a href={d.href} data-sound="confirm" className={CARD}>
+                <PixelShadow />
+                <span className={`${CARD_FACE} gap-8 px-8 py-6 text-body`}>
+                  <PixelIcon name={d.icon} />
+                  <span className="min-w-0">
+                    <span className="block truncate text-body uppercase tracking-[0.125em]">
+                      {d.label}
+                    </span>
+                    <span className="mt-2 block truncate text-body">
+                      {d.value}
+                    </span>
                   </span>
                 </span>
               </a>
@@ -85,11 +90,16 @@ export function Contact() {
                 rel="noopener noreferrer"
                 aria-label={social.label}
                 data-sound="confirm"
-                className={`${CARD} size-[round(up,48px,var(--ipx))] justify-center gap-6 text-body min-[40rem]:w-auto min-[40rem]:px-8`}
+                className={CARD}
               >
-                <PixelIcon name={social.icon} />
-                <span className="hidden min-[40rem]:inline">
-                  {social.label}
+                <PixelShadow />
+                <span
+                  className={`${CARD_FACE} size-[round(up,48px,var(--ipx))] justify-center gap-6 text-body min-[40rem]:w-auto min-[40rem]:px-8`}
+                >
+                  <PixelIcon name={social.icon} />
+                  <span className="hidden min-[40rem]:inline">
+                    {social.label}
+                  </span>
                 </span>
               </a>
             </li>

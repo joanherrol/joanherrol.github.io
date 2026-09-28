@@ -12,6 +12,7 @@ Script checks with Playwright at 390, 800 and 1440px wide, and at device scale f
 - every text element's `fontSize / 8 * dpr` is an integer;
 - every shadowed element's ancestors have no `transform`, `opacity < 1`, `filter`, `sticky` or `container-type` once revealed;
 - hovering a pressable's bottom-right edge pixel stays hovered for 500ms (no flicker);
+- every `.pixel-cut` has its `--cut` set once the page is visible, with the step count its shorter side calls for;
 - a bullet fired at a card stops with its edge exactly on the card face;
 - the production build contains no dev-only routes.
 

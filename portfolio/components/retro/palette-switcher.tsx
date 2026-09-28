@@ -10,7 +10,13 @@ import {
 } from "@/lib/palette";
 import { copy } from "@/lib/copy";
 import { PixelIcon } from "@/components/retro/pixel-icon";
-import { dropdown, PixelArt, TitleBar } from "@/components/retro/ui";
+import { pixelCutRef } from "@/components/retro/pixel-corners";
+import {
+  dropdown,
+  PixelArt,
+  PixelShadow,
+  TitleBar,
+} from "@/components/retro/ui";
 import { useDismiss } from "@/components/retro/use-dismiss";
 import { SoundToggle } from "@/components/retro/sound-toggle";
 
@@ -76,39 +82,46 @@ export function PaletteSwitcher() {
           data-sound="open"
           aria-expanded={open}
           aria-label={`${copy.menu.palette}: ${current.name}`}
-          className={`${dropdown.trigger} px-4 text-body`}
+          className={dropdown.trigger}
         >
-          <Swatch palette={current} />
+          <PixelShadow />
+          <span className={`${dropdown.triggerFace} px-4 text-body`}>
+            <Swatch palette={current} />
+          </span>
         </button>
 
         {open && (
           <div
+            ref={pixelCutRef}
             className={`${dropdown.panel} absolute left-0 top-full w-max sm:w-100`}
           >
-            <TitleBar title={copy.menu.palette} divider />
-            <ul>
-              {PALETTES.map((p) => (
-                <li key={p.id}>
-                  <button
-                    type="button"
-                    onClick={() => choose(p)}
-                    data-sound="confirm"
-                    aria-pressed={p.id === current.id}
-                    className={`group ${dropdown.item}`}
-                  >
-                    <Swatch
-                      palette={p}
-                      className="outline-cream group-hover:outline-solid group-hover:outline-[0.125em]"
-                    />
-                    {p.name}
-                    <PixelIcon
-                      name="check"
-                      className={`ml-auto ${p.id === current.id ? "" : "invisible"}`}
-                    />
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <PixelShadow />
+            <div className={dropdown.panelFace}>
+              <TitleBar title={copy.menu.palette} divider />
+              <ul>
+                {PALETTES.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      onClick={() => choose(p)}
+                      data-sound="confirm"
+                      aria-pressed={p.id === current.id}
+                      className={`group ${dropdown.item}`}
+                    >
+                      <Swatch
+                        palette={p}
+                        className="outline-cream group-hover:outline-solid group-hover:outline-[0.125em]"
+                      />
+                      {p.name}
+                      <PixelIcon
+                        name="check"
+                        className={`ml-auto ${p.id === current.id ? "" : "invisible"}`}
+                      />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
       </div>

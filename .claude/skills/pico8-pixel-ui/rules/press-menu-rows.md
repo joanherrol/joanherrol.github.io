@@ -19,11 +19,22 @@ Dropdowns are floating cream (or paper) panels with a divided title bar. A row t
 
 ```ts
 export const dropdown = {
-  trigger: "pixel-float pixel-button flex h-[round(up,44px,var(--ipx))] cursor-pointer items-center bg-paper",
-  panel: "pixel-float pointer-events-auto mt-6 bg-paper",
+  trigger: "pixel-button pixel-cut flex h-[round(up,44px,var(--ipx))] cursor-pointer",
+  triggerFace: "pixel-face flex items-center bg-paper",
+  panel: "pixel-float pixel-cut pointer-events-auto mt-6",
+  panelFace: "pixel-face bg-paper",
   item: "flex w-full cursor-pointer items-center gap-6 whitespace-nowrap px-6 py-4 text-left text-body uppercase leading-none tracking-[0.125em] hover:bg-pico-accent hover:text-cream",
 };
 ```
+
+```tsx
+<nav ref={pixelCutRef} className={dropdown.panel}>
+  <PixelShadow />
+  <div className={dropdown.panelFace}>…rows…</div>
+</nav>
+```
+
+The panel mounts on open, so it registers its corners with `ref={pixelCutRef}` (see `surface-cut-corners`). The face clips the lit rows to the stepped corners.
 
 ```tsx
 <button

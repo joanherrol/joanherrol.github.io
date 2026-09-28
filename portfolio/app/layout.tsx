@@ -3,6 +3,7 @@ import { Press_Start_2P, Tiny5 } from "next/font/google";
 import "./globals.css";
 import { paletteBootScript } from "@/lib/palette";
 import { pixelBootScript } from "@/lib/pixel";
+import { PixelCorners } from "@/components/retro/pixel-corners";
 
 const display = Press_Start_2P({
   variable: "--font-display",
@@ -39,6 +40,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: paletteBootScript }} />
         <script dangerouslySetInnerHTML={{ __html: pixelBootScript }} />
         {children}
+        <PixelCorners />
       </body>
     </html>
   );

@@ -73,8 +73,13 @@ export function Mark({ children }: Readonly<{ children: ReactNode }>) {
   return <span className="text-mark leading-snug">{children}</span>;
 }
 
-const buttonClasses =
-  "card-accent pixel-float pixel-button inline-flex items-center justify-center gap-3 px-6 py-4 text-body uppercase leading-none tracking-[0.125em] sm:gap-5 sm:px-11 sm:py-8 sm:text-body-lg";
+/** The ground shadow of a `.pixel-cut` host; a sibling of its face, so clipping the face never clips it. */
+export function PixelShadow() {
+  return <span aria-hidden="true" className="pixel-shadow" />;
+}
+
+const buttonFace =
+  "pixel-face card-accent inline-flex items-center justify-center gap-3 px-6 py-4 text-body uppercase leading-none tracking-[0.125em] sm:gap-5 sm:px-11 sm:py-8 sm:text-body-lg";
 
 export function PixelButton({
   href,
@@ -92,21 +97,27 @@ export function PixelButton({
   return (
     <a
       href={href}
-      className={buttonClasses}
+      className="pixel-button pixel-cut inline-flex"
       data-sound="confirm"
       download={download}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
     >
-      {children}
-      {icon && <PixelIcon name={icon} />}
+      <PixelShadow />
+      <span className={buttonFace}>
+        {children}
+        {icon && <PixelIcon name={icon} />}
+      </span>
     </a>
   );
 }
 
+/** Hosts take the shadow, position and pointer; faces take the fill, padding and text. */
 export const dropdown = {
   trigger:
-    "pixel-float pixel-button flex h-[round(up,44px,var(--ipx))] cursor-pointer items-center bg-paper",
-  panel: "pixel-float pointer-events-auto mt-6 bg-paper",
+    "pixel-button pixel-cut flex h-[round(up,44px,var(--ipx))] cursor-pointer",
+  triggerFace: "pixel-face flex items-center bg-paper",
+  panel: "pixel-float pixel-cut pointer-events-auto mt-6",
+  panelFace: "pixel-face bg-paper",
   item: "flex w-full cursor-pointer items-center gap-6 whitespace-nowrap px-6 py-4 text-left text-body uppercase leading-none tracking-[0.125em] hover:bg-pico-accent hover:text-cream",
 };
 
@@ -153,12 +164,15 @@ function FloatFrame({
   delay = 0,
   className,
   bodyClassName,
+  cutFree,
   children,
-}: Omit<FloatProps, "title"> & Readonly<{ bodyClassName: string }>) {
+}: Omit<FloatProps, "title"> &
+  Readonly<{ bodyClassName: string; cutFree?: boolean }>) {
   return (
     <figure
       data-reveal
-      className={`relative ${className}`}
+      data-cut-free={cutFree || undefined}
+      className={`pixel-cut relative ${className}`}
       style={
         {
           "--tilt": `${tilt}deg`,
@@ -167,7 +181,7 @@ function FloatFrame({
       }
     >
       <div aria-hidden="true" className="float-shadow" />
-      <div className={`float-body ${bodyClassName}`}>{children}</div>
+      <div className={`float-body pixel-face ${bodyClassName}`}>{children}</div>
     </figure>
   );
 }
@@ -266,6 +280,7 @@ export function ConsoleFrame({ title, className = "", ...props }: FloatProps) {
       {...props}
       className={className}
       bodyClassName="flex items-center justify-between gap-6 bg-cream px-6 py-8"
+      cutFree
     >
       <PixelArt rows={DPAD} colors={DPAD_COLORS} className="w-19 shrink-0" />
       <div className="min-w-0 flex-1 bg-dark-grey px-3 pb-3">

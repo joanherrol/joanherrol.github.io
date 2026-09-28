@@ -51,7 +51,7 @@ export function Skills() {
               {g.skills.map((s) => (
                 <li
                   key={s}
-                  className={`px-3 py-2 text-body leading-none sm:px-4 ${
+                  className={`pixel-cut pixel-face px-3 py-2 text-body leading-none sm:px-4 ${
                     g.featured ? "card-accent" : "card-cream"
                   }`}
                 >

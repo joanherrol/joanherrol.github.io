@@ -10,7 +10,7 @@ import {
   subscribeSound,
 } from "@/lib/sound";
 import { PixelIcon } from "@/components/retro/pixel-icon";
-import { dropdown } from "@/components/retro/ui";
+import { dropdown, PixelShadow } from "@/components/retro/ui";
 
 export function SoundToggle() {
   const on = useSyncExternalStore(subscribeSound, soundEnabled, () => false);
@@ -27,9 +27,12 @@ export function SoundToggle() {
       data-sound="confirm"
       aria-pressed={on}
       aria-label={copy.menu.sound}
-      className={`${dropdown.trigger} px-6 text-body`}
+      className={dropdown.trigger}
     >
-      <PixelIcon name={on ? "sound" : "mute"} />
+      <PixelShadow />
+      <span className={`${dropdown.triggerFace} px-6 text-body`}>
+        <PixelIcon name={on ? "sound" : "mute"} />
+      </span>
     </button>
   );
 }

@@ -9,7 +9,8 @@
   inherits: true;
   initial-value: 2px;
 }
-@property --raise {
+/* Registered so scripts read it in px (pixel-corners.tsx). */
+@property --s {
   syntax: "<length>";
   inherits: true;
   initial-value: 0px;
@@ -272,58 +273,74 @@
     color: var(--color-white);
   }
 
-  /* Floating: a grown copy, two shadow pixels showing. */
-  .pixel-float {
+  /* Stair-stepped corners, one --s per step. PixelCorners sets the step count from
+     each .pixel-cut element's size; one step shows until it runs. */
+  .pixel-cut {
+    --cut: polygon(
+      0 var(--s),
+      var(--s) var(--s),
+      var(--s) 0,
+      calc(100% - var(--s)) 0,
+      calc(100% - var(--s)) var(--s),
+      100% var(--s),
+      100% calc(100% - var(--s)),
+      calc(100% - var(--s)) calc(100% - var(--s)),
+      calc(100% - var(--s)) 100%,
+      var(--s) 100%,
+      var(--s) calc(100% - var(--s)),
+      0 calc(100% - var(--s))
+    );
+  }
+  .pixel-face {
+    position: relative;
+    clip-path: var(--cut);
+  }
+
+  /* The shadow: a black same-shape copy on the ground layer, a sibling of the face so
+     clipping the face never clips it. */
+  .pixel-float,
+  .pixel-flat,
+  .pixel-button {
     position: relative;
   }
-  .pixel-float::before,
+  .pixel-shadow,
   .float-shadow::before {
     content: "";
     position: absolute;
     z-index: -1;
-    inset: calc(var(--s) + var(--raise)) calc(var(--s) * -2 - var(--raise))
-      calc(var(--s) * -2 - var(--raise)) calc(var(--s) + var(--raise));
     background-color: var(--color-black);
+    clip-path: var(--cut);
     pointer-events: none;
   }
-  .pixel-flat {
-    position: relative;
+  /* Floating: a grown copy, two shadow pixels showing. */
+  .pixel-float > .pixel-shadow,
+  .float-shadow::before {
+    inset: var(--s) calc(var(--s) * -2) calc(var(--s) * -2) var(--s);
   }
-  .pixel-flat::before {
-    content: "";
-    position: absolute;
-    z-index: -1;
+  /* Resting: a copy grown one shadow pixel right and down. */
+  .pixel-flat > .pixel-shadow {
     inset: 0 calc(var(--s) * -1) calc(var(--s) * -1) 0;
-    background-color: var(--color-black);
-    pointer-events: none;
   }
-  /* Offsets, not transforms, so the shadow stays on the ground. */
+  /* Pressable: the element stays still as the hit zone, with an exact-size shadow one
+     --s down. Only the face moves, with translate, so the compositor animates it. */
   .pixel-button {
-    --px: 0.125em;
-    position: relative;
-    top: calc(var(--raise) * -1);
-    left: calc(var(--raise) * -1);
-    transition: --raise 100ms var(--ease-out);
-  }
-  .pixel-button::before {
-    inset: calc(var(--s) + var(--raise)) calc(var(--s) * -1 - var(--raise))
-      calc(var(--s) * -1 - var(--raise)) calc(var(--s) + var(--raise));
-  }
-  /* The hit zone stays at rest while the face moves. */
-  .pixel-button::after {
-    content: "";
-    position: absolute;
-    inset: var(--raise) calc(var(--raise) * -1) calc(var(--raise) * -1)
-      var(--raise);
     pointer-events: auto;
   }
+  .pixel-button > .pixel-shadow {
+    inset: var(--s) calc(var(--s) * -1) calc(var(--s) * -1) var(--s);
+  }
+  .pixel-button > .pixel-face {
+    transition: translate 100ms var(--ease-out);
+    pointer-events: none;
+  }
+  /* Lifts one of its own text pixels, so small controls don't jump. */
   @media (hover: hover) {
-    .pixel-button:hover {
-      --raise: var(--px);
+    .pixel-button:hover > .pixel-face {
+      translate: -0.125em -0.125em;
     }
   }
-  .pixel-button:active {
-    --raise: calc(var(--s) * -1);
+  .pixel-button:active > .pixel-face {
+    translate: var(--s) var(--s);
   }
 
   @keyframes float-tilt {
@@ -365,12 +382,6 @@
         float-bob 2s ease-in-out var(--float-delay, 0s) infinite alternate;
     }
   }
-}
-
-/* Unlayered so it beats pointer-events utilities: only the resting hit zone
-   (::after) takes the pointer. */
-.pixel-button {
-  pointer-events: none;
 }
 
 .tone-dark,

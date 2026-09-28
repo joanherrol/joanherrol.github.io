@@ -2,7 +2,7 @@
 title: Shadows Are Solid Same-Shape Copies, Never Bands
 impact: CRITICAL
 impactDescription: prevents the background showing between an element and its shadow as it moves
-tags: shadow, pseudo-element, float, cards
+tags: shadow, sibling, float, cards, corners
 ---
 
 ## Shadows Are Solid Same-Shape Copies, Never Bands
@@ -21,31 +21,29 @@ A shadow is a black copy of the element's whole shape behind it, offset down and
 .card { box-shadow: 6px 6px 0 black; } /* moves with the card; can't stay on the ground */
 ```
 
-**Correct:**
+**Correct (a sibling element, so the face's corner clip never clips it):**
 
 ```css
-.pixel-float { position: relative; }
-.pixel-float::before {
-  content: "";
+.pixel-shadow {
   position: absolute;
   z-index: -1;
-  inset: calc(var(--s) + var(--raise)) calc(var(--s) * -2 - var(--raise))
-    calc(var(--s) * -2 - var(--raise)) calc(var(--s) + var(--raise));
   background-color: var(--color-black);
+  clip-path: var(--cut); /* the same stair-stepped shape, see surface-cut-corners */
   pointer-events: none;
 }
-```
-
-```css
-.pixel-flat { position: relative; }
-.pixel-flat::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
+.pixel-float > .pixel-shadow {
+  inset: var(--s) calc(var(--s) * -2) calc(var(--s) * -2) var(--s);
+}
+.pixel-flat > .pixel-shadow {
   inset: 0 calc(var(--s) * -1) calc(var(--s) * -1) 0;
-  background-color: var(--color-black);
-  pointer-events: none;
 }
 ```
 
-`--raise` is 0 for anything that doesn't move. The `- var(--raise)` terms keep the shadow still on the ground when a pressable's face moves.
+```tsx
+<div className="pixel-flat pixel-cut">
+  <PixelShadow />
+  <div className="pixel-face card-cream p-4">…</div>
+</div>
+```
+
+The shadow never moves: pressables and floating frames move only their face (see `press-float-raise`, `shadow-wrap-to-animate`).

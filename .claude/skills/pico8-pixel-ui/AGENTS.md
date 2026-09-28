@@ -10,7 +10,7 @@
 
 ## Abstract
 
-A strict design system for flat pixel-art web UIs that sit alongside PICO-8-style game characters, plus the techniques for animating those characters, their shadows, shots and collisions on a web page. It holds 44 rules across 10 categories, ordered by impact from critical (the pixel grid, colour, shadows and layers) to supporting (performance and tooling). Each rule explains why it matters and shows incorrect and correct code. The reference implementation is a Next.js 16, React 19 and Tailwind CSS v4 portfolio; `templates/` holds its core files.
+A strict design system for flat pixel-art web UIs that sit alongside PICO-8-style game characters, plus the techniques for animating those characters, their shadows, shots and collisions on a web page. It holds 45 rules across 10 categories, ordered by impact from critical (the pixel grid, colour, shadows and layers) to supporting (performance and tooling). Each rule explains why it matters and shows incorrect and correct code. The reference implementation is a Next.js 16, React 19 and Tailwind CSS v4 portfolio; `templates/` holds its core files.
 
 ---
 
@@ -49,8 +49,9 @@ A strict design system for flat pixel-art web UIs that sit alongside PICO-8-styl
    - 5.5 [Reveals, Hurt Flashes and Reduced Motion](#55-reveals-hurt-flashes-and-reduced-motion)
    - 5.6 [Declare Click Sounds With data-sound, One Listener](#56-declare-click-sounds-with-datasound-one-listener)
 6. [Outlines and Surfaces](#6-outlines-and-surfaces) — **MEDIUM-HIGH**
-   - 6.1 [No Black Outlines, With a Short List of Exceptions](#61-no-black-outlines-with-a-short-list-of-exceptions)
-   - 6.2 [Two Image Frames: Window and Console](#62-two-image-frames-window-and-console)
+   - 6.1 [Surfaces Have Stair-Stepped Corners](#61-surfaces-have-stairstepped-corners)
+   - 6.2 [No Black Outlines, With a Short List of Exceptions](#62-no-black-outlines-with-a-short-list-of-exceptions)
+   - 6.3 [Two Image Frames: Window and Console](#63-two-image-frames-window-and-console)
 7. [Sprites and Animation](#7-sprites-and-animation) — **HIGH**
    - 7.1 [Horizontal Strip Sheets With Typed Metadata](#71-horizontal-strip-sheets-with-typed-metadata)
    - 7.2 [Compose Characters From Layered Sprites](#72-compose-characters-from-layered-sprites)
@@ -603,40 +604,38 @@ A shadow is a black copy of the element's whole shape behind it, offset down and
 .card { box-shadow: 6px 6px 0 black; } /* moves with the card; can't stay on the ground */
 ```
 
-**Correct:**
+**Correct (a sibling element, so the face's corner clip never clips it):**
 
 ```css
-.pixel-float { position: relative; }
-.pixel-float::before {
-  content: "";
+.pixel-shadow {
   position: absolute;
   z-index: -1;
-  inset: calc(var(--s) + var(--raise)) calc(var(--s) * -2 - var(--raise))
-    calc(var(--s) * -2 - var(--raise)) calc(var(--s) + var(--raise));
   background-color: var(--color-black);
+  clip-path: var(--cut); /* the same stair-stepped shape, see surface-cut-corners */
   pointer-events: none;
 }
-```
-
-```css
-.pixel-flat { position: relative; }
-.pixel-flat::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
+.pixel-float > .pixel-shadow {
+  inset: var(--s) calc(var(--s) * -2) calc(var(--s) * -2) var(--s);
+}
+.pixel-flat > .pixel-shadow {
   inset: 0 calc(var(--s) * -1) calc(var(--s) * -1) 0;
-  background-color: var(--color-black);
-  pointer-events: none;
 }
 ```
 
-`--raise` is 0 for anything that doesn't move. The `- var(--raise)` terms keep the shadow still on the ground when a pressable's face moves.
+```tsx
+<div className="pixel-flat pixel-cut">
+  <PixelShadow />
+  <div className="pixel-face card-cream p-4">…</div>
+</div>
+```
+
+The shadow never moves: pressables and floating frames move only their face (see `press-float-raise`, `shadow-wrap-to-animate`).
 
 ### 3.3 Keep Shadows on a Ground Layer With No Stacking Contexts Above
 
 **Impact: CRITICAL (prevents shadows jumping above bullets or painting over their own element)**
 
-Shadows are `z-index: -1` pseudo-elements. For them to land below projectiles and above the section background, the section paints its background on its own `::before` at `-1`, and neither the shadowed element nor any ancestor may form a stacking context. `transform`, `opacity < 1`, `filter`, `position: sticky`, `container-type`, `will-change`, `isolation` or `z-index` on a positioned element all trap the shadow inside.
+Shadows are `z-index: -1` elements (`.pixel-shadow` siblings, or the `::before` of an unclipped wrapper). For them to land below projectiles and above the section background, the section paints its background on its own `::before` at `-1`, and neither the shadowed element nor any ancestor may form a stacking context. `transform`, `opacity < 1`, `filter`, `position: sticky`, `container-type`, `will-change`, `isolation` or `z-index` on a positioned element all trap the shadow inside. A face's `clip-path` also forms a stacking context, which is why the shadow is the face's sibling, never its child.
 
 Layers, bottom to top:
 
@@ -684,7 +683,7 @@ Big black blocks over content, or a shadow drawn on top of its own element, alwa
 
 **Impact: CRITICAL (animating the element makes it a stacking context that lifts its own shadow)**
 
-A shadowed element must never transform or animate itself. Put the reveal, bob or tilt on a wrapper, or split the element into separate shadow and body elements. For moving pressables, move with `top`/`left` offsets, not transforms (see `press-float-raise`).
+A shadowed element must never transform or animate itself. Put the reveal, bob or tilt on a wrapper, or split the element into separate shadow and body elements. Pressables are already split: only the face translates, and its sibling shadow stays on the ground (see `press-float-raise`).
 
 **Incorrect (the card is both revealed and shadowed):**
 
@@ -968,7 +967,7 @@ With an 8-pixel em, line heights of 1, 1.125, 1.25, 1.375 or 1.625 give whole-pi
 
 **Impact: HIGH**
 
-Buttons float, lift one of their own pixels on hover and sit flush when pressed, with a hit zone that never moves. Floating frames, reveals and feedback.
+Button faces float, lift one of their own pixels on hover and sit flush when pressed, while the host stays still as the hit zone. Floating frames, reveals and feedback.
 
 ### 5.1 Pressables Float, Lift One Own Pixel, Press Flush
 
@@ -977,79 +976,68 @@ Buttons float, lift one of their own pixels on hover and sit flush when pressed,
 Buttons, header buttons and link cards float 1 `--s` above a black copy of exactly their shape.
 
 - **At rest,** 1 shadow pixel shows.
-- **On hover,** the face rises 1 of its own text pixels (`--px: 0.125em`), so small controls don't jump.
+- **On hover,** the face rises 1 of its own text pixels (`0.125em`), so small controls don't jump.
 - **When pressed,** it sinks flush onto the floor, covering the shadow completely.
 
-Drive all three from one registered `<length>` (`--raise`) so it can transition. Move the face with `top`/`left` offsets; a transform would carry the shadow along. The shadow pseudo counter-offsets by `--raise`, so it stays still on the ground.
+Only the face moves. The host holds a sibling shadow and the face (see `surface-cut-corners`), so moving the face with `translate` leaves the shadow on the ground, and the compositor animates it without layout or paint. Never animate offsets (`top`/`left`) or a registered custom property: both relayout or repaint every frame.
 
-**Incorrect (translate moves the ::before shadow too; scale leaves half pixels):**
+**Incorrect (moves the whole element, shadow included; offsets relayout every frame; scale leaves half pixels):**
 
 ```css
 .btn:hover  { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 black; }
+.btn:hover  { top: -2px; left: -2px; }
 .btn:active { transform: scale(0.97); }
 ```
 
 **Correct:**
 
 ```css
-@property --raise {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
+.pixel-button { position: relative; pointer-events: auto; }
+.pixel-button > .pixel-shadow {
+  inset: var(--s) calc(var(--s) * -1) calc(var(--s) * -1) var(--s); /* exact size, 1 --s down */
 }
-.pixel-button {
-  --px: 0.125em;
-  position: relative;
-  top: calc(var(--raise) * -1);
-  left: calc(var(--raise) * -1);
-  transition: --raise 100ms var(--ease-out);
-}
-.pixel-button::before { /* combined with .pixel-float::before: exact size, 1 --s down */
-  inset: calc(var(--s) + var(--raise)) calc(var(--s) * -1 - var(--raise))
-    calc(var(--s) * -1 - var(--raise)) calc(var(--s) + var(--raise));
+.pixel-button > .pixel-face {
+  transition: translate 100ms var(--ease-out);
+  pointer-events: none;
 }
 @media (hover: hover) {
-  .pixel-button:hover { --raise: var(--px); }
+  .pixel-button:hover > .pixel-face { translate: -0.125em -0.125em; }
 }
-.pixel-button:active { --raise: calc(var(--s) * -1); }
+.pixel-button:active > .pixel-face { translate: var(--s) var(--s); }
 ```
 
 ```tsx
-const buttonClasses =
-  "card-accent pixel-float pixel-button inline-flex items-center justify-center gap-3 px-6 py-4 " +
-  "text-body uppercase leading-none tracking-[0.125em] sm:gap-5 sm:px-11 sm:py-8 sm:text-body-lg";
+<a href={href} className="pixel-button pixel-cut inline-flex">
+  <PixelShadow />
+  <span className="pixel-face card-accent inline-flex items-center gap-3 px-6 py-4 uppercase">
+    {children}
+  </span>
+</a>
 ```
 
-Gate hover behind `(hover: hover)` so a tap on a phone doesn't leave the button stuck in its lifted state.
+Gate hover behind `(hover: hover)` so a tap on a phone doesn't leave the button stuck in its lifted state. Hover colours on the face use `group-hover:` from the host.
 
 ### 5.2 The Hit Zone Never Moves
 
 **Impact: HIGH (stops hover flicker when the cursor sits on a moving button's edge)**
 
-When a face lifts on hover, a cursor on its bottom or right edge ends up outside it, so it drops, re-enters, lifts again, and flickers. Make the element ignore the pointer and give a transparent `::after`, pinned to the resting position, the pointer instead. `:hover` and `:active` still match, because the pseudo belongs to the element.
+When a face lifts on hover, a cursor on its bottom or right edge ends up outside it, so it drops, re-enters, lifts again, and flickers. The host never moves, so it is the hit zone: it takes the pointer and the face ignores it. `:hover` and `:active` match on the host and move only the face.
 
-**Incorrect:**
+**Incorrect (the element's own box moves out from under the cursor):**
 
 ```css
-.pixel-button:hover { --raise: var(--px); } /* the element's own box moves out from under the cursor */
+.pixel-button:hover { translate: -0.125em -0.125em; }
 ```
 
 **Correct:**
 
 ```css
-@layer components {
-  .pixel-button::after {
-    content: "";
-    position: absolute;
-    inset: var(--raise) calc(var(--raise) * -1) calc(var(--raise) * -1) var(--raise);
-    pointer-events: auto;
-  }
-}
-/* Unlayered so it beats pointer-events utilities: only the resting hit zone takes the pointer. */
-.pixel-button { pointer-events: none; }
+.pixel-button { pointer-events: auto; }
+.pixel-button > .pixel-face { pointer-events: none; }
+.pixel-button:hover > .pixel-face { translate: -0.125em -0.125em; }
 ```
 
-Keep the `none` rule unlayered. Inside `@layer components`, a utility such as `pointer-events-auto` on a parent menu would override it.
+Set `pointer-events: auto` on the host explicitly: fixed menus are `pointer-events-none` so they don't block the page, and the host must still take clicks inside them. Delegated handlers (`data-sound`, links) sit on the host, so the click target is always the host.
 
 ### 5.3 Menu Rows Highlight in Accent; Selected Looks Like Hovered
 
@@ -1067,11 +1055,22 @@ Dropdowns are floating cream (or paper) panels with a divided title bar. A row t
 
 ```ts
 export const dropdown = {
-  trigger: "pixel-float pixel-button flex h-[round(up,44px,var(--ipx))] cursor-pointer items-center bg-paper",
-  panel: "pixel-float pointer-events-auto mt-6 bg-paper",
+  trigger: "pixel-button pixel-cut flex h-[round(up,44px,var(--ipx))] cursor-pointer",
+  triggerFace: "pixel-face flex items-center bg-paper",
+  panel: "pixel-float pixel-cut pointer-events-auto mt-6",
+  panelFace: "pixel-face bg-paper",
   item: "flex w-full cursor-pointer items-center gap-6 whitespace-nowrap px-6 py-4 text-left text-body uppercase leading-none tracking-[0.125em] hover:bg-pico-accent hover:text-cream",
 };
 ```
+
+```tsx
+<nav ref={pixelCutRef} className={dropdown.panel}>
+  <PixelShadow />
+  <div className={dropdown.panelFace}>…rows…</div>
+</nav>
+```
+
+The panel mounts on open, so it registers its corners with `ref={pixelCutRef}` (see `surface-cut-corners`). The face clips the lit rows to the stepped corners.
 
 ```tsx
 <button
@@ -1228,9 +1227,52 @@ Normalise every file to its measured loudness (`gain = 10 ** ((level - LOUDNESS[
 
 **Impact: MEDIUM-HIGH**
 
-No black outlines; contrast from flat colour, spacing and shadow. Short list of allowed exceptions and the two image frames.
+No black outlines; contrast from flat colour, spacing and shadow. Stair-stepped corners, a short list of allowed exceptions and the two image frames.
 
-### 6.1 No Black Outlines, With a Short List of Exceptions
+### 6.1 Surfaces Have Stair-Stepped Corners
+
+**Impact: MEDIUM-HIGH (pixel-art corners on every button, card, chip, frame and menu, with shadows that match)**
+
+Buttons, cards, chips, image frames and menu panels lose a stair of `--s` squares from each corner, like a pixel-art rounded rectangle. They get one step per 12 `--s` of their shorter side, with a minimum of 1, so small controls get one notch and big windows get several. Never use `border-radius`: it anti-aliases, and it can't be drawn in whole pixels.
+
+- Cut with `clip-path: var(--cut)`. `--cut` is a polygon in `var(--s)` and `%` terms, so it follows the element's size and stays on the pixel grid.
+- `clip-path` also clips the element's own pseudo-elements, so a shadowed surface splits in two:
+  - the **host** (`.pixel-cut` plus `.pixel-float`, `.pixel-flat` or `.pixel-button`) carries position, sizing and the pointer;
+  - it holds a **sibling shadow** (`.pixel-shadow`, see `shadow-solid-copy`) and a **face** (`.pixel-face`, clipped) that carries fill, padding and text.
+- Unshadowed surfaces (chips, badges) put `pixel-cut pixel-face` on one element.
+- The shadow uses the same `--cut`: its `%` terms resolve against its own box, so the stairs line up with the face.
+- `PixelCorners` (mounted once in the root layout) sets `--cut` on every `.pixel-cut` from its size with a shared `ResizeObserver`. It reads every size first, then writes only the changed values, so it never forces a layout. Elements that mount later, like menu panels, take `ref={pixelCutRef}`. The CSS default is one step, which shows until hydration.
+
+**Incorrect (border-radius blurs the corner; clipping the host also clips its `::before` shadow):**
+
+```css
+.card { border-radius: 8px; }
+.card { clip-path: var(--cut); } /* the shadow pseudo disappears with the corner */
+```
+
+**Correct:**
+
+```css
+.pixel-cut {
+  --cut: polygon(0 var(--s), var(--s) var(--s), var(--s) 0, /* … one step, clockwise … */);
+}
+.pixel-face {
+  position: relative;
+  clip-path: var(--cut);
+}
+```
+
+```tsx
+<div className="pixel-flat pixel-cut">
+  <PixelShadow />
+  <div className="pixel-face card-cream p-4">…</div>
+</div>
+<li className="pixel-cut pixel-face card-accent px-3 py-2">React</li>
+```
+
+Class names that other code looks up (the collision covers `.card-cream`, `.card-accent`, `.float-body`) belong on the face, the part you can see.
+
+### 6.2 No Black Outlines, With a Short List of Exceptions
 
 **Impact: HIGH (separation comes from flat colour, spacing and shadow, not strokes)**
 
@@ -1271,7 +1313,7 @@ const LIGHTS = ["bg-red border-dark-red", "bg-yellow border-orange", "bg-green b
 :focus-visible { outline: var(--p) solid var(--pico-accent); outline-offset: var(--p); }
 ```
 
-### 6.2 Two Image Frames: Window and Console
+### 6.3 Two Image Frames: Window and Console
 
 **Impact: MEDIUM (pictures framed without borders, in the system's own vocabulary)**
 
@@ -1920,7 +1962,7 @@ const set = (name: string, n: number) => {
 el.textContent = `${size}px · pixel ${size / 8}px`;
 ```
 
-Put the tuner's `sticky` on a wrapper, never on the shadowed card (see `shadow-ground-layer`). Show state (rest, hover, pressed) by setting `--raise` inline on static copies.
+Put the tuner's `sticky` on a wrapper, never on the shadowed card (see `shadow-ground-layer`). Show state (rest, hover, pressed) by setting `translate` inline on the faces of static copies.
 
 ### 10.2 Verify the Pixel Rules in a Real Browser
 
@@ -1931,6 +1973,7 @@ Script checks with Playwright at 390, 800 and 1440px wide, and at device scale f
 - every text element's `fontSize / 8 * dpr` is an integer;
 - every shadowed element's ancestors have no `transform`, `opacity < 1`, `filter`, `sticky` or `container-type` once revealed;
 - hovering a pressable's bottom-right edge pixel stays hovered for 500ms (no flicker);
+- every `.pixel-cut` has its `--cut` set once the page is visible, with the step count its shorter side calls for;
 - a bullet fired at a card stops with its edge exactly on the card face;
 - the production build contains no dev-only routes.
 
